@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
@@ -5,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const http = require('http');
 const { Server } = require('socket.io');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const prisma = new PrismaClient();
 const app = express();
@@ -163,37 +165,46 @@ app.post('/api/admin/log', verifyToken, async (req, res) => {
 });
 
 // ========================
-// AI Chatbot (Mock AI)
+// AI Chatbot (Gemini Integration)
 // ========================
-app.post('/api/chat', (req, res) => {
+let model = null;
+try {
+  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'YOUR_API_KEY_HERE') {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  }
+} catch (e) {
+  console.log("Failed to initialize Gemini AI. Check API key.");
+}
+
+app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Message required' });
 
-  const msg = message.toLowerCase();
-  let response = "I'm Coach AI! I can help you with fantasy drafts, live streaming, or sports rules. What do you want to know?";
-
-  if (msg.includes('hello') || msg.includes('hi')) {
-    response = "Hello Manager! Ready to draft some players or watch a live stream today?";
-  } else if (msg.includes('how to play') || msg.includes('rules')) {
-    response = "It's simple! Go to the 'Draft Team' tab, pick your players within the $100M budget, and select your Captain (2x points) and Vice-Captain (1.5x points).";
-  } else if (msg.includes('football')) {
-    response = "In our Football fantasy league, players earn points for goals, assists, and clean sheets. Check the Admin panel for the exact point breakdown!";
-  } else if (msg.includes('f1') || msg.includes('formula 1')) {
-    response = "F1 drivers earn points for overtakes, fastest laps, and pitstops under 2.5s. DNF costs -15 points!";
-  } else if (msg.includes('cricket') || msg.includes('ipl')) {
-    response = "Cricket is here! Players earn huge points (+20) for taking wickets, and +1 for every run scored. Don't forget, a Duck is -5 points!";
-  } else if (msg.includes('stream') || msg.includes('watch')) {
-    response = "Head over to the 'Watch Party' tab! You can stream your own screen to other managers, or check 'Live Tracking' for real-world football highlights.";
-  } else if (msg.includes('score') || msg.includes('point')) {
-    response = "You can track everyone's points in the Leaderboard tab. The Admin panel is where performance logs are officially recorded and calculated.";
-  } else if (msg.includes('who are you') || msg.includes('your name')) {
-    response = "I am Coach AI, your personal Fantasy League Assistant. I was built by Antigravity!";
+  if (!model) {
+    // Fallback mode if API key is not set
+    return res.json({ text: "Oops! My AI brain is currently offline. Please replace 'YOUR_API_KEY_HERE' in the backend/.env file with a real Google Gemini API Key to activate my true power!" });
   }
 
-  // Simulate network delay for AI thinking effect
-  setTimeout(() => {
-    res.json({ text: response });
-  }, 1000);
+  try {
+    const prompt = `You are Champak, the official, highly energetic assistant for the IIITN Streaming Platform (a fantasy sports and watch-party platform with a Neo-Tokyo Japanese aesthetic). 
+    Your personality is enthusiastic, knowledgeable about sports (Football, F1, Cricket), tech-savvy, and deeply helpful. 
+    Rules: 
+    - Keep your answers concise, engaging, and to the point (maximum 2-3 short sentences).
+    - Never break character. You are Champak, not an AI model.
+    - If asked about rules: Football uses goals/assists. F1 uses overtakes/pitstops. Cricket uses wickets/runs.
+    
+    User: ${message}
+    Champak:`;
+    
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    
+    res.json({ text: responseText });
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    res.json({ text: "Sorry Manager! I'm having trouble connecting to my neural network right now." });
+  }
 });
 
 // ========================

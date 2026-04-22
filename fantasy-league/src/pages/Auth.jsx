@@ -29,7 +29,8 @@ const Auth = ({ setToken }) => {
       } else {
         setError(data.error || 'Authentication failed');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       setError('Server error. Please try again.');
     }
   };
@@ -43,8 +44,8 @@ const Auth = ({ setToken }) => {
 
       <div className="card-3d glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '40px', position: 'relative', zIndex: 10, animation: 'fadeIn 0.5s ease' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1 className="heading-gradient" style={{ fontSize: '2.5rem', margin: '0 0 8px 0' }}>CFL</h1>
-          <p style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>Fantasy League</p>
+          <h1 className="heading-gradient" style={{ fontSize: '2.5rem', margin: '0 0 8px 0' }}>IIITN</h1>
+          <p style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.8rem' }}>Streaming Platform</p>
         </div>
 
         <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>{isLogin ? 'Manager Access' : 'Register New Manager'}</h2>

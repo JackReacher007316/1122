@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 const ParticleEffects = ({ type = 'sakura' }) => {
-  const [particles, setParticles] = useState([]);
-
-  useEffect(() => {
+  const [particles] = useState(() => {
     // Generate 30 random particles
     const particleCount = 30;
-    const newParticles = Array.from({ length: particleCount }).map((_, i) => ({
+    return Array.from({ length: particleCount }).map((_, i) => ({
       id: i,
       left: Math.random() * 100, // random x position (vw)
       animationDuration: 10 + Math.random() * 15, // between 10s and 25s
@@ -14,9 +12,7 @@ const ParticleEffects = ({ type = 'sakura' }) => {
       size: 10 + Math.random() * 15, // 10px to 25px
       opacity: 0.3 + Math.random() * 0.5,
     }));
-    
-    setParticles(newParticles);
-  }, []);
+  });
 
   return (
     <div className="particle-container">

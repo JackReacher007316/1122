@@ -1,16 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Users, LayoutDashboard, Trophy, Settings, Activity, MonitorPlay } from 'lucide-react';
-import Dashboard from './pages/Dashboard';
-import CreateTeam from './pages/CreateTeam';
-import Leaderboard from './pages/Leaderboard';
-import AdminPanel from './pages/AdminPanel';
-import LiveTracking from './pages/LiveTracking';
-import WatchParty from './pages/WatchParty';
-import Auth from './pages/Auth';
 import DynamicBackground from './components/DynamicBackground';
 import ParticleEffects from './components/ParticleEffects';
+import WelcomeAnimation from './components/WelcomeAnimation';
 import Chatbot from './components/Chatbot';
+
+// Lazy loading pages for performance optimization
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const CreateTeam = React.lazy(() => import('./pages/CreateTeam'));
+const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
+const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
+const LiveTracking = React.lazy(() => import('./pages/LiveTracking'));
+const WatchParty = React.lazy(() => import('./pages/WatchParty'));
+const Auth = React.lazy(() => import('./pages/Auth'));
+
+const PageLoader = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%', minHeight: '50vh', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid rgba(255,16,122,0.3)', borderTopColor: 'var(--neon-pink)', animation: 'spin 1s linear infinite' }}></div>
+    <span style={{ color: 'var(--neon-pink)', fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '2px' }}>INITIALIZING...</span>
+    <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+  </div>
+);
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, token }) => {
@@ -54,8 +65,8 @@ const Sidebar = ({ setToken }) => {
       zIndex: 10
     }}>
       <div className="logo" style={{ marginBottom: '48px', padding: '0 12px' }}>
-        <h2 className="heading-gradient" style={{ fontSize: '1.5rem', lineHeight: 1.2 }}>CFL</h2>
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px' }}>Fantasy League</span>
+        <h2 className="heading-gradient" style={{ fontSize: '1.5rem', lineHeight: 1.2 }}>IIITN</h2>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px' }}>Streaming Platform</span>
       </div>
       
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -142,40 +153,43 @@ function App() {
 
   return (
     <Router>
+      <WelcomeAnimation />
       <DynamicBackground activeSport={activeSport} />
       <ParticleEffects type={activeSport === 'f1' || activeSport === 'hackathon' ? 'sparks' : 'sakura'} />
       
-      <Routes>
-        <Route path="/auth" element={<Auth setToken={setToken} />} />
-        
-        <Route path="/*" element={
-          <div className="app-container" style={{ position: 'relative', zIndex: 1 }}>
-            <Sidebar setToken={setToken} />
-            <main className="main-content">
-              <Routes>
-                {/* Publicly Visible Pages */}
-                <Route path="/" element={<Dashboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
-                <Route path="/live" element={<LiveTracking activeSport={activeSport} setActiveSport={setActiveSport} />} />
-                <Route path="/watch-party" element={<WatchParty activeSport={activeSport} setActiveSport={setActiveSport} />} />
-                <Route path="/leaderboard" element={<Leaderboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
-                
-                {/* Protected Pages (Require Login) */}
-                <Route path="/create-team" element={
-                  <ProtectedRoute token={token}>
-                    <CreateTeam activeSport={activeSport} setActiveSport={setActiveSport} />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin" element={
-                  <ProtectedRoute token={token}>
-                    <AdminPanel activeSport={activeSport} setActiveSport={setActiveSport} />
-                  </ProtectedRoute>
-                } />
-              </Routes>
-            </main>
-            <Chatbot />
-          </div>
-        } />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/auth" element={<Auth setToken={setToken} />} />
+          
+          <Route path="/*" element={
+            <div className="app-container" style={{ position: 'relative', zIndex: 1 }}>
+              <Sidebar setToken={setToken} />
+              <main className="main-content">
+                <Routes>
+                  {/* Publicly Visible Pages */}
+                  <Route path="/" element={<Dashboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
+                  <Route path="/live" element={<LiveTracking activeSport={activeSport} setActiveSport={setActiveSport} />} />
+                  <Route path="/watch-party" element={<WatchParty activeSport={activeSport} setActiveSport={setActiveSport} />} />
+                  <Route path="/leaderboard" element={<Leaderboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
+                  
+                  {/* Protected Pages (Require Login) */}
+                  <Route path="/create-team" element={
+                    <ProtectedRoute token={token}>
+                      <CreateTeam activeSport={activeSport} setActiveSport={setActiveSport} />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin" element={
+                    <ProtectedRoute token={token}>
+                      <AdminPanel activeSport={activeSport} setActiveSport={setActiveSport} />
+                    </ProtectedRoute>
+                  } />
+                </Routes>
+              </main>
+              <Chatbot />
+            </div>
+          } />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

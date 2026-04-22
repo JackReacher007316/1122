@@ -149,27 +149,49 @@ const LiveTracking = ({ activeSport, setActiveSport }) => {
             <span style={{ fontSize: '1.5rem' }}>🏏</span>
             Cricket Live Scores
           </h2>
-          <div className="glass-panel scene-3d" style={{ padding: '32px', minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center', borderTop: '2px solid #00e5ff' }}>
-            <div id="cricket-widget" ref={cricketWidgetRef} style={{ width: '100%', textAlign: 'center' }}>
-              <div style={{ color: '#00e5ff', fontSize: '1.2rem', marginBottom: '16px' }}>Fetching Real-Time Global Cricket Feed...</div>
-              <p style={{ color: 'var(--text-muted)' }}>If the widget fails to load, ensure your browser allows third-party scripts.</p>
-              {/* Fallback mock UI in case the script is blocked */}
-              <div style={{ marginTop: '32px', background: 'rgba(0,0,0,0.5)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(0, 229, 255, 0.2)', maxWidth: '500px', margin: '32px auto 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  <span>IPL 2026 - Final</span>
-                  <span style={{ color: '#00e5ff', animation: 'pulse 2s infinite' }}>● LIVE</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+            <div className="glass-panel scene-3d" style={{ padding: '32px', minHeight: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', borderTop: '2px solid #00e5ff' }}>
+              <div id="cricket-widget" ref={cricketWidgetRef} style={{ width: '100%', textAlign: 'center' }}>
+                <div style={{ color: '#00e5ff', fontSize: '1.2rem', marginBottom: '16px' }}>Fetching Real-Time Global Cricket Feed...</div>
+                <p style={{ color: 'var(--text-muted)' }}>If the widget fails to load, ensure your browser allows third-party scripts.</p>
+                {/* Fallback mock UI in case the script is blocked */}
+                <div style={{ marginTop: '32px', background: 'rgba(0,0,0,0.5)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(0, 229, 255, 0.2)', maxWidth: '500px', margin: '32px auto 0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    <span>IPL 2026 - Final</span>
+                    <span style={{ color: '#00e5ff', animation: 'pulse 2s infinite' }}>● LIVE</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                    <div>RCB</div>
+                    <div style={{ color: 'var(--gold)' }}>198/3 (18.4)</div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.2rem', marginTop: '12px' }}>
+                    <div style={{ color: 'var(--text-muted)' }}>CSK</div>
+                    <div style={{ color: 'var(--text-muted)' }}>Yet to bat</div>
+                  </div>
+                  <div style={{ marginTop: '24px', fontSize: '0.9rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px' }}>
+                    <span style={{ color: 'var(--neon-green)' }}>V. Kohli: 82* (45)</span> | <span style={{ color: 'var(--text-muted)' }}>M. Siraj: 0* (1)</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                  <div>RCB</div>
-                  <div style={{ color: 'var(--gold)' }}>198/3 (18.4)</div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.2rem', marginTop: '12px' }}>
-                  <div style={{ color: 'var(--text-muted)' }}>CSK</div>
-                  <div style={{ color: 'var(--text-muted)' }}>Yet to bat</div>
-                </div>
-                <div style={{ marginTop: '24px', fontSize: '0.9rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px' }}>
-                  <span style={{ color: 'var(--neon-green)' }}>V. Kohli: 82* (45)</span> | <span style={{ color: 'var(--text-muted)' }}>M. Siraj: 0* (1)</span>
-                </div>
+              </div>
+            </div>
+
+            {/* Cricket Highlights Video */}
+            <div className="glass-panel" style={{ padding: '0', overflow: 'hidden', borderTop: '2px solid #00e5ff', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '16px 24px', background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Match Highlights</h3>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Latest T20 Thriller</span>
+              </div>
+              <div style={{ width: '100%', height: '100%', minHeight: '300px', background: '#000', position: 'relative' }}>
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src="https://www.youtube.com/embed/PzM0y4N-n68?autoplay=0&mute=1&controls=1&loop=1" 
+                  title="Cricket Highlights" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                ></iframe>
               </div>
             </div>
           </div>
@@ -183,42 +205,64 @@ const LiveTracking = ({ activeSport, setActiveSport }) => {
             <span style={{ fontSize: '1.5rem' }}>🏎️</span>
             F1 Live Timing
           </h2>
-          <div className="glass-panel" style={{ borderTop: '2px solid var(--neon-red)' }}>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Official F1 live video streams require a paid F1TV subscription. Live timing data shown below.</p>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
-                  <th style={{ padding: '12px' }}>Pos</th>
-                  <th style={{ padding: '12px' }}>Driver</th>
-                  <th style={{ padding: '12px' }}>Gap</th>
-                  <th style={{ padding: '12px' }}>Interval</th>
-                  <th style={{ padding: '12px' }}>Tyre</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '12px', fontWeight: 'bold' }}>1</td>
-                  <td style={{ padding: '12px' }}>M. Verstappen</td>
-                  <td style={{ padding: '12px' }}>Leader</td>
-                  <td style={{ padding: '12px' }}>-</td>
-                  <td style={{ padding: '12px', color: 'var(--neon-red)' }}>Soft</td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '12px', fontWeight: 'bold' }}>2</td>
-                  <td style={{ padding: '12px' }}>L. Hamilton</td>
-                  <td style={{ padding: '12px' }}>+2.451s</td>
-                  <td style={{ padding: '12px' }}>+2.451s</td>
-                  <td style={{ padding: '12px', color: 'var(--neon-red)' }}>Soft</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '12px', fontWeight: 'bold' }}>3</td>
-                  <td style={{ padding: '12px' }}>C. Leclerc</td>
-                  <td style={{ padding: '12px' }}>+5.120s</td>
-                  <td style={{ padding: '12px' }}>+2.669s</td>
-                  <td style={{ padding: '12px', color: 'var(--gold)' }}>Medium</td>
-                </tr>
-              </tbody>
-            </table>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+            <div className="glass-panel" style={{ borderTop: '2px solid var(--neon-red)' }}>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Official F1 live video streams require a paid F1TV subscription. Live timing data shown below.</p>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                    <th style={{ padding: '12px' }}>Pos</th>
+                    <th style={{ padding: '12px' }}>Driver</th>
+                    <th style={{ padding: '12px' }}>Gap</th>
+                    <th style={{ padding: '12px' }}>Interval</th>
+                    <th style={{ padding: '12px' }}>Tyre</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '12px', fontWeight: 'bold' }}>1</td>
+                    <td style={{ padding: '12px' }}>M. Verstappen</td>
+                    <td style={{ padding: '12px' }}>Leader</td>
+                    <td style={{ padding: '12px' }}>-</td>
+                    <td style={{ padding: '12px', color: 'var(--neon-red)' }}>Soft</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '12px', fontWeight: 'bold' }}>2</td>
+                    <td style={{ padding: '12px' }}>L. Hamilton</td>
+                    <td style={{ padding: '12px' }}>+2.451s</td>
+                    <td style={{ padding: '12px' }}>+2.451s</td>
+                    <td style={{ padding: '12px', color: 'var(--neon-red)' }}>Soft</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '12px', fontWeight: 'bold' }}>3</td>
+                    <td style={{ padding: '12px' }}>C. Leclerc</td>
+                    <td style={{ padding: '12px' }}>+5.120s</td>
+                    <td style={{ padding: '12px' }}>+2.669s</td>
+                    <td style={{ padding: '12px', color: 'var(--gold)' }}>Medium</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* F1 Highlights Video */}
+            <div className="glass-panel" style={{ padding: '0', overflow: 'hidden', borderTop: '2px solid var(--neon-red)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '16px 24px', background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Race Highlights</h3>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Latest Grand Prix Action</span>
+              </div>
+              <div style={{ width: '100%', height: '100%', minHeight: '300px', background: '#000', position: 'relative' }}>
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src="https://www.youtube.com/embed/5WUDh-z3pIE?autoplay=0&mute=1&controls=1&loop=1" 
+                  title="F1 Highlights" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                ></iframe>
+              </div>
+            </div>
           </div>
         </section>
       )}

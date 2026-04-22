@@ -29,14 +29,16 @@ const DynamicBackground = ({ activeSport }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [nextImageIndex, setNextImageIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [prevSport, setPrevSport] = useState(activeSport);
 
   const images = BACKGROUND_IMAGES[activeSport] || BACKGROUND_IMAGES['all'];
 
-  // Reset index when sport changes
-  useEffect(() => {
+  // Reset index when sport changes (update state during render)
+  if (activeSport !== prevSport) {
+    setPrevSport(activeSport);
     setCurrentImageIndex(0);
     setNextImageIndex(images.length > 1 ? 1 : 0);
-  }, [activeSport, images.length]);
+  }
 
   // Handle crossfade interval
   useEffect(() => {

@@ -4,7 +4,7 @@ import { MessageCircle, X, Send, Bot } from 'lucide-react';
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi Manager! I'm Coach AI. How can I help you dominate the Fantasy League today?", sender: 'ai' }
+    { id: 1, text: "Hi Manager! I'm Coach AI. How can I help you dominate the IIITN Streaming Platform today?", sender: 'ai' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -37,7 +37,8 @@ const Chatbot = () => {
       const data = await res.json();
       
       setMessages(prev => [...prev, { id: Date.now(), text: data.text || "I'm not sure about that.", sender: 'ai' }]);
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       setMessages(prev => [...prev, { id: Date.now(), text: "Sorry, I lost connection to the server.", sender: 'ai' }]);
     } finally {
       setIsTyping(false);
@@ -95,7 +96,7 @@ const Chatbot = () => {
               <Bot size={24} color="#fff" />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>Coach AI</h3>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>Champak</h3>
               <span style={{ fontSize: '0.8rem', color: 'var(--neon-green)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-green)' }}></span> Online
               </span>
@@ -123,7 +124,7 @@ const Chatbot = () => {
             ))}
             {isTyping && (
               <div style={{ alignSelf: 'flex-start', padding: '12px 16px', borderRadius: '16px 16px 16px 0', background: 'rgba(255,255,255,0.1)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                Coach AI is thinking...
+                Champak is thinking...
               </div>
             )}
             <div ref={messagesEndRef} />

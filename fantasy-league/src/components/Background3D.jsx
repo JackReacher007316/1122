@@ -2,6 +2,11 @@ import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, Float, Grid, Sphere, Box } from '@react-three/drei';
 
+const f1Positions = Array.from({ length: 20 }).map(() => [(Math.random() - 0.5) * 20, Math.random() * 5, (Math.random() - 0.5) * 40]);
+const footballPositions = Array.from({ length: 15 }).map(() => [(Math.random() - 0.5) * 30, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20]);
+const hackathonPositions = Array.from({ length: 30 }).map(() => [(Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20]);
+const cricketPositions = Array.from({ length: 15 }).map(() => [(Math.random() - 0.5) * 30, Math.random() * 10, (Math.random() - 0.5) * 20]);
+
 const AbstractElements = ({ sport }) => {
   const groupRef = useRef();
 
@@ -29,8 +34,8 @@ const AbstractElements = ({ sport }) => {
           sectionColor="#ff8c00" 
           fadeDistance={30}
         />
-        {Array.from({ length: 20 }).map((_, i) => (
-          <Float key={i} speed={5} rotationIntensity={2} floatIntensity={2} position={[(Math.random() - 0.5) * 20, Math.random() * 5, (Math.random() - 0.5) * 40]}>
+        {f1Positions.map((pos, i) => (
+          <Float key={i} speed={5} rotationIntensity={2} floatIntensity={2} position={pos}>
              <Box args={[0.2, 0.2, 2]}>
                <meshStandardMaterial color="#ff2800" emissive="#ff2800" emissiveIntensity={2} toneMapped={false} />
              </Box>
@@ -50,8 +55,8 @@ const AbstractElements = ({ sport }) => {
           sectionColor="#00b8ff" 
           fadeDistance={30}
         />
-        {Array.from({ length: 15 }).map((_, i) => (
-          <Float key={i} speed={2} rotationIntensity={1} floatIntensity={1} position={[(Math.random() - 0.5) * 30, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20]}>
+        {footballPositions.map((pos, i) => (
+          <Float key={i} speed={2} rotationIntensity={1} floatIntensity={1} position={pos}>
              <Sphere args={[0.5, 16, 16]}>
                <meshStandardMaterial color="#00ff87" wireframe />
              </Sphere>
@@ -71,8 +76,8 @@ const AbstractElements = ({ sport }) => {
           sectionColor="#0055ff" 
           fadeDistance={30}
         />
-        {Array.from({ length: 30 }).map((_, i) => (
-          <Float key={i} speed={1} rotationIntensity={2} floatIntensity={1} position={[(Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20]}>
+        {hackathonPositions.map((pos, i) => (
+          <Float key={i} speed={1} rotationIntensity={2} floatIntensity={1} position={pos}>
              <Box args={[0.5, 0.5, 0.5]}>
                <meshStandardMaterial color="#00e5ff" wireframe opacity={0.5} transparent />
              </Box>
@@ -92,8 +97,8 @@ const AbstractElements = ({ sport }) => {
           sectionColor="#00e5ff" 
           fadeDistance={30}
         />
-        {Array.from({ length: 15 }).map((_, i) => (
-          <Float key={i} speed={2} rotationIntensity={3} floatIntensity={2} position={[(Math.random() - 0.5) * 30, Math.random() * 10, (Math.random() - 0.5) * 20]}>
+        {cricketPositions.map((pos, i) => (
+          <Float key={i} speed={2} rotationIntensity={3} floatIntensity={2} position={pos}>
              <Sphere args={[0.3, 16, 16]}>
                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
              </Sphere>

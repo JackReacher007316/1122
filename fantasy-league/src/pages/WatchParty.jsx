@@ -6,13 +6,99 @@ import SportTabs from '../components/SportTabs';
 const WatchParty = ({ activeSport, setActiveSport }) => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [viewers, setViewers] = useState(0);
+  const [hasRemoteStream, setHasRemoteStream] = useState(false);
+  
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
   const socketRef = useRef();
   const peerConnectionRef = useRef();
   const streamRef = useRef();
+  const isBroadcastingRef = useRef(false);
 
   useEffect(() => {
+    isBroadcastingRef.current = isBroadcasting;
+  }, [isBroadcasting]);
+
+  useEffect(() => {
+    // Define WebRTC handlers as regular functions to ensure they are hoisted
+    // and accessible within the useEffect hook
+    function initPeerConnection(target) {
+      const peer = new RTCPeerConnection({
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+        ]
+      });
+
+      peer.onicecandidate = (event) => {
+        if (event.candidate && socketRef.current) {
+          socketRef.current.emit('ice-candidate', {
+            target,
+            candidate: event.candidate
+          });
+        }
+      };
+
+      peer.ontrack = (event) => {
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = event.streams[0];
+          setHasRemoteStream(true);
+        }
+      };
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => {
+          peer.addTrack(track, streamRef.current);
+        });
+      }
+
+      return peer;
+    }
+
+    async function createOffer(target) {
+      const peer = initPeerConnection(target);
+      peerConnectionRef.current = peer;
+
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+
+      if (socketRef.current) {
+        socketRef.current.emit('offer', {
+          target,
+          sdp: peer.localDescription
+        });
+      }
+    }
+
+    async function handleReceiveOffer(payload) {
+      const peer = initPeerConnection(payload.caller);
+      peerConnectionRef.current = peer;
+
+      await peer.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+
+      if (socketRef.current) {
+        socketRef.current.emit('answer', {
+          target: payload.caller,
+          sdp: peer.localDescription
+        });
+      }
+    }
+
+    async function handleReceiveAnswer(payload) {
+      const peer = peerConnectionRef.current;
+      if (peer) {
+        await peer.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      }
+    }
+
+    async function handleNewICECandidateMsg(payload) {
+      const peer = peerConnectionRef.current;
+      if (peer) {
+        await peer.addIceCandidate(new RTCIceCandidate(payload.candidate));
+      }
+    }
+
     // Connect to the signaling server (proxy handles /api, but socket.io connects directly)
     // For socket.io, if it's served on the same domain, we can just use '/'
     // Since Vite proxies /api and /socket.io, we should connect socket.io to the exact same host.
@@ -25,13 +111,14 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
     socketRef.current.on('user-joined', (userId) => {
       setViewers(v => v + 1);
       // If we are broadcasting, we need to create an offer to the new user
-      if (isBroadcasting && streamRef.current) {
+      if (isBroadcastingRef.current && streamRef.current) {
         createOffer(userId);
       }
     });
 
     socketRef.current.on('user-left', () => {
       setViewers(v => Math.max(0, v - 1));
+      setHasRemoteStream(false);
     });
 
     // WebRTC Signaling Handlers
@@ -40,84 +127,12 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
     socketRef.current.on('ice-candidate', handleNewICECandidateMsg);
 
     return () => {
-      socketRef.current.disconnect();
+      if (socketRef.current) socketRef.current.disconnect();
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isBroadcasting]);
-
-  const initPeerConnection = (target) => {
-    const peer = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-      ]
-    });
-
-    peer.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.current.emit('ice-candidate', {
-          target,
-          candidate: event.candidate
-        });
-      }
-    };
-
-    peer.ontrack = (event) => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
-      }
-    };
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => {
-        peer.addTrack(track, streamRef.current);
-      });
-    }
-
-    return peer;
-  };
-
-  const createOffer = async (target) => {
-    const peer = initPeerConnection(target);
-    peerConnectionRef.current = peer;
-
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
-
-    socketRef.current.emit('offer', {
-      target,
-      sdp: peer.localDescription
-    });
-  };
-
-  const handleReceiveOffer = async (payload) => {
-    const peer = initPeerConnection(payload.caller);
-    peerConnectionRef.current = peer;
-
-    await peer.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-
-    socketRef.current.emit('answer', {
-      target: payload.caller,
-      sdp: peer.localDescription
-    });
-  };
-
-  const handleReceiveAnswer = async (payload) => {
-    const peer = peerConnectionRef.current;
-    if (peer) {
-      await peer.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-    }
-  };
-
-  const handleNewICECandidateMsg = async (payload) => {
-    const peer = peerConnectionRef.current;
-    if (peer) {
-      await peer.addIceCandidate(new RTCIceCandidate(payload.candidate));
-    }
-  };
+  }, []); // Run only once on mount
 
   const startBroadcast = async () => {
     try {
@@ -196,7 +211,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
             style={{ width: '100%', height: '100%', objectFit: 'contain', display: !isBroadcasting ? 'block' : 'none' }}
           />
 
-          {!isBroadcasting && !remoteVideoRef.current?.srcObject && (
+          {!isBroadcasting && !hasRemoteStream && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--text-muted)' }}>
               <VideoOff size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
               <p>Waiting for the host to start the broadcast...</p>
