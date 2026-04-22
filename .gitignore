@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+build/
+.env
+
+# Database
+backend/dev.db
+backend/dev.db-journal
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
