@@ -56,12 +56,12 @@ const Chatbot = () => {
           width: '60px',
           height: '60px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--neon-blue), #8a2be2)',
+          background: 'linear-gradient(135deg, var(--neon-pink), #8a2be2)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(0,229,255,0.4)',
+          boxShadow: '0 8px 32px rgba(255, 16, 122, 0.4)',
           zIndex: 1000,
           transition: 'transform 0.3s ease',
           transform: isOpen ? 'scale(0.8)' : 'scale(1)'
@@ -85,13 +85,13 @@ const Chatbot = () => {
             flexDirection: 'column',
             padding: 0,
             overflow: 'hidden',
-            borderTop: '3px solid var(--neon-blue)',
+            borderTop: '3px solid var(--neon-pink)',
             animation: 'fadeIn 0.3s ease'
           }}
         >
           {/* Header */}
           <div style={{ padding: '16px', background: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--neon-blue)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--neon-pink)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Bot size={24} color="#fff" />
             </div>
             <div>
@@ -112,7 +112,7 @@ const Chatbot = () => {
                   maxWidth: '80%',
                   padding: '12px 16px',
                   borderRadius: msg.sender === 'user' ? '16px 16px 0 16px' : '16px 16px 16px 0',
-                  background: msg.sender === 'user' ? 'var(--neon-blue)' : 'rgba(255,255,255,0.1)',
+                  background: msg.sender === 'user' ? 'var(--neon-pink)' : 'rgba(255,255,255,0.1)',
                   color: '#fff',
                   fontSize: '0.9rem',
                   lineHeight: '1.4'
@@ -138,7 +138,7 @@ const Chatbot = () => {
               placeholder="Ask me anything..." 
               style={{ flex: 1, padding: '10px 16px', borderRadius: '20px', border: 'none', background: 'rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
             />
-            <button type="submit" disabled={!input.trim()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: input.trim() ? 'var(--neon-blue)' : 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: input.trim() ? 'pointer' : 'not-allowed', color: '#fff' }}>
+            <button type="submit" disabled={!input.trim()} style={{ width: '40px', height: '40px', borderRadius: '50%', background: input.trim() ? 'var(--neon-pink)' : 'rgba(255,255,255,0.1)', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: input.trim() ? 'pointer' : 'not-allowed', color: '#fff' }}>
               <Send size={18} />
             </button>
           </form>

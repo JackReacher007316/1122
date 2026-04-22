@@ -9,6 +9,7 @@ import LiveTracking from './pages/LiveTracking';
 import WatchParty from './pages/WatchParty';
 import Auth from './pages/Auth';
 import DynamicBackground from './components/DynamicBackground';
+import ParticleEffects from './components/ParticleEffects';
 import Chatbot from './components/Chatbot';
 
 // Protected Route Wrapper
@@ -73,7 +74,7 @@ const Sidebar = ({ setToken }) => {
                 textDecoration: 'none',
                 borderRadius: '8px',
                 background: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                borderLeft: isActive ? '3px solid var(--neon-green)' : '3px solid transparent',
+                borderLeft: isActive ? '3px solid var(--neon-pink)' : '3px solid transparent',
                 transition: 'all 0.3s ease',
                 fontFamily: 'var(--font-heading)',
                 fontSize: '0.9rem'
@@ -107,10 +108,10 @@ const Sidebar = ({ setToken }) => {
           </button>
         </div>
 
-        <div style={{ padding: '16px', background: 'rgba(0,255,135,0.1)', borderRadius: '8px', border: '1px solid rgba(0,255,135,0.2)' }}>
-          <h4 style={{ color: 'var(--neon-green)', fontSize: '0.8rem', marginBottom: '8px' }}>SYSTEM STATUS</h4>
+        <div style={{ padding: '16px', background: 'rgba(255,16,122,0.1)', borderRadius: '8px', border: '1px solid rgba(255,16,122,0.2)' }}>
+          <h4 style={{ color: 'var(--neon-pink)', fontSize: '0.8rem', marginBottom: '8px' }}>SYSTEM STATUS</h4>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-green)', boxShadow: '0 0 10px var(--neon-green)', animation: 'pulse 2s infinite' }}></div>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-pink)', boxShadow: '0 0 10px var(--neon-pink)', animation: 'pulse 2s infinite' }}></div>
             <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>All Systems Go</span>
           </div>
         </div>
@@ -142,6 +143,7 @@ function App() {
   return (
     <Router>
       <DynamicBackground activeSport={activeSport} />
+      <ParticleEffects type={activeSport === 'f1' || activeSport === 'hackathon' ? 'sparks' : 'sakura'} />
       
       <Routes>
         <Route path="/auth" element={<Auth setToken={setToken} />} />

@@ -1,35 +1,27 @@
 import React, { useState, useEffect } from 'react';
 
-// Curated high-resolution Unsplash images for each sport
+// Curated Neo-Tokyo / Japanese theme Unsplash images
 const BACKGROUND_IMAGES = {
   all: [
-    'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?q=80&w=2560&auto=format&fit=crop', // Generic Stadium
-    'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2560&auto=format&fit=crop', // Football
-    'https://images.unsplash.com/photo-1538501111663-ea0e2dc92b15?q=80&w=2560&auto=format&fit=crop', // F1
-    'https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2560&auto=format&fit=crop'  // Cricket
+    'https://images.unsplash.com/photo-1542931287-023b922fa89b?q=80&w=2560&auto=format&fit=crop', // Tokyo Neon Streets
+    'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=2560&auto=format&fit=crop', // Tokyo City Night
+    'https://images.unsplash.com/photo-1528360983277-13d401cdc186?q=80&w=2560&auto=format&fit=crop', // Japanese Temple/Sakura
   ],
   football: [
-    'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=2560&auto=format&fit=crop', // Stadium
-    'https://images.unsplash.com/photo-1518605368461-1eb24608c5c7?q=80&w=2560&auto=format&fit=crop', // Pitch lines
-    'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=2560&auto=format&fit=crop', // Ball on grass
-    'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?q=80&w=2560&auto=format&fit=crop'  // Floodlights
+    'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=2560&auto=format&fit=crop', // Dramatic Stadium (Blue Lock vibe)
+    'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?q=80&w=2560&auto=format&fit=crop', // Dark Soccer field
   ],
   f1: [
-    'https://images.unsplash.com/photo-1538501111663-ea0e2dc92b15?q=80&w=2560&auto=format&fit=crop', // F1 Car Track
-    'https://images.unsplash.com/photo-1614200179396-2bdb77ebf81b?q=80&w=2560&auto=format&fit=crop', // F1 Race Start
-    'https://images.unsplash.com/photo-1507503741692-a1690045e0c5?q=80&w=2560&auto=format&fit=crop', // F1 Engine/Wheel close
-    'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=2560&auto=format&fit=crop'  // Speed blur
+    'https://images.unsplash.com/photo-1511674488667-160a2b02cd49?q=80&w=2560&auto=format&fit=crop', // Highway lights (Cyberpunk speed)
+    'https://images.unsplash.com/photo-1614200187524-dc4b892acf16?q=80&w=2560&auto=format&fit=crop', // Racing focus
   ],
   cricket: [
-    'https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2560&auto=format&fit=crop', // Cricket Pitch
-    'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?q=80&w=2560&auto=format&fit=crop', // Stadium Crowd
-    'https://images.unsplash.com/photo-1607734834519-d8576ae60ea6?q=80&w=2560&auto=format&fit=crop', // Bat and Ball
-    'https://images.unsplash.com/photo-1624526267942-ab0f0b580898?q=80&w=2560&auto=format&fit=crop'  // Cricket Match Action
+    'https://images.unsplash.com/photo-1499591934245-40b55745b905?q=80&w=2560&auto=format&fit=crop', // Sunset landscape
+    'https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2560&auto=format&fit=crop', // Dark moody cricket field
   ],
   hackathon: [
-    'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2560&auto=format&fit=crop', // Code Screen
-    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2560&auto=format&fit=crop', // Team working
-    'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2560&auto=format&fit=crop'  // Laptop setup
+    'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2560&auto=format&fit=crop', // Cyber Matrix code
+    'https://images.unsplash.com/photo-1510511459012-926b522a154e?q=80&w=2560&auto=format&fit=crop', // Tokyo Akihabara tech
   ]
 };
 

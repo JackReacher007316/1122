@@ -1,36 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Orbitron:wght@400;500;700;900&display=swap');
 
 :root {
-  /* Core Colors */
-  --bg-dark: #0a0b10;
-  --bg-panel: rgba(20, 22, 30, 0.6);
-  --bg-panel-solid: #14161e;
+  /* Core Colors (Neo-Tokyo / Indigo) */
+  --bg-dark: #05050A;
+  --bg-panel: rgba(15, 12, 25, 0.75);
+  --bg-panel-solid: #0F0C19;
   
-  /* Accents */
-  --neon-green: #00ff87; /* Football turf / energy */
-  --neon-red: #ff2800;   /* F1 racing red */
-  --neon-blue: #00e5ff;
-  --gold: #ffd700;
+  /* Accents (Sakura & Tokyo Crimson) */
+  --neon-green: #FFB7C5; /* Replaced green with Sakura Pink for compatibility */
+  --neon-red: #E50914;   /* Tokyo Crimson */
+  --neon-blue: #00e5ff;  /* Cyber Blue */
+  --gold: #FFD700;
+  --neon-pink: #FF107A;
   
   /* Text */
-  --text-main: #ffffff;
-  --text-muted: #8b949e;
+  --text-main: #F4F4F5;
+  --text-muted: #A1A1AA;
 
   /* Gradients */
-  --grad-football: linear-gradient(135deg, #00ff87 0%, #00b8ff 100%);
-  --grad-f1: linear-gradient(135deg, #ff2800 0%, #ff8c00 100%);
-  --grad-panel: linear-gradient(180deg, rgba(30, 34, 45, 0.8) 0%, rgba(20, 22, 30, 0.8) 100%);
+  --grad-football: linear-gradient(135deg, #FFB7C5 0%, #FF107A 100%);
+  --grad-f1: linear-gradient(135deg, #E50914 0%, #8A0000 100%);
+  --grad-panel: linear-gradient(180deg, rgba(25, 20, 40, 0.8) 0%, rgba(15, 12, 25, 0.9) 100%);
 
   /* Borders & Shadows */
-  --border-glass: 1px solid rgba(255, 255, 255, 0.08);
-  --shadow-neon-green: 0 0 15px rgba(0, 255, 135, 0.4);
-  --shadow-neon-red: 0 0 15px rgba(255, 40, 0, 0.4);
-  --shadow-3d: 0 20px 40px rgba(0,0,0,0.6);
+  --border-glass: 1px solid rgba(255, 183, 197, 0.15);
+  --shadow-neon-green: 0 0 20px rgba(255, 183, 197, 0.5);
+  --shadow-neon-red: 0 0 20px rgba(229, 9, 20, 0.5);
+  --shadow-3d: 0 20px 40px rgba(0,0,0,0.8);
   
   /* Typography */
-  --font-heading: 'Orbitron', sans-serif; /* Tech / F1 vibe */
-  --font-subheading: 'Rajdhani', sans-serif; /* Sporty / Stats */
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Orbitron', sans-serif;
+  --font-subheading: 'Noto Sans JP', sans-serif;
+  --font-body: 'Noto Sans JP', sans-serif;
 }
 
 * {

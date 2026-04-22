@@ -2,11 +2,11 @@ import React from 'react';
 
 const SportTabs = ({ activeSport, setActiveSport }) => {
   const tabs = [
-    { id: 'all', label: 'All Events', icon: '🌍' },
-    { id: 'football', label: 'Football', icon: '⚽', color: 'var(--neon-green)' },
+    { id: 'all', label: 'All Events', icon: '🌸' },
+    { id: 'football', label: 'Football', icon: '⚽', color: 'var(--neon-pink)' },
     { id: 'f1', label: 'Formula 1', icon: '🏎️', color: 'var(--neon-red)' },
-    { id: 'cricket', label: 'Cricket', icon: '🏏', color: '#00e5ff' },
-    { id: 'hackathon', label: 'Hackathon', icon: '💻', color: 'var(--neon-blue)' }
+    { id: 'cricket', label: 'Cricket', icon: '🎋', color: 'var(--neon-blue)' },
+    { id: 'hackathon', label: 'Hackathon', icon: '👾', color: 'var(--neon-green)' }
   ];
 
   return (
