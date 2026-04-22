@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
@@ -22,7 +23,11 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-const PORT = 3000;
+// Serve built frontend in production
+const frontendPath = path.join(__dirname, '..', 'fantasy-league', 'dist');
+app.use(express.static(frontendPath));
+
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'supersecret_jwt_key_for_fantasy_league'; // In production, use process.env
 
 // ========================
@@ -249,6 +254,11 @@ io.on('connection', (socket) => {
     console.log(`User disconnected: ${socket.id}`);
     socket.to(STREAM_ROOM).emit('user-left', socket.id);
   });
+});
+
+// Catch-all: serve frontend for any non-API route (SPA support)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 server.listen(PORT, '0.0.0.0', () => {

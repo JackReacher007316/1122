@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true, // Listen on all local IPs
+    allowedHosts: ['.trycloudflare.com'], // Allow all Cloudflare tunnel domains
     proxy: {
       '/api': 'http://localhost:3000',
       '/socket.io': {

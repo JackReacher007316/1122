@@ -1,0 +1,15 @@
+{
+  "name": "iiitn-streaming-platform",
+  "version": "1.0.0",
+  "description": "IIITN Streaming Platform - Fantasy League & Watch Party",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../fantasy-league && npm install",
+    "build": "cd fantasy-league && npm run build",
+    "postinstall": "cd backend && npx prisma generate",
+    "start": "cd backend && node server.js",
+    "dev": "cd fantasy-league && npm run dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
