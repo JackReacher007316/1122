@@ -10,36 +10,98 @@ datasource db {
 model User {
   id          Int           @id @default(autoincrement())
   username    String        @unique
-  password    String        @default("hashedpassword") // Added for Auth
+  password    String        @default("hashedpassword")
   totalPoints Int           @default(0)
   theme       String        @default("all")
   rank        Int           @default(0)
+  wallet      Int           @default(10000) // Virtual currency
   teams       FantasyTeam[]
+  entries     ContestEntry[]
 }
 
 model Player {
-  id       Int      @id @default(autoincrement())
-  name     String
-  role     String
-  cost     Int
-  theme    String
-  img      String
-  points   Int      @default(0)
-  
+  id              Int      @id @default(autoincrement())
+  name            String
+  role            String   // BAT, BOWL, AR, WK (cricket) | GK, DEF, MID, FWD (football) | Driver (f1) | Dev, Designer (hackathon)
+  cost            Int      // Legacy field
+  theme           String   // cricket, football, f1, hackathon
+  img             String   // emoji
+  points          Int      @default(0)
+  credits         Float    @default(8.0) // Dream11-style credits (1-10)
+  team            String   @default("") // Real team name e.g. "CSK", "RCB", "Man City"
+  playerType      String   @default("") // Short type code: BAT, BOWL, AR, WK, GK, DEF, MID, FWD, DRV
+  rating          Float    @default(0) // Player form rating 0-10
+  selectedByPct   Float    @default(0) // % of users who selected this player
+
   // Relations
   teamMembers FantasyTeamMember[]
   logs        PerformanceLog[]
+}
+
+model Match {
+  id          Int      @id @default(autoincrement())
+  title       String   // "CSK vs RCB" or "Man City vs Liverpool"
+  sport       String   // cricket, football, f1, hackathon
+  teamA       String   // Team A name
+  teamB       String   // Team B name
+  teamALogo   String   @default("") // emoji or URL
+  teamBLogo   String   @default("") // emoji or URL
+  venue       String   @default("")
+  matchTime   String   // ISO timestamp or readable date
+  deadline    String   // Team creation deadline
+  status      String   @default("UPCOMING") // UPCOMING, LIVE, COMPLETED
+  prize       String   @default("₹10,000") // Total prize pool display text
+  contestCount Int     @default(3) // Number of contests
+  createdAt   DateTime @default(now())
+
+  teams       FantasyTeam[]
+  contests    Contest[]
+}
+
+model Contest {
+  id          Int      @id @default(autoincrement())
+  matchId     Int
+  match       Match    @relation(fields: [matchId], references: [id])
+  name        String   // "Mega Contest", "Head to Head", "Practice"
+  entryFee    Int      @default(0) // Virtual currency
+  prizePool   String   @default("FREE") // Display text
+  maxEntries  Int      @default(100)
+  spotsLeft   Int      @default(100)
+  contestType String   @default("mega") // mega, h2h, practice, winner-takes-all
+  prizeBreakup String  @default("") // JSON string of prize distribution
+  createdAt   DateTime @default(now())
+
+  entries     ContestEntry[]
+}
+
+model ContestEntry {
+  id          Int         @id @default(autoincrement())
+  contestId   Int
+  contest     Contest     @relation(fields: [contestId], references: [id])
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+  teamId      Int
+  team        FantasyTeam @relation(fields: [teamId], references: [id])
+  rank        Int         @default(0)
+  points      Int         @default(0)
+  createdAt   DateTime    @default(now())
 }
 
 model FantasyTeam {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
-  theme     String   // 'f1', 'football', 'hackathon'
-  budget    Int      @default(100)
+  matchId   Int?
+  match     Match?   @relation(fields: [matchId], references: [id])
+  theme     String   // 'f1', 'football', 'hackathon', 'cricket'
+  budget    Float    @default(100)
+  teamName  String   @default("My Team")
+  captainId Int?     // Player ID of captain
+  vcId      Int?     // Player ID of vice-captain
   createdAt DateTime @default(now())
 
   members   FantasyTeamMember[]
+  entries   ContestEntry[]
 }
 
 model FantasyTeamMember {
@@ -47,7 +109,7 @@ model FantasyTeamMember {
   fantasyTeamId Int
   playerId      Int
   teamRole      String?     // 'C', 'VC', or null
-  
+
   fantasyTeam   FantasyTeam @relation(fields: [fantasyTeamId], references: [id])
   player        Player      @relation(fields: [playerId], references: [id])
 }

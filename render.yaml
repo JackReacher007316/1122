@@ -2,13 +2,17 @@ services:
   - type: web
     name: iiitn-streaming-platform
     runtime: node
-    buildCommand: "cd fantasy-league && npm install && npm run build && cd ../backend && npm install && npx prisma generate"
+    buildCommand: "cd fantasy-league && npm install && npm run build && cd ../backend && npm install && npx prisma generate && npx prisma db push"
     startCommand: "cd backend && node server.js"
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: GEMINI_API_KEY

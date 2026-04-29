@@ -1,0 +1,86 @@
+{
+  "pptx_exists": true,
+  "pptx_size": 79780,
+  "preview_count": 15,
+  "preview_dimensions": [
+    [
+      "slide-01.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-02.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-03.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-04.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-05.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-06.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-07.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-08.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-09.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-10.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-11.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-12.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-13.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-14.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-15.png",
+      1920,
+      1080
+    ]
+  ],
+  "nonblank_previews": 15,
+  "pptx_zip_ok": true,
+  "has_presentation_xml": true,
+  "pptx_slide_xml_count": 15
+}

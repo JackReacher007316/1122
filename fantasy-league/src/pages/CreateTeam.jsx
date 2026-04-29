@@ -1,189 +1,406 @@
-import React, { useState, useEffect } from 'react';
-import SportTabs from '../components/SportTabs';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Check, Crown, Star, ChevronRight, AlertCircle } from 'lucide-react';
 
-const CreateTeam = ({ activeSport, setActiveSport }) => {
-  const [budget, setBudget] = useState(100);
-  const [selectedPlayers, setSelectedPlayers] = useState([]);
+const ROLE_CONFIG = {
+  cricket: {
+    roles: ['WK', 'BAT', 'AR', 'BOWL'],
+    labels: { WK: 'Wicketkeeper', BAT: 'Batsman', AR: 'All-Rounder', BOWL: 'Bowler' },
+    min: { WK: 1, BAT: 3, AR: 1, BOWL: 3 },
+    max: { WK: 4, BAT: 6, AR: 4, BOWL: 6 },
+    total: 11,
+  },
+  football: {
+    roles: ['GK', 'DEF', 'MID', 'FWD'],
+    labels: { GK: 'Goalkeeper', DEF: 'Defender', MID: 'Midfielder', FWD: 'Forward' },
+    min: { GK: 1, DEF: 3, MID: 3, FWD: 1 },
+    max: { GK: 1, DEF: 5, MID: 5, FWD: 3 },
+    total: 11,
+  },
+  f1: {
+    roles: ['DRV'],
+    labels: { DRV: 'Driver' },
+    min: { DRV: 11 },
+    max: { DRV: 11 },
+    total: 11,
+  },
+  hackathon: {
+    roles: ['DEV', 'DES'],
+    labels: { DEV: 'Developer', DES: 'Designer' },
+    min: { DEV: 8, DES: 1 },
+    max: { DEV: 11, DES: 3 },
+    total: 11,
+  }
+};
+
+const CreateTeam = ({ activeSport }) => {
+  const [searchParams] = useSearchParams();
+  const matchId = searchParams.get('matchId');
+  const navigate = useNavigate();
+  const [match, setMatch] = useState(null);
   const [allPlayers, setAllPlayers] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const [activeRole, setActiveRole] = useState('all');
+  const [step, setStep] = useState(1); // 1=select, 2=captain, 3=confirm
+  const [captainId, setCaptainId] = useState(null);
+  const [vcId, setVcId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [teamName, setTeamName] = useState('My Team');
+
+  const TOTAL_CREDITS = 100;
+  const usedCredits = selected.reduce((sum, p) => sum + p.credits, 0);
+  const remainingCredits = TOTAL_CREDITS - usedCredits;
 
   useEffect(() => {
-    fetch('/api/players')
-      .then(res => res.json())
-      .then(data => {
-        setAllPlayers(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch players:", err);
-        setLoading(false);
-      });
-  }, []);
-
-  const filteredPlayers = activeSport === 'all'
-    ? allPlayers
-    : allPlayers.filter(p => p.theme === activeSport);
-
-  const handleSelect = (player) => {
-    if (selectedPlayers.find(p => p.id === player.id)) {
-      setSelectedPlayers(selectedPlayers.filter(p => p.id !== player.id));
-      setBudget(budget + player.cost);
+    if (matchId) {
+      Promise.all([
+        fetch(`/api/matches/${matchId}`).then(r => r.json()),
+        fetch(`/api/matches/${matchId}/players`).then(r => r.json()),
+      ]).then(([m, p]) => { setMatch(m); setAllPlayers(p); setLoading(false); }).catch(() => setLoading(false));
     } else {
-      if (budget >= player.cost && selectedPlayers.length < 5) {
-        setSelectedPlayers([...selectedPlayers, { ...player, teamRole: 'member' }]);
-        setBudget(budget - player.cost);
-      }
+      fetch(`/api/players?sport=${activeSport === 'all' ? 'cricket' : activeSport}`)
+        .then(r => r.json())
+        .then(p => { setAllPlayers(p); setLoading(false); }).catch(() => setLoading(false));
+    }
+  }, [matchId, activeSport]);
+
+  const sport = match?.sport || (activeSport === 'all' ? 'cricket' : activeSport);
+  const config = ROLE_CONFIG[sport] || ROLE_CONFIG.cricket;
+
+  const roleCount = useMemo(() => {
+    const counts = {};
+    config.roles.forEach(r => counts[r] = 0);
+    selected.forEach(p => { if (counts[p.playerType] !== undefined) counts[p.playerType]++; });
+    return counts;
+  }, [selected, config]);
+
+  const teamCount = useMemo(() => {
+    const counts = {};
+    selected.forEach(p => { counts[p.team] = (counts[p.team] || 0) + 1; });
+    return counts;
+  }, [selected]);
+
+  const filteredPlayers = activeRole === 'all' ? allPlayers : allPlayers.filter(p => p.playerType === activeRole);
+
+  const canSelect = (player) => {
+    if (selected.find(p => p.id === player.id)) return true; // can deselect
+    if (selected.length >= config.total) return false;
+    if (player.credits > remainingCredits) return false;
+    const roleMax = config.max[player.playerType] || config.total;
+    if ((roleCount[player.playerType] || 0) >= roleMax) return false;
+    // Max 7 from one team
+    if ((teamCount[player.team] || 0) >= 7) return false;
+    return true;
+  };
+
+  const togglePlayer = (player) => {
+    if (selected.find(p => p.id === player.id)) {
+      setSelected(selected.filter(p => p.id !== player.id));
+      if (captainId === player.id) setCaptainId(null);
+      if (vcId === player.id) setVcId(null);
+    } else if (canSelect(player)) {
+      setSelected([...selected, player]);
     }
   };
 
-  const assignRole = (id, newRole) => {
-    const updated = selectedPlayers.map(p => {
-      if (p.id === id) return { ...p, teamRole: newRole };
-      if (p.teamRole === newRole) return { ...p, teamRole: null }; 
-      return p;
-    });
-    setSelectedPlayers(updated);
-  };
+  const isValid = selected.length === config.total && Object.keys(config.min).every(role => (roleCount[role] || 0) >= config.min[role]);
 
   const lockTeam = async () => {
+    if (!captainId || !vcId) { alert('Select both Captain and Vice-Captain'); return; }
+    const token = localStorage.getItem('fantasy_token');
+    if (!token) { navigate('/auth'); return; }
     try {
-      const response = await fetch('/api/team', {
+      const res = await fetch('/api/team', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('fantasy_token')}`
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          theme: activeSport,
-          budget,
-          players: selectedPlayers
+          theme: sport, budget: remainingCredits, matchId: matchId ? parseInt(matchId) : null,
+          teamName, captainId, vcId,
+          players: selected.map(p => ({ id: p.id }))
         })
       });
-      const data = await response.json();
-      if(data.success) {
-        alert('Team Locked successfully!');
-        setSelectedPlayers([]);
-        setBudget(100);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error locking team');
-    }
+      const data = await res.json();
+      if (data.success) {
+        if (matchId) navigate(`/match/${matchId}`);
+        else navigate('/');
+      } else { alert(data.error || 'Error creating team'); }
+    } catch (e) { alert('Error connecting to server'); }
   };
 
-  return (
-    <div style={{ animation: 'fadeIn 0.5s ease' }}>
-      <header style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Draft Your <span className="heading-gradient">Dream Team</span></h1>
-        <p style={{ color: 'var(--text-muted)' }}>Select 5 members. Assign a Captain (2x pts) and Vice-Captain (1.5x pts).</p>
-      </header>
+  const getSportColor = () => {
+    const c = { cricket: '#FFD700', football: '#00ff87', f1: '#ff2800', hackathon: '#00e5ff' };
+    return c[sport] || 'var(--neon-pink)';
+  };
 
-      <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
+  const color = getSportColor();
 
-      <div className="glass-panel" style={{ marginBottom: '32px', position: 'sticky', top: '20px', zIndex: 100 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 style={{ margin: 0 }}>Budget Remaining</h3>
-          <h2 style={{ margin: 0, color: budget < 15 ? 'var(--neon-red)' : 'var(--neon-green)', fontFamily: 'var(--font-heading)' }}>
-            ${budget}M
-          </h2>
-        </div>
-        <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-          <div style={{ 
-            width: `${(budget / 100) * 100}%`, 
-            height: '100%', 
-            background: budget < 15 ? 'var(--neon-red)' : 'var(--grad-football)',
-            transition: 'width 0.3s ease, background 0.3s ease'
-          }}></div>
-        </div>
-      </div>
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ width: '50px', height: '50px', borderRadius: '50%', border: '3px solid rgba(255,16,122,0.2)', borderTopColor: 'var(--neon-pink)', animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
-        <div className="scene-3d">
-          <h3 style={{ marginBottom: '16px' }}>Available Roster</h3>
-          {loading ? (
-            <p style={{ color: 'var(--text-muted)' }}>Loading players...</p>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
-              {filteredPlayers.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No players found.</p>}
-              {filteredPlayers.map(player => {
-                const isSelected = selectedPlayers.find(p => p.id === player.id);
-                return (
-                  <div 
-                    key={player.id}
-                    onClick={() => handleSelect(player)}
-                    className={`card-3d glass-panel ${player.theme === 'f1' ? 'f1-theme' : ''}`}
-                    style={{
-                      padding: '16px',
-                      cursor: 'pointer',
-                      border: isSelected ? '2px solid var(--neon-green)' : '2px solid transparent',
-                      background: isSelected ? 'rgba(0,255,135,0.1)' : 'var(--bg-panel)',
-                      transform: isSelected ? 'translateY(-5px)' : 'none',
-                      textAlign: 'center'
-                    }}
-                  >
-                    <div style={{ fontSize: '3rem', marginBottom: '12px' }}>{player.img}</div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem' }}>{player.name}</h4>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0 0 12px 0' }}>{player.role}</p>
-                    <div style={{ fontWeight: 'bold', color: 'var(--gold)' }}>${player.cost}M</div>
-                    <div style={{ fontSize: '0.8rem', marginTop: '8px', color: 'var(--neon-blue)' }}>{player.points} pts</div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+  // STEP 2: Captain/VC Selection
+  if (step === 2) {
+    return (
+      <div style={{ animation: 'fadeIn 0.4s ease', paddingBottom: '80px' }}>
+        <button onClick={() => setStep(1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '20px', fontFamily: 'var(--font-heading)', fontSize: '0.8rem' }}>
+          <ArrowLeft size={16} /> BACK TO PLAYERS
+        </button>
 
-        <div className="glass-panel" style={{ height: 'fit-content' }}>
-          <h3 style={{ marginBottom: '16px' }}>Your Squad ({selectedPlayers.length}/5)</h3>
-          {selectedPlayers.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '32px 0' }}>No members selected yet.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {selectedPlayers.map(player => (
-                <div key={player.id} style={{ 
-                  background: 'rgba(0,0,0,0.3)', 
-                  padding: '12px', 
-                  borderRadius: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderLeft: player.teamRole === 'C' ? '4px solid var(--gold)' : player.teamRole === 'VC' ? '4px solid #c0c0c0' : '4px solid transparent'
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 'bold' }}>{player.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{player.role} - ${player.cost}M</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      onClick={() => assignRole(player.id, 'C')}
-                      style={{ 
-                        background: player.teamRole === 'C' ? 'var(--gold)' : 'transparent',
-                        color: player.teamRole === 'C' ? '#000' : 'var(--text-muted)',
-                        border: '1px solid var(--gold)',
-                        borderRadius: '4px', padding: '4px 8px', cursor: 'pointer',
-                        fontWeight: 'bold', fontSize: '0.8rem'
-                      }}
-                    >C</button>
-                    <button 
-                      onClick={() => assignRole(player.id, 'VC')}
-                      style={{ 
-                        background: player.teamRole === 'VC' ? '#c0c0c0' : 'transparent',
-                        color: player.teamRole === 'VC' ? '#000' : 'var(--text-muted)',
-                        border: '1px solid #c0c0c0',
-                        borderRadius: '4px', padding: '4px 8px', cursor: 'pointer',
-                        fontWeight: 'bold', fontSize: '0.8rem'
-                      }}
-                    >VC</button>
-                  </div>
+        <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>Choose <span className="heading-gradient">Captain & VC</span></h1>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Captain gets <strong>2x</strong> points • Vice-Captain gets <strong>1.5x</strong> points</p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {selected.map(player => (
+            <div key={player.id} className="glass-panel" style={{
+              padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              borderLeft: captainId === player.id ? '4px solid #FFD700' : vcId === player.id ? '4px solid #c0c0c0' : '4px solid transparent'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <span style={{ fontSize: '1.5rem' }}>{player.img}</span>
+                <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{player.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{player.team} • {player.role}</div>
                 </div>
-              ))}
-              {selectedPlayers.length === 5 && (
-                <button onClick={lockTeam} className="btn-primary" style={{ width: '100%', marginTop: '16px' }}>Lock Team</button>
-              )}
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => { setCaptainId(player.id); if (vcId === player.id) setVcId(null); }} style={{
+                  width: '44px', height: '44px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                  background: captainId === player.id ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'rgba(255,215,0,0.1)',
+                  color: captainId === player.id ? '#000' : '#FFD700',
+                  border: '2px solid #FFD700', transition: 'all 0.3s',
+                  boxShadow: captainId === player.id ? '0 0 20px rgba(255,215,0,0.4)' : 'none'
+                }}>C</button>
+                <button onClick={() => { setVcId(player.id); if (captainId === player.id) setCaptainId(null); }} style={{
+                  width: '44px', height: '44px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                  background: vcId === player.id ? 'linear-gradient(135deg, #c0c0c0, #888)' : 'rgba(192,192,192,0.1)',
+                  color: vcId === player.id ? '#000' : '#c0c0c0',
+                  border: '2px solid #c0c0c0', transition: 'all 0.3s',
+                  boxShadow: vcId === player.id ? '0 0 20px rgba(192,192,192,0.3)' : 'none'
+                }}>VC</button>
+              </div>
             </div>
-          )}
+          ))}
+        </div>
+
+        {captainId && vcId && (
+          <button onClick={() => setStep(3)} className="btn-primary" style={{
+            width: '100%', padding: '16px', marginTop: '24px', fontSize: '0.9rem', letterSpacing: '2px'
+          }}>
+            CONTINUE <ChevronRight size={18} style={{ display: 'inline' }} />
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // STEP 3: Confirm & Lock
+  if (step === 3) {
+    const captain = selected.find(p => p.id === captainId);
+    const vc = selected.find(p => p.id === vcId);
+    return (
+      <div style={{ animation: 'fadeIn 0.4s ease', paddingBottom: '80px' }}>
+        <button onClick={() => setStep(2)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '20px', fontFamily: 'var(--font-heading)', fontSize: '0.8rem' }}>
+          <ArrowLeft size={16} /> BACK
+        </button>
+
+        <h1 style={{ fontSize: '2rem', marginBottom: '24px' }}>Confirm <span className="heading-gradient">Your Team</span></h1>
+
+        <div className="glass-panel" style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+            <input value={teamName} onChange={e => setTeamName(e.target.value)} placeholder="Team Name" style={{
+              flex: 1, padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px', color: '#fff', fontFamily: 'var(--font-body)', outline: 'none'
+            }} />
+          </div>
+
+          {/* Captain & VC highlight */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ padding: '14px', background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)', borderRadius: '12px', textAlign: 'center' }}>
+              <Crown size={20} color="#FFD700" style={{ marginBottom: '6px' }} />
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>CAPTAIN (2x)</div>
+              <div style={{ fontWeight: 'bold', color: '#FFD700' }}>{captain?.name}</div>
+            </div>
+            <div style={{ padding: '14px', background: 'rgba(192,192,192,0.08)', border: '1px solid rgba(192,192,192,0.3)', borderRadius: '12px', textAlign: 'center' }}>
+              <Star size={20} color="#c0c0c0" style={{ marginBottom: '6px' }} />
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>VICE-CAPTAIN (1.5x)</div>
+              <div style={{ fontWeight: 'bold', color: '#c0c0c0' }}>{vc?.name}</div>
+            </div>
+          </div>
+
+          {/* Team List */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {selected.map(p => (
+              <span key={p.id} style={{
+                padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem',
+                background: p.id === captainId ? 'rgba(255,215,0,0.15)' : p.id === vcId ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.05)',
+                border: p.id === captainId ? '1px solid rgba(255,215,0,0.4)' : p.id === vcId ? '1px solid rgba(192,192,192,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                color: '#fff'
+              }}>{p.name} <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>({p.team})</span></span>
+            ))}
+          </div>
+        </div>
+
+        <button onClick={lockTeam} className="btn-primary" style={{
+          width: '100%', padding: '16px', fontSize: '1rem', letterSpacing: '2px'
+        }}>
+          🔒 LOCK TEAM
+        </button>
+      </div>
+    );
+  }
+
+  // STEP 1: Player Selection
+  return (
+    <div style={{ animation: 'fadeIn 0.4s ease', paddingBottom: '100px' }}>
+      {/* Header */}
+      <button onClick={() => matchId ? navigate(`/match/${matchId}`) : navigate('/')} style={{
+        display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
+        color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '16px', fontFamily: 'var(--font-heading)', fontSize: '0.8rem'
+      }}>
+        <ArrowLeft size={16} /> {matchId ? 'BACK TO MATCH' : 'BACK'}
+      </button>
+
+      <h1 style={{ fontSize: '2rem', margin: '0 0 4px 0' }}>
+        Create <span className="heading-gradient">Dream Team</span>
+      </h1>
+      {match && <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontSize: '0.9rem' }}>{match.teamA} vs {match.teamB}</p>}
+
+      {/* Credit Bar (sticky) */}
+      <div className="glass-panel" style={{ position: 'sticky', top: '0', zIndex: 100, marginBottom: '20px', padding: '14px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>PLAYERS</span>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 900 }}>
+                <span style={{ color }}>{selected.length}</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>/{config.total}</span>
+              </div>
+            </div>
+            <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }} />
+            <div>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>CREDITS LEFT</span>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 900, color: remainingCredits < 15 ? '#ff2800' : '#00ff87' }}>
+                {remainingCredits.toFixed(1)}
+              </div>
+            </div>
+          </div>
+          {/* Role requirement badges */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {config.roles.map(role => {
+              const count = roleCount[role] || 0;
+              const min = config.min[role];
+              const met = count >= min;
+              return (
+                <span key={role} style={{
+                  padding: '3px 8px', borderRadius: '6px', fontSize: '0.65rem',
+                  fontFamily: 'var(--font-heading)', letterSpacing: '0.5px',
+                  background: met ? `${color}15` : 'rgba(255,40,0,0.1)',
+                  color: met ? color : '#ff2800',
+                  border: `1px solid ${met ? `${color}40` : 'rgba(255,40,0,0.3)'}`
+                }}>
+                  {role} {count}/{min}+
+                </span>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ width: `${(selected.length / config.total) * 100}%`, height: '100%', background: `linear-gradient(90deg, ${color}, var(--neon-pink))`, transition: 'width 0.3s ease', borderRadius: '2px' }} />
         </div>
       </div>
+
+      {/* Role Filter Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <button onClick={() => setActiveRole('all')} style={{
+          padding: '8px 16px', borderRadius: '8px', border: activeRole === 'all' ? `1px solid ${color}` : '1px solid rgba(255,255,255,0.1)',
+          background: activeRole === 'all' ? `${color}20` : 'transparent', color: activeRole === 'all' ? '#fff' : 'var(--text-muted)',
+          cursor: 'pointer', fontFamily: 'var(--font-heading)', fontSize: '0.75rem', whiteSpace: 'nowrap'
+        }}>ALL ({allPlayers.length})</button>
+        {config.roles.map(role => (
+          <button key={role} onClick={() => setActiveRole(role)} style={{
+            padding: '8px 16px', borderRadius: '8px',
+            border: activeRole === role ? `1px solid ${color}` : '1px solid rgba(255,255,255,0.1)',
+            background: activeRole === role ? `${color}20` : 'transparent',
+            color: activeRole === role ? '#fff' : 'var(--text-muted)',
+            cursor: 'pointer', fontFamily: 'var(--font-heading)', fontSize: '0.75rem', whiteSpace: 'nowrap'
+          }}>{config.labels[role] || role} ({allPlayers.filter(p => p.playerType === role).length})</button>
+        ))}
+      </div>
+
+      {/* Player List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Header Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 0.8fr 0.8fr 60px', padding: '8px 16px', fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>
+          <span>PLAYER</span><span>TEAM</span><span style={{ textAlign: 'center' }}>PTS</span><span style={{ textAlign: 'center' }}>CR</span><span />
+        </div>
+
+        {filteredPlayers.map((player, i) => {
+          const isSelected = selected.find(p => p.id === player.id);
+          const canPick = canSelect(player);
+          return (
+            <div key={player.id} onClick={() => canPick && togglePlayer(player)} style={{
+              display: 'grid', gridTemplateColumns: '2fr 1fr 0.8fr 0.8fr 60px',
+              padding: '14px 16px', borderRadius: '10px', alignItems: 'center',
+              background: isSelected ? `${color}10` : 'rgba(255,255,255,0.02)',
+              border: isSelected ? `1px solid ${color}40` : '1px solid rgba(255,255,255,0.05)',
+              cursor: canPick ? 'pointer' : 'not-allowed', opacity: !canPick && !isSelected ? 0.4 : 1,
+              transition: 'all 0.2s', animation: `slideInUp 0.3s ease ${0.03 * i}s both`,
+            }}
+            onMouseEnter={e => { if (canPick) e.currentTarget.style.background = isSelected ? `${color}15` : 'rgba(255,255,255,0.04)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${color}10` : 'rgba(255,255,255,0.02)'; }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.3rem' }}>{player.img}</span>
+                <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{player.name}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{player.role} • {player.selectedByPct}% sel</div>
+                </div>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{player.team}</span>
+              <span style={{ textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '0.85rem', color: 'var(--neon-blue)' }}>{player.points}</span>
+              <span style={{ textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '0.9rem', fontWeight: 'bold' }}>{player.credits}</span>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '50%',
+                  border: isSelected ? `2px solid ${color}` : '2px solid rgba(255,255,255,0.15)',
+                  background: isSelected ? color : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}>
+                  {isSelected && <Check size={14} color="#000" strokeWidth={3} />}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bottom CTA */}
+      {selected.length > 0 && (
+        <div style={{
+          position: 'fixed', bottom: '0', left: '260px', right: '0',
+          padding: '16px 32px', background: 'linear-gradient(180deg, transparent, rgba(5,5,10,0.95) 30%)',
+          zIndex: 200, display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        }}>
+          <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', fontSize: '0.8rem' }}>
+            {selected.length}/{config.total} selected
+            {!isValid && <span style={{ color: '#ff2800', marginLeft: '12px' }}><AlertCircle size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> Complete role requirements</span>}
+          </span>
+          <button onClick={() => isValid && setStep(2)} disabled={!isValid} className="btn-primary" style={{
+            padding: '14px 32px', fontSize: '0.85rem', opacity: isValid ? 1 : 0.5, cursor: isValid ? 'pointer' : 'not-allowed'
+          }}>
+            NEXT: CHOOSE C/VC <ChevronRight size={16} style={{ display: 'inline' }} />
+          </button>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 };
