@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Users, LayoutDashboard, Trophy, Settings, Activity, MonitorPlay, Zap, Shield, Gamepad2 } from 'lucide-react';
+import { Users, LayoutDashboard, Trophy, Settings, Activity, MonitorPlay, Zap, Shield, Gamepad2, Layout } from 'lucide-react';
 import DynamicBackground from './components/DynamicBackground';
 import ParticleEffects from './components/ParticleEffects';
 import WelcomeAnimation from './components/WelcomeAnimation';

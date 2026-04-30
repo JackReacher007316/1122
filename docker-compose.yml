@@ -1,0 +1,51 @@
+# ─── Fantasy League – Docker Compose ─────────────────────────────────────────
+# Runs the full stack in Ubuntu containers:
+#   • backend  → Node.js + Express + Prisma + SQLite  (port 3000)
+#   • frontend → React + Vite dev server              (port 5173)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Backend ────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fantasy_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-supersecret_jwt_key_for_fantasy_league}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DATABASE_URL: file:/app/prisma/dev.db
+    volumes:
+      # Persist the SQLite database across container restarts
+      - sqlite_data:/app/prisma
+    networks:
+      - fantasy_net
+
+  # ── Frontend ───────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./fantasy-league
+      dockerfile: Dockerfile
+    container_name: fantasy_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - fantasy_net
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  sqlite_data:
+    name: fantasy_sqlite_data
+
+# ── Networks ───────────────────────────────────────────────────────────────────
+networks:
+  fantasy_net:
+    name: fantasy_network
+    driver: bridge

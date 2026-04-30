@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 const W = 1920;
 const H = 1080;
 
@@ -21,6 +23,20 @@ const OUT = "C:/Users/AARYAN/pratice/presentation/output/IIITN_Fantasy_Arena_Pre
 const PREVIEW_DIR = "C:/Users/AARYAN/pratice/presentation/scratch/previews";
 const INSPECT = "C:/Users/AARYAN/pratice/presentation/scratch/inspect.json";
 const REPORT = "C:/Users/AARYAN/pratice/presentation/scratch/build-report.json";
+const ASSET_DIR = "C:/Users/AARYAN/pratice/presentation/assets/processed";
+const A = {
+  max: `${ASSET_DIR}/max_verstappen.png`,
+  rohit: `${ASSET_DIR}/rohit_sharma.png`,
+  ronaldo: `${ASSET_DIR}/cristiano_ronaldo.png`,
+  messi: `${ASSET_DIR}/lionel_messi.png`,
+  virat: `${ASSET_DIR}/virat_kohli.png`,
+  dhoni: `${ASSET_DIR}/ms_dhoni.png`,
+  haaland: `${ASSET_DIR}/erling_haaland.png`,
+  salah: `${ASSET_DIR}/mohamed_salah.png`,
+  hamilton: `${ASSET_DIR}/lewis_hamilton.png`,
+  leclerc: `${ASSET_DIR}/charles_leclerc.png`,
+};
+const IMAGE_DATA_URLS = new Map();
 
 function noLine(color = C.bg) {
   return { style: "solid", fill: color, width: 0 };
@@ -162,6 +178,43 @@ function addArrow(slide, name, x, y, w, h, color) {
   addShape(slide, name, "rightArrow", { left: x, top: y, width: w, height: h }, color);
 }
 
+function addPhoto(slide, name, path, x, y, w, h, accent = C.pink, fit = "cover") {
+  addShape(slide, `${name}.frame`, "roundRect", { left: x - 6, top: y - 6, width: w + 12, height: h + 12 }, C.panel, accent, 3);
+  if (!IMAGE_DATA_URLS.has(path)) {
+    const bytes = fs.readFileSync(path);
+    IMAGE_DATA_URLS.set(path, `data:image/png;base64,${bytes.toString("base64")}`);
+  }
+  const img = slide.images.add({
+    dataUrl: IMAGE_DATA_URLS.get(path),
+    contentType: "image/png",
+    alt: name,
+    position: { left: x, top: y, width: w, height: h },
+    fit,
+  });
+  img.name = `${name}.image`;
+  img.geometry = "roundRect";
+  return img;
+}
+
+function addPlayerCard(slide, id, player, role, sport, path, x, y, w, h, accent) {
+  addPhoto(slide, `${id}.photo`, path, x, y, w, h - 74, accent, "contain");
+  addShape(slide, `${id}.caption`, "roundRect", { left: x, top: y + h - 90, width: w, height: 90 }, C.panel, accent, 2);
+  addText(slide, `${id}.name`, player, { left: x + 18, top: y + h - 78, width: w - 36, height: 32 }, {
+    fontSize: 22,
+    color: C.white,
+    bold: true,
+    fill: C.panel,
+    fontFace: "Noto Sans JP",
+  });
+  addText(slide, `${id}.meta`, `${sport} | ${role}`, { left: x + 18, top: y + h - 42, width: w - 36, height: 24 }, {
+    fontSize: 15,
+    color: accent,
+    bold: true,
+    fill: C.panel,
+    fontFace: "Noto Sans JP",
+  });
+}
+
 function addBullet(slide, name, text, x, y, w, accent = C.cyan) {
   addShape(slide, `${name}.dot`, "ellipse", { left: x, top: y + 8, width: 16, height: 16 }, accent);
   addText(slide, `${name}.text`, text, { left: x + 34, top: y, width: w, height: 48 }, {
@@ -209,6 +262,10 @@ function cover(presentation) {
   addShape(slide, "cover.track.1", "rect", { left: 1190, top: -180, width: 110, height: 1500, rotation: 22 }, C.pink);
   addShape(slide, "cover.track.2", "rect", { left: 1326, top: -180, width: 36, height: 1500, rotation: 22 }, C.cyan);
   addShape(slide, "cover.track.3", "rect", { left: 1415, top: -180, width: 78, height: 1500, rotation: 22 }, C.purple);
+  addPhoto(slide, "cover.max", A.max, 1486, 118, 230, 176, C.red, "contain");
+  addPhoto(slide, "cover.rohit", A.rohit, 1286, 338, 230, 176, C.gold);
+  addPhoto(slide, "cover.messi", A.messi, 1518, 560, 230, 176, C.cyan);
+  addPhoto(slide, "cover.ronaldo", A.ronaldo, 1320, 760, 230, 176, C.green);
   addLabel(slide, "COLLEGE PROJECT DEMO", 104, 88, 330, C.cyan);
   addText(slide, "cover.kicker", "IIITN", { left: 102, top: 188, width: 680, height: 86 }, {
     fontSize: 72,
@@ -238,7 +295,7 @@ function cover(presentation) {
     lineSpacing: 1.16,
   });
   ["CRICKET", "FOOTBALL", "F1", "HACKATHON"].forEach((tag, i) => addLabel(slide, tag, 104 + i * 188, 884, 150, [C.gold, C.green, C.red, C.cyan][i]));
-  addText(slide, "cover.date", "React + Express + Prisma + Socket.IO + Streaming + AI", { left: 1040, top: 912, width: 680, height: 44 }, {
+  addText(slide, "cover.date", "React + Express + Prisma + Socket.IO + Streaming + AI", { left: 1040, top: 956, width: 680, height: 44 }, {
     fontSize: 20,
     color: C.muted,
     alignment: "right",
@@ -432,6 +489,9 @@ function slide6(presentation) {
     fill: C.bg,
     fontFace: "Noto Sans JP",
   });
+  addPhoto(slide, "draft.rohit.photo", A.rohit, 1702, 346, 100, 86, C.gold);
+  addPhoto(slide, "draft.max.photo", A.max, 1702, 480, 100, 86, C.red);
+  addPhoto(slide, "draft.ronaldo.photo", A.ronaldo, 1702, 614, 100, 86, C.green);
   slide.speakerNotes.text = "This slide shows the rules that make team creation a real fantasy workflow rather than a simple checklist.";
 }
 
@@ -657,9 +717,122 @@ function slide13(presentation) {
   slide.speakerNotes.text = "Use the database model to prove the app has real persistence and relationships, not just UI screens.";
 }
 
+function playerGallery(presentation) {
+  const slide = presentation.slides.add();
+  addSlideTitle(slide, 14, "Fantasy Player Pool", "Star power makes fantasy feel alive", "The deck now shows recognizable cricket, football, and F1 athletes as the kind of cross-sport pool this platform can support.");
+  const cards = [
+    ["pool.rohit", "Rohit Sharma", "BAT", "Cricket", A.rohit, C.gold],
+    ["pool.virat", "Virat Kohli", "BAT", "Cricket", A.virat, C.pink],
+    ["pool.dhoni", "MS Dhoni", "WK", "Cricket", A.dhoni, C.cyan],
+    ["pool.messi", "Lionel Messi", "FWD", "Football", A.messi, C.green],
+    ["pool.ronaldo", "Cristiano Ronaldo", "FWD", "Football", A.ronaldo, C.red],
+    ["pool.haaland", "Erling Haaland", "FWD", "Football", A.haaland, C.cyan],
+    ["pool.max", "Max Verstappen", "DRV", "Formula 1", A.max, C.red],
+    ["pool.hamilton", "Lewis Hamilton", "DRV", "Formula 1", A.hamilton, C.purple],
+  ];
+  cards.forEach((c, i) => {
+    const x = 110 + (i % 4) * 430;
+    const y = 354 + Math.floor(i / 4) * 292;
+    addPlayerCard(slide, c[0], c[1], c[2], c[3], c[4], x, y, 250, 250, c[5]);
+  });
+  addText(slide, "pool.note", "Fantasy value can combine credits, form, popularity, role scarcity, and multiplier potential.", { left: 260, top: 910, width: 1250, height: 44 }, {
+    fontSize: 25,
+    color: C.text,
+    bold: true,
+    alignment: "center",
+    fill: C.bg,
+    fontFace: "Noto Sans JP",
+  });
+  slide.speakerNotes.text = "Use this slide to make the fantasy domain concrete: the player pool can span real sports and recognizable athletes.";
+}
+
+function fantasyAnalysis(presentation) {
+  const slide = presentation.slides.add();
+  addSlideTitle(slide, 15, "Fantasy Analysis Layer", "A good fantasy product helps users compare risk and upside", "Analysis visuals translate raw player data into fast decisions: captain choice, credits, form, selection share, and role coverage.");
+
+  addShape(slide, "analysis.matrix", "roundRect", { left: 112, top: 354, width: 660, height: 500 }, C.panel, C.cyan, 2);
+  addText(slide, "analysis.matrix.title", "Risk vs Upside Matrix", { left: 150, top: 388, width: 540, height: 42 }, {
+    fontSize: 30,
+    color: C.cyan,
+    bold: true,
+    fill: C.panel,
+  });
+  addShape(slide, "analysis.axis.x", "rect", { left: 190, top: 756, width: 490, height: 3 }, C.muted);
+  addShape(slide, "analysis.axis.y", "rect", { left: 190, top: 486, width: 3, height: 270 }, C.muted);
+  addText(slide, "analysis.axis.low", "Safer", { left: 186, top: 774, width: 80, height: 24 }, { fontSize: 16, color: C.muted, fill: C.panel, fontFace: "Noto Sans JP" });
+  addText(slide, "analysis.axis.high", "Higher upside", { left: 536, top: 774, width: 150, height: 24 }, { fontSize: 16, color: C.muted, fill: C.panel, fontFace: "Noto Sans JP" });
+  addText(slide, "analysis.axis.form", "Form", { left: 132, top: 486, width: 64, height: 24 }, { fontSize: 16, color: C.muted, fill: C.panel, fontFace: "Noto Sans JP" });
+  const dots = [
+    ["Rohit", 330, 610, C.gold],
+    ["Messi", 470, 540, C.green],
+    ["Max", 560, 500, C.red],
+    ["Haaland", 600, 642, C.cyan],
+    ["Dhoni", 292, 690, C.pink],
+  ];
+  dots.forEach(([label, x, y, color], i) => {
+    addShape(slide, `analysis.dot.${i}`, "ellipse", { left: x, top: y, width: 28, height: 28 }, color);
+    addText(slide, `analysis.dot.label.${i}`, label, { left: x + 36, top: y - 4, width: 110, height: 26 }, {
+      fontSize: 16,
+      color: C.white,
+      fill: C.panel,
+      fontFace: "Noto Sans JP",
+    });
+  });
+
+  const playerRows = [
+    ["Max Verstappen", A.max, 9.8, 10.5, "C/VC upside", C.red],
+    ["Rohit Sharma", A.rohit, 8.9, 9.5, "Opening impact", C.gold],
+    ["Cristiano Ronaldo", A.ronaldo, 8.7, 10.0, "Goal threat", C.green],
+    ["Lionel Messi", A.messi, 9.2, 10.0, "Assist + goal", C.cyan],
+  ];
+  playerRows.forEach((row, i) => {
+    const y = 354 + i * 124;
+    addPhoto(slide, `analysis.${i}.photo`, row[1], 876, y, 92, 92, row[5]);
+    addText(slide, `analysis.${i}.name`, row[0], { left: 992, top: y + 2, width: 300, height: 30 }, {
+      fontSize: 24,
+      color: C.white,
+      bold: true,
+      fill: C.bg,
+      fontFace: "Noto Sans JP",
+    });
+    addText(slide, `analysis.${i}.tag`, row[4], { left: 992, top: y + 38, width: 260, height: 24 }, {
+      fontSize: 16,
+      color: row[5],
+      bold: true,
+      fill: C.bg,
+      fontFace: "Noto Sans JP",
+    });
+    addShape(slide, `analysis.${i}.form.bg`, "rect", { left: 1290, top: y + 10, width: 260, height: 16 }, "#302B44");
+    addShape(slide, `analysis.${i}.form`, "rect", { left: 1290, top: y + 10, width: row[2] * 24, height: 16 }, row[5]);
+    addText(slide, `analysis.${i}.form.label`, `Form ${row[2]}`, { left: 1568, top: y + 2, width: 110, height: 28 }, {
+      fontSize: 17,
+      color: C.text,
+      fill: C.bg,
+      fontFace: "Noto Sans JP",
+    });
+    addShape(slide, `analysis.${i}.credit.bg`, "rect", { left: 1290, top: y + 58, width: 260, height: 16 }, "#302B44");
+    addShape(slide, `analysis.${i}.credit`, "rect", { left: 1290, top: y + 58, width: row[3] * 22, height: 16 }, C.pink);
+    addText(slide, `analysis.${i}.credit.label`, `Credits ${row[3]}`, { left: 1568, top: y + 50, width: 130, height: 28 }, {
+      fontSize: 17,
+      color: C.text,
+      fill: C.bg,
+      fontFace: "Noto Sans JP",
+    });
+  });
+
+  addText(slide, "analysis.caption", "Analysis images to include in a future product: ownership heatmaps, captain-risk radar, credits-vs-form scatter, and matchup trend cards.", { left: 176, top: 900, width: 1420, height: 48 }, {
+    fontSize: 23,
+    color: C.muted,
+    alignment: "center",
+    fill: C.bg,
+    fontFace: "Noto Sans JP",
+  });
+  slide.speakerNotes.text = "This slide shows the kind of analysis layer that makes player selection more strategic and presentation-friendly.";
+}
+
 function slide14(presentation) {
   const slide = presentation.slides.add();
-  addSlideTitle(slide, 14, "Tech Stack", "Modern web stack with real-time and media capabilities", "The implementation combines frontend polish with backend services that make live interaction possible.");
+  addSlideTitle(slide, 16, "Tech Stack", "Modern web stack with real-time and media capabilities", "The implementation combines frontend polish with backend services that make live interaction possible.");
   addSimpleTable(slide, "stack.table", ["Layer", "Technology", "Purpose"], [
     ["Frontend", "React 19, Vite, React Router, lucide-react", "Interactive pages, navigation, icons"],
     ["Visuals", "Three.js, @react-three/fiber, CSS effects", "Futuristic animated interface"],
@@ -681,7 +854,7 @@ function slide14(presentation) {
 
 function slide15(presentation) {
   const slide = presentation.slides.add();
-  addSlideTitle(slide, 15, "Future Scope", "The foundation is ready for richer campus-scale play", "The next version can focus on reliability, richer scoring, and broader event support.");
+  addSlideTitle(slide, 17, "Future Scope", "The foundation is ready for richer campus-scale play", "The next version can focus on reliability, richer scoring, and broader event support.");
   const roadmap = [
     ["1", "Mobile-first refinement", "Responsive drafting and live watch party controls.", C.cyan],
     ["2", "Advanced scoring rules", "Sport-specific points, substitutions, penalties, and bonuses.", C.gold],
@@ -757,6 +930,8 @@ export async function build(artifact) {
     slide11,
     slide12,
     slide13,
+    playerGallery,
+    fantasyAnalysis,
     slide14,
     slide15,
   ].forEach((fn) => fn(presentation));

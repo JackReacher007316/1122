@@ -1,7 +1,7 @@
 {
   "pptx_exists": true,
-  "pptx_size": 79780,
-  "preview_count": 15,
+  "pptx_size": 12703713,
+  "preview_count": 17,
   "preview_dimensions": [
     [
       "slide-01.png",
@@ -77,10 +77,21 @@
       "slide-15.png",
       1920,
       1080
+    ],
+    [
+      "slide-16.png",
+      1920,
+      1080
+    ],
+    [
+      "slide-17.png",
+      1920,
+      1080
     ]
   ],
-  "nonblank_previews": 15,
+  "nonblank_previews": 17,
   "pptx_zip_ok": true,
   "has_presentation_xml": true,
-  "pptx_slide_xml_count": 15
+  "pptx_slide_xml_count": 17,
+  "pptx_media_count": 19
 }

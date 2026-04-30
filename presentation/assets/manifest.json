@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "max_verstappen",
+    "page": "Max Verstappen",
+    "page_url": "https://en.wikipedia.org/wiki/Max_Verstappen",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/5/52/2024-08-25_Motorsport%2C_Formel_1%2C_Gro%C3%9Fer_Preis_der_Niederlande_2024_STP_3973_by_Stepro_%28medium_crop%29.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/max_verstappen.jpg",
+    "bytes": 3233168
+  },
+  {
+    "slug": "rohit_sharma",
+    "page": "Rohit Sharma",
+    "page_url": "https://en.wikipedia.org/wiki/Rohit_Sharma",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Prime_Minister_Of_Bharat_Shri_Narendra_Damodardas_Modi_with_Shri_Rohit_Gurunath_Sharma_%28Cropped%29.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/rohit_sharma.jpg",
+    "bytes": 102183
+  },
+  {
+    "slug": "cristiano_ronaldo",
+    "page": "Cristiano Ronaldo",
+    "page_url": "https://en.wikipedia.org/wiki/Cristiano_Ronaldo",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/9/9c/President_Donald_Trump_meets_with_Cristiano_Ronaldo_in_the_Oval_Office_%2854933344262%29_%28cropped_and_rotated%29.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/cristiano_ronaldo.jpg",
+    "bytes": 283662
+  },
+  {
+    "slug": "lionel_messi",
+    "page": "Lionel Messi",
+    "page_url": "https://en.wikipedia.org/wiki/Lionel_Messi",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Lionel_Messi_White_House_2026_%283x4_cropped%29.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/lionel_messi.jpg",
+    "bytes": 905868
+  },
+  {
+    "slug": "virat_kohli",
+    "page": "Virat Kohli",
+    "page_url": "https://en.wikipedia.org/wiki/Virat_Kohli",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Virat_Kohli_in_PMO_New_Delhi.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/virat_kohli.jpg",
+    "bytes": 113936
+  },
+  {
+    "slug": "ms_dhoni",
+    "page": "MS Dhoni",
+    "page_url": "https://en.wikipedia.org/wiki/MS_Dhoni",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/d5/MS_Dhoni_%28Prabhav_%2723_-_RiGI_2023%29.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/ms_dhoni.jpg",
+    "bytes": 515799
+  },
+  {
+    "slug": "erling_haaland",
+    "page": "Erling Haaland",
+    "page_url": "https://en.wikipedia.org/wiki/Erling_Haaland",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/71/Erling_Haaland_June_2025.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/erling_haaland.jpg",
+    "bytes": 5452824
+  },
+  {
+    "slug": "mohamed_salah",
+    "page": "Mohamed Salah",
+    "page_url": "https://en.wikipedia.org/wiki/Mohamed_Salah",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Mohamed_Salah_2018.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/mohamed_salah.jpg",
+    "bytes": 337828
+  },
+  {
+    "slug": "lewis_hamilton",
+    "page": "Lewis Hamilton",
+    "page_url": "https://en.wikipedia.org/wiki/Lewis_Hamilton",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Prime_Minister_Keir_Starmer_meets_Sir_Lewis_Hamilton_%2854566928382%29_%28cropped%29.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/lewis_hamilton.jpg",
+    "bytes": 804454
+  },
+  {
+    "slug": "charles_leclerc",
+    "page": "Charles Leclerc",
+    "page_url": "https://en.wikipedia.org/wiki/Charles_Leclerc",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/2024-08-25_Motorsport%2C_Formel_1%2C_Gro%C3%9Fer_Preis_der_Niederlande_2024_STP_3978_by_Stepro_%28cropped2%29.jpg",
+    "path": "C:/Users/AARYAN/pratice/presentation/assets/charles_leclerc.jpg",
+    "bytes": 2487211
+  }
+]
