@@ -33,11 +33,10 @@ COPY . .
 RUN npx prisma generate
 
 # ── Persist the SQLite database via a volume ──────────────────────────────────
-# The actual volume is declared in docker-compose.yml
-RUN mkdir -p /app/prisma
+# (Not needed with PostgreSQL, but kept for local Docker usage)
 
 # ── Expose backend port ────────────────────────────────────────────────────────
 EXPOSE 3000
 
-# ── Startup: migrate DB then start server ─────────────────────────────────────
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+# ── Startup: push DB schema then start server ─────────────────────────────────
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]

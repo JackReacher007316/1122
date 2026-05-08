@@ -5,8 +5,15 @@ build/
 .env
 
 # Database
-backend/dev.db
-backend/dev.db-journal
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+*.db
+*.db-journal
+
+# Cloudflare tunnel binaries & logs
+cloudflared.exe
+cloudflared
+*.log
 
 # Editor
 .vscode/

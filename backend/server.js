@@ -29,7 +29,7 @@ const frontendPath = path.join(__dirname, '..', 'fantasy-league', 'dist');
 app.use(express.static(frontendPath));
 
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = 'supersecret_jwt_key_for_fantasy_league'; // In production, use process.env
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_jwt_key_for_fantasy_league';
 
 // ========================
 // OBS STUDIO - RTMP Media Server
@@ -503,7 +503,7 @@ io.on('connection', (socket) => {
 });
 
 // Catch-all: serve frontend for any non-API route (SPA support)
-app.use((req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
@@ -516,5 +516,9 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`============================\n`);
 });
 
-// Start the RTMP Media Server for OBS
-nms.run();
+// Start the RTMP Media Server for OBS (graceful — skip if ports unavailable in cloud)
+try {
+  nms.run();
+} catch (e) {
+  console.log('RTMP Media Server could not start (expected on cloud platforms):', e.message);
+}

@@ -1,64 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Icon3D from './Icon3D';
+import { SPORT_CATALOG } from '../data/liveSports';
 
-const SportTabs = ({ activeSport, setActiveSport }) => {
-  const tabs = [
-    { id: 'all', label: 'All Events', icon: '🌸' },
-    { id: 'football', label: 'Football', icon: '⚽', color: 'var(--neon-pink)' },
-    { id: 'f1', label: 'Formula 1', icon: '🏎️', color: 'var(--neon-red)' },
-    { id: 'cricket', label: 'Cricket', icon: '🎋', color: 'var(--neon-blue)' },
-    { id: 'hackathon', label: 'Hackathon', icon: '👾', color: 'var(--neon-green)' }
-  ];
+const tabs = [
+  { id: 'all', label: 'All Sports', short: 'ALL', color: '#f8fafc', shape: 'live' },
+  ...SPORT_CATALOG,
+];
+
+export default function SportTabs({ activeSport, setActiveSport }) {
+  const [hovered, setHovered] = useState(null);
 
   return (
-    <div className="glass-panel" style={{ 
-      display: 'flex', 
-      gap: '12px', 
-      marginBottom: '32px',
-      padding: '12px',
-      overflowX: 'auto',
-      whiteSpace: 'nowrap'
-    }}>
-      {tabs.map(tab => {
+    <div className="sport-tabs" role="tablist" aria-label="Sports">
+      {tabs.map((tab) => {
         const isActive = activeSport === tab.id;
+        const isHovered = hovered === tab.id;
+
         return (
           <button
             key={tab.id}
+            className={`sport-tab ${isActive ? 'is-active' : ''}`}
             onClick={() => setActiveSport(tab.id)}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '8px',
-              border: isActive ? `1px solid ${tab.color || 'rgba(255,255,255,0.5)'}` : '1px solid transparent',
-              background: isActive ? (tab.color ? `${tab.color}20` : 'rgba(255,255,255,0.1)') : 'transparent',
-              color: isActive ? (tab.color || '#fff') : 'var(--text-muted)',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-heading)',
-              fontSize: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.3s ease',
-              textTransform: 'uppercase'
-            }}
-            onMouseEnter={(e) => {
-              if(!isActive) {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                e.currentTarget.style.color = '#fff';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if(!isActive) {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = 'var(--text-muted)';
-              }
-            }}
+            onMouseEnter={() => setHovered(tab.id)}
+            onMouseLeave={() => setHovered(null)}
+            role="tab"
+            aria-selected={isActive}
+            style={{ '--sport-color': tab.color }}
           >
-            <span>{tab.icon}</span>
-            {tab.label}
+            <Icon3D color={tab.color} shape={tab.shape} size={28} active={isActive} hovered={isHovered} />
+            <span>{tab.label}</span>
           </button>
         );
       })}
     </div>
   );
-};
-
-export default SportTabs;
+}
