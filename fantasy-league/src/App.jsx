@@ -134,6 +134,7 @@ function AppRoutes({ activeSport, setActiveSport, token }) {
     <Routes>
       <Route path="/" element={<Dashboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route path="/football" element={<FootballLive />} />
+      <Route path="/live/football" element={<FootballLive />} />
       <Route path="/match/:id" element={<MatchDetail />} />
       <Route path="/live" element={<LiveTracking activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route path="/live/:sport" element={<LiveScorePage />} />
