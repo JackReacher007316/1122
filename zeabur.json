@@ -1,0 +1,14 @@
+{
+  "build": {
+    "command": "cd fantasy-league && npm install && npm run build && cd ../backend && npm install && npx prisma generate && npx prisma db push && node seed.js"
+  },
+  "start": {
+    "command": "cd backend && node server.js"
+  },
+  "env": {
+    "PORT": "3000",
+    "NODE_ENV": "production",
+    "DATABASE_URL": "file:./prisma/dev.db",
+    "JWT_SECRET": "supersecret_jwt_key_for_fantasy_league"
+  }
+}
