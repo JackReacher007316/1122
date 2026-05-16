@@ -2,7 +2,7 @@
 # Runs the full stack in containers:
 #   • db       → PostgreSQL 16                        (port 5432)
 #   • backend  → Node.js + Express + Prisma           (port 3000)
-#   • frontend → React + Vite dev server               (port 5173)
+# The backend serves the built frontend as static files.
 # ─────────────────────────────────────────────────────────────────────────────
 
 services:
@@ -21,37 +21,30 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - fantasy_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iiitn_user -d iiitn_streaming"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # ── Backend ────────────────────────────────────────────────────────────────
+  # ── Backend (serves frontend static files too) ─────────────────────────────
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: fantasy_backend
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       PORT: 3000
+      NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-supersecret_jwt_key_for_fantasy_league}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       DATABASE_URL: postgresql://iiitn_user:iiitn_pass@db:5432/iiitn_streaming
     depends_on:
-      - db
-    networks:
-      - fantasy_net
-
-  # ── Frontend ───────────────────────────────────────────────────────────────
-  frontend:
-    build:
-      context: ./fantasy-league
-      dockerfile: Dockerfile
-    container_name: fantasy_frontend
-    restart: unless-stopped
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
+      db:
+        condition: service_healthy
     networks:
       - fantasy_net
 

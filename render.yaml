@@ -3,8 +3,11 @@ services:
     name: iiitn-streaming-platform
     runtime: node
     plan: free
-    buildCommand: "cd fantasy-league && npm install && npm run build && cd ../backend && npm install && npx prisma generate && npx prisma db push"
-    startCommand: "cd backend && node server.js"
+    region: oregon
+    buildCommand: >
+      cd fantasy-league && npm install && npm run build &&
+      cd ../backend && npm install && npx prisma generate
+    startCommand: "cd backend && npx prisma db push --accept-data-loss --skip-generate && node seed.js && node server.js"
     envVars:
       - key: NODE_ENV
         value: production
@@ -24,3 +27,4 @@ databases:
     plan: free
     databaseName: iiitn_streaming
     user: iiitn_user
+    region: oregon

@@ -1,9 +1,18 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { ArrowLeft, Play, Calendar, Trophy, Tv, ExternalLink, X, ChevronRight, Radio } from 'lucide-react';
+import { ArrowLeft, Play, Calendar, Trophy, Tv, X, ChevronRight, Radio, BarChart3, ClipboardList, FileText, LayoutGrid } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LEAGUES, MATCHES, getStreamUrl, getLeagueById, getFeaturedMatches } from '../data/footballSchedule';
 
-const STREAM_URL = 'https://www.footem.co.in';
+const BASE_URL = 'https://harborfreight22.com';
+
+// All football sections from harborfreight22.com — opened INSIDE our website, no new tab
+const FOOTBALL_SECTIONS = [
+  { id: 'live', label: 'Live Streams', icon: Tv, url: BASE_URL, color: '#ff314a', desc: 'Watch live football matches' },
+  { id: 'schedule', label: 'Schedule', icon: Calendar, url: `${BASE_URL}/lich-thi-dau`, color: '#20df7f', desc: 'Full match schedule' },
+  { id: 'standings', label: 'Standings', icon: BarChart3, url: `${BASE_URL}/bang-xep-hang`, color: '#f2c94c', desc: 'League tables & rankings' },
+  { id: 'results', label: 'Results', icon: ClipboardList, url: `${BASE_URL}/ket-qua-tran-dau`, color: '#4bb7ff', desc: 'Match results & scores' },
+  { id: 'analysis', label: 'Analysis', icon: FileText, url: `${BASE_URL}/nhan-dinh-tran-dau`, color: '#9b7bff', desc: 'Pre-match analysis & predictions' },
+];
 
 function LeagueFilter({ active, onChange }) {
   return (
@@ -18,6 +27,28 @@ function LeagueFilter({ active, onChange }) {
           {l.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+function SectionNav({ activeSection, onSelect }) {
+  return (
+    <div className="ftb-section-nav">
+      {FOOTBALL_SECTIONS.map(s => {
+        const Icon = s.icon;
+        return (
+          <button
+            key={s.id}
+            className={`ftb-section-btn ${activeSection === s.id ? 'is-active' : ''}`}
+            style={{ '--sc': s.color }}
+            onClick={() => onSelect(s.id)}
+            title={s.desc}
+          >
+            <Icon size={16} />
+            <span>{s.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -55,26 +86,24 @@ function MatchRow({ match, onWatch }) {
   );
 }
 
-function StreamPlayer({ match, onClose }) {
+/* Inline iframe viewer — opens harborfreight22.com pages INSIDE the website, no new tab */
+function InlineViewer({ url, title, onClose }) {
   return (
     <div className="ftb-stream-overlay">
       <div className="ftb-stream-modal">
         <div className="ftb-stream-header">
           <div>
-            <h3>{match ? `${match.home} vs ${match.away}` : 'Football Live Stream'}</h3>
-            {match && <span className="ftb-stream-meta">{getLeagueById(match.league).label} • {match.round}</span>}
+            <h3>{title}</h3>
+            <span className="ftb-stream-meta">Powered by ColaTV • harborfreight22.com</span>
           </div>
           <div className="ftb-stream-actions">
-            <a href={STREAM_URL} target="_blank" rel="noopener noreferrer" className="ftb-external-btn">
-              <ExternalLink size={14} /> Open in new tab
-            </a>
             <button className="ftb-close-btn" onClick={onClose}><X size={18} /></button>
           </div>
         </div>
         <div className="ftb-stream-player">
           <iframe
-            src={STREAM_URL}
-            title="Football Live Stream"
+            src={url}
+            title={title}
             allowFullScreen
             allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
@@ -92,6 +121,9 @@ export default function FootballLive() {
   const [streamMatch, setStreamMatch] = useState(null);
   const [showStream, setShowStream] = useState(false);
   const [monthFilter, setMonthFilter] = useState('all');
+  const [activeSection, setActiveSection] = useState(null); // for section iframes
+  const [viewerUrl, setViewerUrl] = useState('');
+  const [viewerTitle, setViewerTitle] = useState('');
 
   const months = [
     { id: 'all', label: 'All' },
@@ -111,14 +143,43 @@ export default function FootballLive() {
 
   const featured = useMemo(() => getFeaturedMatches(), []);
 
+  // Group matches by date for schedule-wise display
+  const groupedByDate = useMemo(() => {
+    const groups = {};
+    filtered.forEach(m => {
+      const dateKey = new Date(m.date).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(m);
+    });
+    return groups;
+  }, [filtered]);
+
   const handleWatch = useCallback((match) => {
     setStreamMatch(match);
     setShowStream(true);
+    setActiveSection(null);
   }, []);
 
   const openFullStream = useCallback(() => {
     setStreamMatch(null);
     setShowStream(true);
+    setActiveSection(null);
+  }, []);
+
+  const openSection = useCallback((sectionId) => {
+    const section = FOOTBALL_SECTIONS.find(s => s.id === sectionId);
+    if (section) {
+      setViewerUrl(section.url);
+      setViewerTitle(section.label);
+      setActiveSection(sectionId);
+      setShowStream(false);
+    }
+  }, []);
+
+  const closeViewer = useCallback(() => {
+    setActiveSection(null);
+    setShowStream(false);
+    setStreamMatch(null);
   }, []);
 
   return (
@@ -137,7 +198,7 @@ export default function FootballLive() {
               Football <span>Schedule & Streaming</span>
             </h1>
             <p className="hero-copy">
-              All matches from Premier League, La Liga, Serie A, Bundesliga, Champions League & FIFA World Cup 2026 — with one-click live streaming.
+              All matches from Premier League, La Liga, Serie A, Bundesliga, Champions League & FIFA World Cup 2026 — with one-click live streaming powered by ColaTV.
             </p>
             <button className="ftb-stream-big-btn" onClick={openFullStream}>
               <Play size={18} /> Open Live Stream Player
@@ -158,6 +219,36 @@ export default function FootballLive() {
         </div>
       </div>
 
+      {/* Football Section Navigation — all links open INSIDE the website */}
+      <div className="ftb-sections-header">
+        <LayoutGrid size={16} style={{ color: 'var(--muted)' }} />
+        <span className="ftb-sections-title">Football Hub — All Links (opens inside)</span>
+      </div>
+      <SectionNav activeSection={activeSection} onSelect={openSection} />
+
+      {/* Inline Section Viewer — shows harborfreight22.com pages INSIDE our site */}
+      {activeSection && (
+        <div className="ftb-inline-viewer">
+          <div className="ftb-inline-header">
+            <div className="ftb-inline-title-row">
+              <h3>{viewerTitle}</h3>
+              <span className="ftb-inline-badge">harborfreight22.com</span>
+            </div>
+            <button className="ftb-close-btn" onClick={closeViewer}><X size={16} /></button>
+          </div>
+          <div className="ftb-inline-frame">
+            <iframe
+              src={viewerUrl}
+              title={viewerTitle}
+              allowFullScreen
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        </div>
+      )}
+
       {/* League Filter */}
       <LeagueFilter active={activeLeague} onChange={setActiveLeague} />
 
@@ -172,17 +263,34 @@ export default function FootballLive() {
         <span className="ftb-count">{filtered.length} matches</span>
       </div>
 
-      {/* Match List */}
-      <div className="ftb-match-list">
-        {filtered.length === 0 ? (
+      {/* Schedule-wise Match List (Grouped by Date) */}
+      <div className="ftb-schedule-list">
+        {Object.keys(groupedByDate).length === 0 ? (
           <div className="empty-state" style={{ padding: 60 }}>No matches found for this filter. Try a different league or month.</div>
         ) : (
-          filtered.map(m => <MatchRow key={m.id} match={m} onWatch={handleWatch} />)
+          Object.entries(groupedByDate).map(([dateLabel, matches]) => (
+            <div key={dateLabel} className="ftb-date-group">
+              <div className="ftb-date-header">
+                <Calendar size={14} />
+                <span>{dateLabel}</span>
+                <span className="ftb-date-count">{matches.length} match{matches.length > 1 ? 'es' : ''}</span>
+              </div>
+              <div className="ftb-match-list">
+                {matches.map(m => <MatchRow key={m.id} match={m} onWatch={handleWatch} />)}
+              </div>
+            </div>
+          ))
         )}
       </div>
 
-      {/* Stream Player Overlay */}
-      {showStream && <StreamPlayer match={streamMatch} onClose={() => setShowStream(false)} />}
+      {/* Stream Player Overlay — opens harborfreight22.com INSIDE our website */}
+      {showStream && (
+        <InlineViewer
+          url={streamMatch ? BASE_URL : BASE_URL}
+          title={streamMatch ? `${streamMatch.home} vs ${streamMatch.away}` : 'Football Live Stream'}
+          onClose={closeViewer}
+        />
+      )}
 
       <style>{`
         .ftb-header { margin-bottom: 24px; }
@@ -209,6 +317,60 @@ export default function FootballLive() {
         .ftb-feat-detail { display: flex; flex-direction: column; font-size: 0.72rem; color: var(--muted); gap: 2px; text-align: right; }
         .ftb-feat-arrow { color: var(--muted); flex-shrink: 0; }
 
+        /* Section Navigation — Football Hub Links */
+        .ftb-sections-header {
+          display: flex; align-items: center; gap: 8px; margin-bottom: 10px; margin-top: 8px;
+          font-size: 0.82rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .ftb-sections-title { color: var(--text); }
+        .ftb-section-nav {
+          display: flex; gap: 10px; overflow-x: auto; padding: 4px 0 18px;
+          scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+        .ftb-section-btn {
+          display: flex; align-items: center; gap: 8px; padding: 12px 20px;
+          border-radius: 14px; border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.04); color: var(--muted); font-size: 0.82rem;
+          font-weight: 750; cursor: pointer; transition: all 0.25s; white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .ftb-section-btn:hover {
+          color: var(--text); background: color-mix(in srgb, var(--sc) 12%, transparent);
+          border-color: color-mix(in srgb, var(--sc) 35%, transparent);
+          transform: translateY(-2px); box-shadow: 0 6px 20px color-mix(in srgb, var(--sc) 15%, transparent);
+        }
+        .ftb-section-btn.is-active {
+          color: var(--sc); background: color-mix(in srgb, var(--sc) 18%, transparent);
+          border-color: color-mix(in srgb, var(--sc) 45%, transparent);
+          box-shadow: 0 4px 16px color-mix(in srgb, var(--sc) 20%, transparent);
+        }
+        .ftb-section-btn svg { flex-shrink: 0; }
+
+        /* Inline Viewer — harborfreight22.com pages embedded INSIDE our website */
+        .ftb-inline-viewer {
+          border-radius: 18px; border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(10,17,24,0.85); overflow: hidden; margin-bottom: 24px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+          animation: slideInUp 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .ftb-inline-header {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+          background: rgba(0,0,0,0.3);
+        }
+        .ftb-inline-title-row { display: flex; align-items: center; gap: 12px; }
+        .ftb-inline-title-row h3 { margin: 0; font-size: 0.95rem; }
+        .ftb-inline-badge {
+          padding: 3px 10px; border-radius: 999px; background: rgba(32,223,127,0.12);
+          color: #20df7f; font-size: 0.68rem; font-weight: 800;
+          border: 1px solid rgba(32,223,127,0.25);
+        }
+        .ftb-inline-frame { height: 520px; position: relative; }
+        .ftb-inline-frame iframe {
+          position: absolute; inset: 0; width: 100%; height: 100%; border: none;
+          border-radius: 0 0 18px 18px;
+        }
+
         .football-league-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 16px; }
         .league-tab {
           flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08);
@@ -232,6 +394,22 @@ export default function FootballLive() {
         }
         .ftb-month-btn.is-active, .ftb-month-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
         .ftb-count { margin-left: auto; color: var(--faint); font-size: 0.75rem; font-weight: 700; }
+
+        /* Schedule-wise grouping */
+        .ftb-schedule-list { display: flex; flex-direction: column; gap: 20px; }
+        .ftb-date-group { display: flex; flex-direction: column; gap: 6px; }
+        .ftb-date-header {
+          display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+          border-radius: 12px; background: rgba(32,223,127,0.06);
+          border: 1px solid rgba(32,223,127,0.12); font-size: 0.85rem;
+          font-weight: 800; color: #20df7f; margin-bottom: 4px;
+        }
+        .ftb-date-header svg { flex-shrink: 0; opacity: 0.7; }
+        .ftb-date-count {
+          margin-left: auto; font-size: 0.7rem; font-weight: 700;
+          color: var(--muted); background: rgba(255,255,255,0.06);
+          padding: 2px 8px; border-radius: 999px;
+        }
 
         .ftb-match-list { display: flex; flex-direction: column; gap: 6px; }
         .ftb-match-row {
@@ -289,13 +467,6 @@ export default function FootballLive() {
         .ftb-stream-header h3 { margin: 0; font-size: 1rem; }
         .ftb-stream-meta { color: var(--muted); font-size: 0.75rem; }
         .ftb-stream-actions { display: flex; align-items: center; gap: 10px; }
-        .ftb-external-btn {
-          display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
-          border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-          color: var(--muted); font-size: 0.75rem; font-weight: 700; text-decoration: none; cursor: pointer;
-          transition: all 0.2s;
-        }
-        .ftb-external-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
         .ftb-close-btn {
           width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
           background: rgba(255,255,255,0.04); color: var(--muted); cursor: pointer;
@@ -313,6 +484,9 @@ export default function FootballLive() {
           .ftb-match-row { grid-template-columns: 80px 1fr; gap: 12px; }
           .ftb-watch-btn { grid-column: 1 / -1; justify-self: start; }
           .ftb-stream-modal { width: 98vw; height: 94vh; border-radius: 14px; }
+          .ftb-inline-frame { height: 380px; }
+          .ftb-section-nav { gap: 6px; }
+          .ftb-section-btn { padding: 10px 14px; font-size: 0.75rem; }
         }
       `}</style>
     </div>

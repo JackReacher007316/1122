@@ -503,7 +503,8 @@ io.on('connection', (socket) => {
 });
 
 // Catch-all: serve frontend for any non-API route (SPA support)
-app.get('{*path}', (req, res) => {
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 

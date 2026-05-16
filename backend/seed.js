@@ -2,6 +2,12 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
+  // Check if already seeded — skip if data exists
+  const existingPlayers = await prisma.player.count();
+  if (existingPlayers > 0) {
+    console.log(`✅ Database already seeded (${existingPlayers} players found). Skipping.`);
+    return;
+  }
   console.log('🏏 Seeding Dream11-style data...');
 
   // ========================

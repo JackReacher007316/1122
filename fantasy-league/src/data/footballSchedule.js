@@ -1,7 +1,7 @@
 // Football match schedule — May to August 2026
-// streamUrl points to footem.co.in for live viewing
+// streamUrl points to harborfreight22.com (ColaTV) for live viewing
 
-const STREAM_BASE = 'https://www.footem.co.in';
+const STREAM_BASE = 'https://harborfreight22.com';
 
 export const LEAGUES = [
   { id: 'all', label: 'All Matches', color: '#20df7f' },

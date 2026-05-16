@@ -1,22 +1,6 @@
 # ─── Backend Dockerfile ───────────────────────────────────────────────────────
-# Ubuntu-based Node.js backend with Prisma + SQLite
-FROM ubuntu:24.04
-
-# Avoid interactive prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
-
-# ── System dependencies ────────────────────────────────────────────────────────
-RUN apt-get update && apt-get install -y \
-    curl \
-    ca-certificates \
-    gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
-       | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" \
-       > /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update && apt-get install -y nodejs \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Production Node.js backend with Prisma + PostgreSQL
+FROM node:20-alpine
 
 # ── Working directory ──────────────────────────────────────────────────────────
 WORKDIR /app
@@ -32,11 +16,12 @@ COPY . .
 # ── Generate Prisma client ─────────────────────────────────────────────────────
 RUN npx prisma generate
 
-# ── Persist the SQLite database via a volume ──────────────────────────────────
-# (Not needed with PostgreSQL, but kept for local Docker usage)
-
 # ── Expose backend port ────────────────────────────────────────────────────────
 EXPOSE 3000
 
-# ── Startup: push DB schema then start server ─────────────────────────────────
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]
+# ── Healthcheck ────────────────────────────────────────────────────────────────
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/matches || exit 1
+
+# ── Startup: push DB schema, seed, then start server ───────────────────────────
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss --skip-generate && node seed.js && node server.js"]
