@@ -32,8 +32,8 @@ export const SPORT_CATALOG = [
     short: 'F1',
     shape: 'f1',
     color: '#ff314a',
-    endpoint: '/api/live/f1/standings',
-    sourceLabel: 'F1 standings',
+    endpoint: '/api/live/f1/scoreboard',
+    sourceLabel: 'ESPN Formula 1',
   },
   {
     id: 'tennis',
@@ -76,7 +76,7 @@ export const SPORT_CATALOG = [
 const fallbackTeams = {
   football: [
     ['Mumbai Strikers', 'Delhi United'],
-    ['IIITN Wolves', 'Nagpur City'],
+    ['FOFA Wolves', 'Nagpur City'],
     ['Goa Tide', 'Chennai Coast'],
   ],
   basketball: [
@@ -212,6 +212,15 @@ function parseCricket(data, sport) {
     const secondScore = match.score?.[1];
     const state = match.matchEnded ? 'post' : match.matchStarted ? 'in' : 'pre';
 
+    const homeScoreStr = firstScore && firstScore.r !== '-' ? `${firstScore.r}/${firstScore.w}` : '-';
+    const awayScoreStr = secondScore && secondScore.r !== '-' ? `${secondScore.r}/${secondScore.w}` : '-';
+    let scoreText = null;
+    if (firstScore && firstScore.r !== '-' && secondScore && secondScore.r !== '-') {
+      scoreText = `${homeScoreStr} vs ${awayScoreStr}`;
+    } else if (firstScore && firstScore.r !== '-') {
+      scoreText = `${homeScoreStr} (${firstScore.o || '0 ov'})`;
+    }
+
     return {
       id: `${sport.id}-${match.id || index}`,
       sportId: sport.id,
@@ -220,9 +229,9 @@ function parseCricket(data, sport) {
       competition: match.matchType ? `${match.matchType.toUpperCase()} Cricket` : sport.label,
       home: teams[0] || 'Team A',
       away: teams[1] || 'Team B',
-      homeScore: firstScore ? `${firstScore.r}/${firstScore.w}` : '-',
-      awayScore: secondScore ? `${secondScore.r}/${secondScore.w}` : '-',
-      scoreText: firstScore ? `${firstScore.r}/${firstScore.w} (${firstScore.o})` : null,
+      homeScore: homeScoreStr,
+      awayScore: awayScoreStr,
+      scoreText,
       venue: match.venue || '',
       statusState: state,
       statusText: match.status || getStatusLabel(state),
@@ -234,26 +243,40 @@ function parseCricket(data, sport) {
 }
 
 function parseF1(data, sport) {
-  if (!Array.isArray(data)) return [];
-  const leaders = data.slice(0, 6);
+  if (!Array.isArray(data?.events)) return [];
 
-  return leaders.map((driver, index) => ({
-    id: `${sport.id}-${driver.position || index}`,
-    sportId: sport.id,
-    sportLabel: sport.label,
-    source: 'live',
-    competition: 'Driver Championship',
-    home: driver.driver || `Driver ${index + 1}`,
-    away: driver.team || 'Constructor',
-    homeScore: `P${driver.position || index + 1}`,
-    awayScore: `${driver.points || 0} pts`,
-    scoreText: `${driver.points || 0} pts`,
-    venue: driver.team || '',
-    statusState: index < 3 ? 'in' : 'post',
-    statusText: `${driver.wins || 0} wins`,
-    updatedAt: new Date().toISOString(),
-    color: sport.color,
-  }));
+  return data.events.flatMap((event) => {
+    const competitions = event.competitions || [];
+    
+    return competitions.map((comp) => {
+      const status = comp.status?.type || {};
+      const date = comp.date || event.date || '';
+      
+      let state = 'pre';
+      if (status.state === 'in') state = 'in';
+      else if (status.state === 'post') state = 'post';
+
+      return {
+        id: `f1-session-${comp.id}`,
+        sportId: sport.id,
+        sportLabel: sport.label,
+        source: 'live',
+        competition: event.name || sport.label,
+        home: comp.type?.shortName || comp.type?.name || 'Session',
+        away: event.circuit?.fullName || 'Circuit',
+        homeScore: comp.type?.abbreviation || comp.type?.shortName || 'GP',
+        awayScore: state === 'post' ? 'Finished' : state === 'in' ? 'LIVE' : 'Scheduled',
+        scoreText: comp.type?.abbreviation || 'GP',
+        venue: event.circuit?.address ? `${event.circuit.address.city || ''}, ${event.circuit.address.country || ''}` : '',
+        statusState: state,
+        statusText: status.shortDetail || status.detail || 'Scheduled',
+        clock: comp.status?.displayClock || '',
+        date,
+        updatedAt: new Date().toISOString(),
+        color: sport.color,
+      };
+    });
+  });
 }
 
 async function fetchJson(url) {

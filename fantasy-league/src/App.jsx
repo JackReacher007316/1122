@@ -23,7 +23,7 @@ function PageLoader() {
     <div className="loading-state">
       <div>
         <div className="loading-spinner" />
-        <div>Loading arena...</div>
+        <div>Warming up engines...</div>
       </div>
     </div>
   );
@@ -46,14 +46,14 @@ function Sidebar({ setToken }) {
   const [hovered, setHovered] = useState(null);
 
   const navItems = [
-    { path: '/', label: '3D Arena', color: '#20df7f', shape: 'football' },
-    { path: '/live', label: 'Live Scores', color: '#ff314a', shape: 'live', live: true },
-    { path: '/live/football', label: 'Football', color: '#20df7f', shape: 'football' },
-    { path: '/live/basketball', label: 'Basketball', color: '#ff8a1c', shape: 'basketball' },
-    { path: '/create-team', label: 'Create Team', color: '#4bb7ff', shape: 'shield' },
-    { path: '/leaderboard', label: 'Leaderboard', color: '#f2c94c', shape: 'default' },
-    { path: '/watch-party', label: 'Watch Party', color: '#9b7bff', shape: 'live' },
-    { path: '/admin', label: 'Admin', color: '#ff4f86', shape: 'shield' },
+    { path: '/', label: 'Paddock', color: '#ffffff', shape: 'f1' },
+    { path: '/live', label: 'Race Control', color: '#00c0f9', shape: 'live', live: true },
+    { path: '/live/football', label: 'Football', color: '#5d2a8f', shape: 'football' },
+    { path: '/live/basketball', label: 'Basketball', color: '#f3c623', shape: 'basketball' },
+    { path: '/create-team', label: 'Garage', color: '#f3c623', shape: 'shield' },
+    { path: '/leaderboard', label: 'Championship', color: '#ffffff', shape: 'default' },
+    { path: '/watch-party', label: 'Team Radio', color: '#5d2a8f', shape: 'live' },
+    { path: '/admin', label: 'Race Engineer', color: '#00c0f9', shape: 'shield' },
   ];
 
   const handleLogout = () => {
@@ -66,13 +66,13 @@ function Sidebar({ setToken }) {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="brand-mark">
-          <Icon3D color="#20df7f" shape="football" size={42} active />
+          <Icon3D color="#5d2a8f" shape="f1" size={42} active />
         </div>
-        <div className="brand-title">IIITN Sportsverse</div>
-        <div className="brand-subtitle">Fantasy, live scores, streams</div>
+        <div className="brand-title">FOFA Monaco GP</div>
+        <div className="brand-subtitle">Real Madrid Edition</div>
       </div>
 
-      <div className="nav-section-label">Arena menu</div>
+      <div className="nav-section-label">Race menu</div>
       <nav className="nav-list" aria-label="Primary">
         {navItems.map((item) => {
           const active = isActivePath(location.pathname, item.path);
@@ -95,10 +95,10 @@ function Sidebar({ setToken }) {
       </nav>
 
       <div className="user-strip">
-        <div className="user-avatar">{(user?.username || 'G').slice(0, 1).toUpperCase()}</div>
+        <div className="user-avatar">{(user?.username || 'P').slice(0, 1).toUpperCase()}</div>
         <div>
-          <div className="user-name">{user?.username || 'Guest'}</div>
-          <div className="user-role">Arena manager</div>
+          <div className="user-name">{user?.username || 'Pilot'}</div>
+          <div className="user-role">Madridista Director</div>
         </div>
         <button className="icon-button" type="button" title="Logout" onClick={handleLogout}>
           <LogOut size={16} />
@@ -111,11 +111,11 @@ function Sidebar({ setToken }) {
 function FloatingNav() {
   const location = useLocation();
   const links = [
-    { path: '/', label: 'Arena' },
-    { path: '/live', label: 'Scores' },
+    { path: '/', label: 'Paddock' },
+    { path: '/live', label: 'Race Ctrl' },
     { path: '/live/football', label: 'Football' },
-    { path: '/create-team', label: 'Team' },
-    { path: '/leaderboard', label: 'Ranks' },
+    { path: '/create-team', label: 'Garage' },
+    { path: '/leaderboard', label: 'Standings' },
   ];
 
   return (
@@ -161,7 +161,7 @@ function AppRoutes({ activeSport, setActiveSport, token }) {
 }
 
 export default function App() {
-  const [activeSport, setActiveSport] = useState('all');
+  const [activeSport, setActiveSport] = useState('f1');
   const [token, setToken] = useState(localStorage.getItem('fantasy_token'));
 
   useEffect(() => {

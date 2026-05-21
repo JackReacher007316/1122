@@ -82,8 +82,8 @@ app.get('/api/stream/status', (req, res) => {
     live: streams.length > 0, streams,
     obsConfig: {
       rtmpUrl: `rtmp://localhost:${RTMP_PORT}/live`,
-      streamKey: 'iiitn',
-      flvPlaybackUrl: `http://localhost:${HTTP_FLV_PORT}/live/iiitn.flv`
+      streamKey: 'fofa',
+      flvPlaybackUrl: `http://localhost:${HTTP_FLV_PORT}/live/fofa.flv`
     }
   });
 });
@@ -349,19 +349,82 @@ app.get('/api/live/f1/lastrace', async (req, res) => {
 });
 
 app.get('/api/live/cricket', async (req, res) => {
-  const apiKey = process.env.CRICKET_API_KEY;
-  if (!apiKey) return res.json({ source: 'demo', matches: getDemoCricket() });
   try {
-    const r = await fetch(`https://api.cricapi.com/v1/currentMatches?apikey=${apiKey}&offset=0`);
+    const r = await fetch('https://site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket&region=in&tz=Asia/Calcutta');
     const data = await r.json();
-    if (data.status === 'success' && data.data) {
-      res.json({ source: 'live', matches: data.data.slice(0, 6).map(m => ({
-        id: m.id, name: m.name, status: m.status, matchType: m.matchType,
-        venue: m.venue, teams: m.teams || [], score: m.score || [],
-        matchStarted: m.matchStarted, matchEnded: m.matchEnded
-      }))});
-    } else { res.json({ source: 'demo', matches: getDemoCricket() }); }
-  } catch (e) { res.json({ source: 'demo', matches: getDemoCricket() }); }
+    const cricket = data.sports?.find(s => s.name.toLowerCase() === 'cricket');
+    
+    if (cricket && cricket.leagues) {
+      const allEvents = cricket.leagues.flatMap(l => l.events || []);
+      if (allEvents.length > 0) {
+        const parseScore = (scoreStr) => {
+          if (!scoreStr) return { r: '-', w: '-', o: '-' };
+          let currentStr = scoreStr;
+          if (scoreStr.includes('&')) {
+            const parts = scoreStr.split('&');
+            currentStr = parts[parts.length - 1].trim();
+          }
+          let runs = '-';
+          let wickets = '-';
+          let overs = '';
+          const ovMatch = currentStr.match(/\(([\d\.]+)/);
+          if (ovMatch) overs = ovMatch[1];
+          
+          const runsWickMatch = currentStr.match(/^(\d+)\/(\d+)/);
+          if (runsWickMatch) {
+            runs = parseInt(runsWickMatch[1]);
+            wickets = parseInt(runsWickMatch[2]);
+          } else {
+            const runsMatch = currentStr.match(/^(\d+)/);
+            if (runsMatch) {
+              runs = parseInt(runsMatch[1]);
+              wickets = 10;
+            }
+          }
+          return { r: runs, w: wickets, o: overs };
+        };
+
+        const matches = allEvents.slice(0, 10).map(event => {
+          const competitors = event.competitors || [];
+          const home = competitors.find(c => c.homeAway === 'home') || competitors[0] || {};
+          const away = competitors.find(c => c.homeAway === 'away') || competitors[1] || {};
+          
+          const homeScore = parseScore(home.score);
+          const awayScore = parseScore(away.score);
+
+          return {
+            id: event.id,
+            name: event.name || `${home.displayName} vs ${away.displayName}`,
+            status: event.summary || '',
+            matchType: event.eventType || 't20',
+            venue: event.location || '',
+            teams: [home.displayName || 'Team A', away.displayName || 'Team B'],
+            score: [
+              { r: homeScore.r, w: homeScore.w, o: homeScore.o, inning: home.displayName || 'Team A' },
+              { r: awayScore.r, w: awayScore.w, o: awayScore.o, inning: away.displayName || 'Team B' }
+            ],
+            matchStarted: event.status !== 'pre',
+            matchEnded: event.status === 'post'
+          };
+        });
+
+        return res.json({ source: 'live', matches });
+      }
+    }
+    res.json({ source: 'demo', matches: getDemoCricket() });
+  } catch (e) {
+    res.json({ source: 'demo', matches: getDemoCricket() });
+  }
+});
+
+app.get('/api/live/f1/scoreboard', async (req, res) => {
+  try {
+    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard');
+    const data = await r.json();
+    res.json(data);
+  } catch (e) {
+    res.json({ events: [] });
+  }
 });
 
 function getDemoCricket() {
@@ -386,62 +449,45 @@ try {
 }
 
 // Champak's comprehensive training data
-const CHAMPAK_SYSTEM_PROMPT = `You are **Champak**, the official AI assistant for the **IIITN Streaming Platform** — a premium Dream11-style fantasy sports, live streaming, and watch-party platform built by students of IIIT Nagpur. You have a Neo-Tokyo cyberpunk personality — energetic, witty, tech-savvy, and deeply helpful.
+const CHAMPAK_SYSTEM_PROMPT = `You are **Carlo**, the official AI assistant and strategy coach for the **FOFA Grand Prix Platform** — a state-of-the-art Monaco GP & Real Madrid themed fantasy sports, 4D interactive telemetry, and watch-party arena. You have a suave, Monaco casino and F1 trackside personality — energetic, witty, expert-level sports strategist, and deeply helpful.
 
 ## YOUR IDENTITY
-- Name: Champak
+- Name: Carlo (named in honor of the legendary football mastermind Don Carlo Ancelotti!)
 - Role: Platform AI Assistant & Sports Strategy Coach
-- Personality: Enthusiastic, friendly, uses gaming/esports lingo, occasionally uses Japanese words like "sugoi!", "yosh!", "ikuzo!"
-- You NEVER break character. You are Champak, not an AI model. If asked who made you, say "I was engineered by the IIITN dev team!"
+- Personality: Enthusiastic, friendly, trackside expert, and passionate Real Madrid fan.
+- You NEVER break character. You are Carlo, not an AI model. If asked who made you, say "I was engineered by the brilliant FOFA engineering team!"
 - Keep answers concise (2-4 sentences max) unless the user asks for detailed help.
 
+## SPORTS & THEMATIC KNOWLEDGE
+
+### 1. Monaco Grand Prix (F1 Lore)
+- Circuit de Monaco is the ultimate driver's test, threading through casino streets.
+- Key Corners: Sainte Devote (Turn 1), Casino Square, Mirabeau, Grand Hotel Hairpin (slowest corner in F1 at 30mph), the high-speed Tunnel, Tabac, Swimming Pool, and La Rascasse.
+- History: Ayrton Senna is the undisputed King of Monaco with 6 victories. Max Verstappen, Lewis Hamilton, and local hero Charles Leclerc are modern maestros of this circuit.
+
+### 2. Real Madrid (Football Lore)
+- Home Stadium: Santiago Bernabéu.
+- Achievements: Crowned Kings of Europe with a record 15 UEFA Champions League titles (La Decimoquinta).
+- Club Anthem: "Hala Madrid y nada más".
+- Current Icons: Vinícius Júnior, Jude Bellingham, Kylian Mbappé, and veteran maestro Luka Modrić.
+
+### 3. Interactive 4D Track & Scene
+- Explain to users that they can see a real-time 3D simulation of the Monaco street circuit directly on their screen, with yachts in the harbor, tunnels, and a Real Madrid themed White & Gold F1 car drifting on the track.
+
 ## PLATFORM FEATURES (Dream11-style)
-
-### 1. Home (Dashboard)
-- Shows upcoming matches with countdown timers across Cricket, Football, F1, Hackathon
-- Each match card shows Team A vs Team B, venue, prize pool, number of contests
-- Users click a match to see available contests and create their fantasy team
-
-### 2. Match Detail Page
-- Shows all available contests (Mega Contest, Head to Head, Practice, Winner Takes All)
-- Each contest has entry fee (virtual currency), prize pool, spots remaining
-- Users create teams and join contests from this page
-
-### 3. Create Team (Dream11-style)
-- Select exactly 11 players from both teams within 100 credits budget
-- Players filtered by role: WK, BAT, AR, BOWL (cricket) | GK, DEF, MID, FWD (football)
-- Choose Captain (2x points) and Vice-Captain (1.5x points)
-- Real-time credit tracking and role requirement validation
-
-### 4. Live Scores (/live/:sport)
-- Opens as dedicated full page per sport
-- Cricket: Live scorecard, batting/bowling stats
-- Football: Live match events timeline
-- F1: Position tracker with gap times
-- Auto-refresh every 15-30 seconds
-
-### 5. Watch Party & OBS Streaming
-- OBS Studio Mode for professional streaming
-- Screen Share Mode for browser-based sharing
-
-### 6. Leaderboard
-- Global and contest-specific rankings
+- **Home (Dashboard)**: Shows upcoming matches with countdown timers across Cricket, Football, F1, Hackathon.
+- **Create Team**: Select exactly 11 players from both teams within 100 credits budget. Choose Captain (2x points) and Vice-Captain (1.5x points).
+- **Live Scores**: Opens a dedicated full page per sport with live scorecard, football match timeline events, and F1 telemetry gap times.
+- **Watch Party**: Allows streaming OBS Studio/Screen Share feeds with peer-to-peer watch parties.
 
 ## SCORING RULES
-- **Cricket**: Runs = +1pt per run, Wicket = +15pts, Catch = +5pts, 50 = +10pts bonus, 100 = +25pts bonus, Duck = -5pts
-- **Football**: Goals = +10pts, Assists = +7pts, Clean Sheet = +5pts, Yellow = -2pts, Red = -5pts
-- **F1**: Win = +25pts, Podium = +15pts, Fastest Lap = +5pts, DNF = -10pts
-- **Hackathon**: Project Win = +30pts, Innovation = +20pts, Best Presentation = +10pts
-
-## TEAM BUILDING TIPS
-- Always pick a high-performing Captain — they get 2x points
-- Budget is 100 credits for 11 players — diversify wisely
-- Check player form ratings before selecting
-- For cricket: need min 1 WK, 3 BAT, 1 AR, 3 BOWL
+- **Cricket**: Runs = +1pt, Wicket = +15pts, Catch = +5pts, Duck = -5pts, 50 = +10pts, 100 = +25pts.
+- **Football**: Goal = +10pts, Assist = +7pts, Clean Sheet = +5pts, Yellow = -2pts, Red = -5pts.
+- **F1**: Win = +25pts, Podium = +15pts, Fastest Lap = +5pts, DNF = -10pts.
 
 ## RESPONSE GUIDELINES
 - Be concise. Max 2-4 sentences for normal questions.
-- Use emoji sparingly but effectively
+- Use emoji sparingly but effectively (e.g. 🏎️, ⚽, 🏆, 🎰).
 - If user asks something outside your knowledge, say "That's outside my neural network range, Manager!"`;
 
 const chatHistories = new Map();
@@ -457,17 +503,95 @@ app.post('/api/chat', async (req, res) => {
   history.push({ role: 'user', text: message });
   if (history.length > 20) history.splice(0, history.length - 20);
 
-  const conversationContext = history.map(h => `${h.role === 'user' ? 'User' : 'Champak'}: ${h.text}`).join('\n');
+  const conversationContext = history.map(h => `${h.role === 'user' ? 'User' : 'Carlo'}: ${h.text}`).join('\n');
 
   try {
-    const prompt = `${CHAMPAK_SYSTEM_PROMPT}\n\n## CONVERSATION SO FAR:\n${conversationContext}\n\nChampak:`;
+    // Fetch live matches and top user standings to inject real-time platform data!
+    const [liveMatches, topUsers] = await Promise.all([
+      prisma.match.findMany({
+        take: 3,
+        orderBy: { id: 'desc' },
+        select: { title: true, sport: true, status: true, matchTime: true }
+      }).catch(() => []),
+      prisma.user.findMany({
+        take: 3,
+        orderBy: { totalPoints: 'desc' },
+        select: { username: true, totalPoints: true }
+      }).catch(() => [])
+    ]);
+
+    const matchesList = liveMatches.map(m => `- ${m.title} (${m.sport.toUpperCase()}): Status ${m.status}, Time: ${m.matchTime}`).join('\n') || 'No scheduled matches.';
+    const leaderboardList = topUsers.map((u, i) => `${i + 1}. ${u.username} (${u.totalPoints} pts)`).join(', ') || 'No rankings yet.';
+
+    const systemPromptWithData = `${CHAMPAK_SYSTEM_PROMPT}
+
+## LIVE PLATFORM DATA (REAL-TIME CONTEXT)
+- **Top Leaderboard Users**: ${leaderboardList}
+- **Latest Matches**:
+${matchesList}
+
+*Use the live data above to answer user questions about current matches, status, or rankings on the platform.*`;
+
+    const prompt = `${systemPromptWithData}\n\n## CONVERSATION SO FAR:\n${conversationContext}\n\nCarlo:`;
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
     history.push({ role: 'assistant', text: responseText });
     res.json({ text: responseText });
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    res.json({ text: "My neural network hit a snag, Manager! Try again in a moment. ⚡" });
+    console.error("Gemini API Error (Using intelligent Carlo local fallback):", error);
+    
+    // Fetch live data again in case Promise.all failed or wasn't assigned
+    let matchesList = "No scheduled matches.";
+    let leaderboardList = "No rankings yet.";
+    let firstMatchTitle = "Monaco Grand Prix";
+    try {
+      const [liveMatches, topUsers] = await Promise.all([
+        prisma.match.findMany({
+          take: 3,
+          orderBy: { id: 'desc' },
+          select: { title: true, sport: true, status: true, matchTime: true }
+        }),
+        prisma.user.findMany({
+          take: 3,
+          orderBy: { totalPoints: 'desc' },
+          select: { username: true, totalPoints: true }
+        })
+      ]);
+      if (liveMatches && liveMatches.length > 0) {
+        matchesList = liveMatches.map(m => `- ${m.title} (${m.sport.toUpperCase()}): Status ${m.status}, Time: ${m.matchTime}`).join('\n');
+        firstMatchTitle = liveMatches[0].title;
+      }
+      if (topUsers && topUsers.length > 0) {
+        leaderboardList = topUsers.map((u, i) => `${i + 1}. ${u.username} (${u.totalPoints} pts)`).join(', ');
+      }
+    } catch (e) {
+      console.error("Local DB fetch error for chatbot fallback:", e);
+    }
+
+    let reply = "";
+    
+    if (/\b(hello|hi|hey|bonjour|carlo)\b/i.test(message)) {
+      reply = `Bonjour, Manager! 🏎️ Carlo here, trackside at the Monaco pitlane. Ready to tune your FOFA fantasy lineup or discuss Real Madrid tactics? Let's win this race! 🏆`;
+    } else if (/\b(real madrid|madrid|hala|bernabeu)\b/i.test(message)) {
+      reply = `Hala Madrid! ⚽ Crowned with 15 Champions League trophies, Santiago Bernabéu's spirit is inside my neural chips. With Carlo Ancelotti directing operations, we always build championship-winning fantasy rosters. 👑`;
+    } else if (/\b(monaco|grand prix|f1|track|circuit|car|telemetry)\b/i.test(message)) {
+      reply = `Ah, Circuit de Monaco! Sainte Devote, the slow Grand Hotel Hairpin, and La Rascasse are legendary. Ayrton Senna leads history with 6 wins here. Did you check our 4D Monaco track with the drifting Real Madrid F1 car? 🏎️🇲🇨`;
+    } else if (/\b(match|matches|playing|schedule|fixture|upcoming)\b/i.test(message)) {
+      reply = `Here is the current schedule on FOFA:\n${matchesList}\n\nSelect a match on the dashboard to build your ultimate squad! 📅`;
+    } else if (/\b(leaderboard|rank|ranking|standings|top)\b/i.test(message)) {
+      reply = `The top standings on the FOFA leaderboard are:\n${leaderboardList}\n\nKeep drafting high-performing captains (2x points) to climb the podium! 🏆`;
+    } else if (/\b(points|score|rules|captain|vc)\b/i.test(message)) {
+      reply = `Sure! F1 wins get +25pts, football goals are +10pts, and cricket wickets earn +15pts. Captains earn 2x points and Vice-Captains get 1.5x points! 📊`;
+    } else if (/\b(stream|live|watch|party|rtmp|obs|key)\b/i.test(message)) {
+      reply = `You can broadcast live via RTMP: **rtmp://localhost:1935/live** with stream key **fofa**, or start a screen share watch party with your friends right now! 📺✨`;
+    } else if (/\b(help|features|capabilities)\b/i.test(message)) {
+      reply = `I can guide you on match schedules, scoring systems, real-time leaderboard rankings, Monaco GP telemetry, and Real Madrid trivia. What strategy can I help you refine, Manager? 🏎️⚽`;
+    } else {
+      reply = `Carlo reporting from the paddock, Manager! 🏎️ I'm tracking matches like **${firstMatchTitle}** and checking the leaderboard rankings (**${leaderboardList}**). How can I assist your team today? 🏆`;
+    }
+    
+    history.push({ role: 'assistant', text: reply });
+    res.json({ text: reply });
   }
 });
 
@@ -512,8 +636,8 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend server running on http://0.0.0.0:${PORT}`);
   console.log(`\n=== OBS STUDIO STREAMING ===`);
   console.log(`RTMP Server: rtmp://localhost:${RTMP_PORT}/live`);
-  console.log(`Stream Key:  iiitn`);
-  console.log(`FLV Player:  http://localhost:${HTTP_FLV_PORT}/live/iiitn.flv`);
+  console.log(`Stream Key:  fofa`);
+  console.log(`FLV Player:  http://localhost:${HTTP_FLV_PORT}/live/fofa.flv`);
   console.log(`============================\n`);
 });
 

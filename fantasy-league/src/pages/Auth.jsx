@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icon3D from '../components/Icon3D';
 
 const Auth = ({ setToken }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -73,7 +74,7 @@ const Auth = ({ setToken }) => {
       {/* Perspective grid floor */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(255,16,122,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,16,122,0.04) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(93,42,143,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(93,42,143,0.04) 1px, transparent 1px)',
         backgroundSize: '50px 50px',
         transform: 'perspective(500px) rotateX(60deg) translateY(30%)',
         transformOrigin: 'center top',
@@ -83,19 +84,19 @@ const Auth = ({ setToken }) => {
       {/* Animated gradient orbs */}
       <div style={{
         position: 'absolute', top: '5%', left: '5%', width: '400px', height: '400px',
-        background: 'radial-gradient(circle, rgba(255,16,122,0.2) 0%, transparent 60%)',
+        background: 'radial-gradient(circle, rgba(93,42,143,0.2) 0%, transparent 60%)',
         borderRadius: '50%', filter: 'blur(60px)',
         animation: 'morphBg 8s ease-in-out infinite'
       }} />
       <div style={{
         position: 'absolute', bottom: '5%', right: '5%', width: '350px', height: '350px',
-        background: 'radial-gradient(circle, rgba(0,229,255,0.15) 0%, transparent 60%)',
+        background: 'radial-gradient(circle, rgba(243,198,35,0.15) 0%, transparent 60%)',
         borderRadius: '50%', filter: 'blur(60px)',
         animation: 'morphBg 10s ease-in-out infinite reverse'
       }} />
       <div style={{
         position: 'absolute', top: '40%', right: '30%', width: '250px', height: '250px',
-        background: 'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 60%)',
+        background: 'radial-gradient(circle, rgba(0,192,249,0.12) 0%, transparent 60%)',
         borderRadius: '50%', filter: 'blur(60px)',
         animation: 'morphBg 12s ease-in-out infinite 3s'
       }} />
@@ -108,9 +109,9 @@ const Auth = ({ setToken }) => {
           top: `${Math.random() * 100}%`,
           width: `${2 + Math.random() * 3}px`,
           height: `${2 + Math.random() * 3}px`,
-          background: i % 2 === 0 ? 'var(--neon-pink)' : 'var(--neon-blue)',
+          background: i % 2 === 0 ? '#f3c623' : '#5d2a8f',
           borderRadius: '50%',
-          boxShadow: `0 0 10px ${i % 2 === 0 ? 'var(--neon-pink)' : 'var(--neon-blue)'}`,
+          boxShadow: `0 0 10px ${i % 2 === 0 ? '#f3c623' : '#5d2a8f'}`,
           opacity: 0.3 + Math.random() * 0.4,
           animation: `float ${3 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 5}s`
         }} />
@@ -139,7 +140,7 @@ const Auth = ({ setToken }) => {
         {/* Card glow */}
         <div style={{
           position: 'absolute', inset: '-2px', borderRadius: '24px',
-          background: 'linear-gradient(135deg, rgba(255,16,122,0.4), transparent 40%, rgba(0,229,255,0.4))',
+          background: 'linear-gradient(135deg, rgba(93,42,143,0.4), transparent 40%, rgba(243,198,35,0.4))',
           zIndex: -1, filter: 'blur(1px)', opacity: 0.7
         }} />
         
@@ -154,30 +155,26 @@ const Auth = ({ setToken }) => {
               display: 'inline-flex', 
               padding: '16px', 
               borderRadius: '50%', 
-              border: '1px solid rgba(255,16,122,0.2)',
+              border: '1px solid rgba(243,198,35,0.2)',
               marginBottom: '20px',
               position: 'relative',
               animation: 'float 4s ease-in-out infinite'
             }}>
-              <img 
-                src="https://www.govtjobsblog.in/wp-content/uploads/2022/04/IIIT-Nagpur.png"
-                alt="IIITN" 
-                style={{ width: '60px', height: '60px' }}
-              />
+              <Icon3D color="#f3c623" shape="f1" size={54} active />
               <div style={{
                 position: 'absolute', inset: '-3px', borderRadius: '50%',
-                border: '1px solid rgba(0,229,255,0.15)',
+                border: '1px solid rgba(93,42,143,0.15)',
                 animation: 'spin 15s linear infinite'
               }} />
             </div>
-            <h1 className="heading-gradient" style={{ fontSize: '2.8rem', margin: '0 0 6px 0', filter: 'drop-shadow(0 0 20px rgba(255,16,122,0.4))' }}>IIITN</h1>
+            <h1 className="heading-gradient" style={{ fontSize: '2.8rem', margin: '0 0 6px 0', filter: 'drop-shadow(0 0 20px rgba(93,42,143,0.4))' }}>MONACO GP</h1>
             <p style={{ 
-              color: 'var(--neon-pink)', 
+              color: '#f3c623', 
               textTransform: 'uppercase', 
               letterSpacing: '4px', 
               fontSize: '0.7rem',
               fontFamily: 'var(--font-heading)'
-            }}>Streaming Platform</p>
+            }}>Real Madrid Edition</p>
           </div>
 
           {/* Toggle Login/Register */}
@@ -193,18 +190,18 @@ const Auth = ({ setToken }) => {
             <button onClick={() => setIsLogin(true)} style={{
               flex: 1, padding: '10px', border: 'none', borderRadius: '10px', cursor: 'pointer',
               fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px',
-              background: isLogin ? 'linear-gradient(135deg, rgba(255,16,122,0.3), rgba(168,85,247,0.2))' : 'transparent',
+              background: isLogin ? 'linear-gradient(135deg, rgba(93,42,143,0.3), rgba(243,198,35,0.2))' : 'transparent',
               color: isLogin ? '#fff' : 'var(--text-muted)',
               transition: 'all 0.3s ease',
-              boxShadow: isLogin ? '0 0 20px rgba(255,16,122,0.2)' : 'none'
+              boxShadow: isLogin ? '0 0 20px rgba(93,42,143,0.2)' : 'none'
             }}>LOGIN</button>
             <button onClick={() => setIsLogin(false)} style={{
               flex: 1, padding: '10px', border: 'none', borderRadius: '10px', cursor: 'pointer',
               fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px',
-              background: !isLogin ? 'linear-gradient(135deg, rgba(0,229,255,0.3), rgba(168,85,247,0.2))' : 'transparent',
+              background: !isLogin ? 'linear-gradient(135deg, rgba(0,192,249,0.3), rgba(243,198,35,0.2))' : 'transparent',
               color: !isLogin ? '#fff' : 'var(--text-muted)',
               transition: 'all 0.3s ease',
-              boxShadow: !isLogin ? '0 0 20px rgba(0,229,255,0.2)' : 'none'
+              boxShadow: !isLogin ? '0 0 20px rgba(0,192,249,0.2)' : 'none'
             }}>REGISTER</button>
           </div>
 
@@ -227,7 +224,7 @@ const Auth = ({ setToken }) => {
             <div style={{ position: 'relative' }}>
               <label style={{ 
                 fontSize: '0.7rem', 
-                color: focusedField === 'user' ? 'var(--neon-pink)' : 'var(--text-muted)', 
+                color: focusedField === 'user' ? '#5d2a8f' : 'var(--text-muted)', 
                 fontFamily: 'var(--font-heading)', 
                 letterSpacing: '2px',
                 display: 'block', marginBottom: '8px',
@@ -244,11 +241,11 @@ const Auth = ({ setToken }) => {
                 style={{ 
                   width: '100%', padding: '14px 16px', 
                   background: 'rgba(0,0,0,0.4)', 
-                  border: focusedField === 'user' ? '1px solid rgba(255,16,122,0.5)' : '1px solid rgba(255,255,255,0.08)',
+                  border: focusedField === 'user' ? '1px solid rgba(93,42,143,0.5)' : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '12px', color: '#fff', outline: 'none',
                   fontSize: '0.95rem', fontFamily: 'var(--font-body)',
                   transition: 'all 0.3s ease',
-                  boxShadow: focusedField === 'user' ? '0 0 20px rgba(255,16,122,0.15)' : 'none'
+                  boxShadow: focusedField === 'user' ? '0 0 20px rgba(93,42,143,0.15)' : 'none'
                 }} 
               />
             </div>
@@ -256,7 +253,7 @@ const Auth = ({ setToken }) => {
             <div style={{ position: 'relative' }}>
               <label style={{ 
                 fontSize: '0.7rem', 
-                color: focusedField === 'pass' ? 'var(--neon-blue)' : 'var(--text-muted)',
+                color: focusedField === 'pass' ? '#f3c623' : 'var(--text-muted)',
                 fontFamily: 'var(--font-heading)', 
                 letterSpacing: '2px',
                 display: 'block', marginBottom: '8px',
@@ -273,11 +270,11 @@ const Auth = ({ setToken }) => {
                 style={{ 
                   width: '100%', padding: '14px 16px', 
                   background: 'rgba(0,0,0,0.4)', 
-                  border: focusedField === 'pass' ? '1px solid rgba(0,229,255,0.5)' : '1px solid rgba(255,255,255,0.08)',
+                  border: focusedField === 'pass' ? '1px solid rgba(243,198,35,0.5)' : '1px solid rgba(255,255,255,0.08)',
                   borderRadius: '12px', color: '#fff', outline: 'none',
                   fontSize: '0.95rem', fontFamily: 'var(--font-body)',
                   transition: 'all 0.3s ease',
-                  boxShadow: focusedField === 'pass' ? '0 0 20px rgba(0,229,255,0.15)' : 'none'
+                  boxShadow: focusedField === 'pass' ? '0 0 20px rgba(243,198,35,0.15)' : 'none'
                 }} 
               />
             </div>
@@ -309,12 +306,12 @@ const Auth = ({ setToken }) => {
             <span 
               onClick={() => { setIsLogin(!isLogin); setError(''); }} 
               style={{ 
-                color: 'var(--neon-blue)', cursor: 'pointer', fontWeight: 'bold',
-                textShadow: '0 0 10px rgba(0,229,255,0.3)',
+                color: '#00c0f9', cursor: 'pointer', fontWeight: 'bold',
+                textShadow: '0 0 10px rgba(0,192,249,0.3)',
                 transition: 'all 0.3s'
               }}
-              onMouseEnter={e => e.target.style.textShadow = '0 0 20px rgba(0,229,255,0.6)'}
-              onMouseLeave={e => e.target.style.textShadow = '0 0 10px rgba(0,229,255,0.3)'}
+              onMouseEnter={e => e.target.style.textShadow = '0 0 20px rgba(0,192,249,0.6)'}
+              onMouseLeave={e => e.target.style.textShadow = '0 0 10px rgba(0,192,249,0.3)'}
             >
               {isLogin ? 'Register Here' : 'Login Here'}
             </span>

@@ -42,7 +42,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
 
     const player = flvjs.createPlayer({
       type: 'flv',
-      url: `http://${window.location.hostname}:8888/live/iiitn.flv`,
+      url: `http://${window.location.hostname}:8888/live/fofa.flv`,
       isLive: true,
     }, { enableStashBuffer: false, stashInitialSize: 128 });
     player.attachMediaElement(obsVideoRef.current);
@@ -125,7 +125,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
 
   const formatUptime = (s) => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
 
-  const obsSettings = { server: `rtmp://${window.location.hostname}:1935/live`, key: 'iiitn' };
+  const obsSettings = { server: `rtmp://${window.location.hostname}:1935/live`, key: 'fofa' };
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease', paddingBottom: '100px' }}>
