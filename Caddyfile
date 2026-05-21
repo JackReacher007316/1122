@@ -1,0 +1,16 @@
+# ─── Caddy Configuration for FOFA ─────────────────────────────────────────────
+# Set up automatic SSL and reverse proxy
+# ─────────────────────────────────────────────────────────────────────────────
+
+fofa.local { # Replace with your domain name (e.g., fofa.yourdomain.com)
+    # Serve the React frontend from the dist folder
+    root * /var/www/html/dist
+    file_server
+
+    # Reverse proxy API and WebSocket requests to the Node.js backend
+    reverse_proxy /api/* 127.0.0.1:3000
+    reverse_proxy /socket.io/* 127.0.0.1:3000
+
+    # Fallback to index.html for React SPA client-side routing
+    try_files {path} {path}/ /index.html
+}
