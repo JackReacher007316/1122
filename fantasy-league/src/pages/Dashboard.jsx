@@ -7,10 +7,21 @@ import { fetchAllScores, getScoreSummary, getSportById, SPORT_CATALOG } from '..
 
 const demoMatches = [
   {
+    id: 'demo-f1',
+    sport: 'f1',
+    status: 'LIVE',
+    teamA: 'Verstappen',
+    teamB: 'Norris',
+    contestCount: 54,
+    prize: 'INR 65K',
+    _count: { teams: 284 },
+    deadline: new Date(Date.now() + 1000 * 60 * 18).toISOString(),
+  },
+  {
     id: 'demo-football',
     sport: 'football',
     status: 'LIVE',
-    teamA: 'IIITN Wolves',
+    teamA: 'FOFA Wolves',
     teamB: 'Nagpur City',
     contestCount: 48,
     prize: 'INR 42K',
@@ -27,17 +38,6 @@ const demoMatches = [
     prize: 'INR 95K',
     _count: { teams: 340 },
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 3).toISOString(),
-  },
-  {
-    id: 'demo-f1',
-    sport: 'f1',
-    status: 'UPCOMING',
-    teamA: 'Verstappen',
-    teamB: 'Norris',
-    contestCount: 31,
-    prize: 'INR 28K',
-    _count: { teams: 116 },
-    deadline: new Date(Date.now() + 1000 * 60 * 88).toISOString(),
   },
   {
     id: 'demo-basketball',
@@ -59,7 +59,7 @@ function Countdown({ deadline }) {
     const tick = () => {
       const diff = new Date(deadline) - new Date();
       if (diff <= 0) {
-        setTimeLeft('Starting');
+        setTimeLeft('Racing Now');
         return;
       }
       const hours = Math.floor(diff / 3600000);
@@ -80,7 +80,7 @@ function sportMeta(sportId) {
   return SPORT_CATALOG.find((sport) => sport.id === sportId) || {
     id: sportId,
     label: sportId || 'Sport',
-    color: '#9b7bff',
+    color: '#5d2a8f',
     shape: 'default',
   };
 }
@@ -108,7 +108,7 @@ function ScorePreview({ score }) {
       <div className="score-meta">
         <strong>{score.competition}</strong>
         <br />
-        {score.venue || 'Global sports feed'}
+        {score.venue || 'Pitlane live telemetry'}
       </div>
     </div>
   );
@@ -140,15 +140,15 @@ function MatchCard({ match, index, navigate }) {
           {match.teamA} vs {match.teamB}
         </div>
         <div className="match-subtitle">
-          {completed ? 'Final contest' : isLive ? 'Scores updating in the live center' : <>Starts in <Countdown deadline={match.deadline} /></>}
+          {completed ? 'Final standings' : isLive ? 'Telemetry updates in the live center' : <>Green light in <Countdown deadline={match.deadline} /></>}
         </div>
       </div>
 
       <div className="prize-block">
-        <small>Prize pool</small>
+        <small>Contest Prize</small>
         <strong>{match.prize}</strong>
         <div className="match-subtitle" style={{ marginTop: 8 }}>
-          {match.contestCount || 0} contests, {match._count?.teams || 0} teams
+          {match.contestCount || 0} pools, {match._count?.teams || 0} teams registered
         </div>
       </div>
     </button>
@@ -190,7 +190,13 @@ export default function Dashboard({ activeSport, setActiveSport }) {
       fetchAllScores()
         .then((groups) => {
           if (!mounted) return;
-          setScores(groups.flatMap((group) => group.scores.slice(0, 1)));
+          // Sort to put F1 telemetry first if possible
+          const sortedScores = groups.flatMap((group) => group.scores).sort((a, b) => {
+            if (a.sportId === 'f1') return -1;
+            if (b.sportId === 'f1') return 1;
+            return 0;
+          });
+          setScores(sortedScores);
         })
         .finally(() => {
           if (mounted) setLoadingScores(false);
@@ -214,10 +220,10 @@ export default function Dashboard({ activeSport, setActiveSport }) {
 
   const stats = useMemo(
     () => [
-      { label: 'Live feeds', value: scores.filter((score) => score.statusState === 'in').length, color: '#20df7f' },
-      { label: 'Sports covered', value: SPORT_CATALOG.length, color: '#4bb7ff' },
-      { label: 'Fantasy contests', value: matches.reduce((sum, match) => sum + (match.contestCount || 0), 0), color: '#ff8a1c' },
-      { label: 'Prize pool', value: 'INR 1.5L+', color: '#f2c94c' },
+      { label: 'Live telemetry', value: scores.filter((score) => score.statusState === 'in').length + ' feeds', color: '#00c0f9' },
+      { label: 'Championships', value: SPORT_CATALOG.length, color: '#5d2a8f' },
+      { label: 'Grand Prix entries', value: matches.reduce((sum, match) => sum + (match.contestCount || 0), 0) + ' pools', color: '#ffffff' },
+      { label: 'Prize pool', value: 'INR 2.5L+', color: '#f3c623' },
     ],
     [matches, scores]
   );
@@ -228,13 +234,13 @@ export default function Dashboard({ activeSport, setActiveSport }) {
         <div>
           <div className="eyebrow">
             <Radio size={15} />
-            3D live sports command center
+            Monaco Grand Prix • Real Madrid Edition
           </div>
           <h1 className="hero-title">
-            Every sport. Every score. <span>In motion.</span>
+            Royal Victory. <span>Monaco Speed.</span>
           </h1>
           <p className="hero-copy">
-            A full 3D fantasy arena for football, cricket, basketball, F1, tennis, baseball, hockey, and NFL action with live score cards that refresh while you play.
+            Experience the legendary Monaco Street Circuit in high-fidelity 4D telemetry. Build your dream garage with Real Madrid precision, track live football matches, and command the pit lane.
           </p>
         </div>
 
@@ -242,10 +248,10 @@ export default function Dashboard({ activeSport, setActiveSport }) {
           <div className="hero-panel-stage">
             <div className="hero-score-chip">
               <div>
-                <strong>{liveScores[0]?.home || 'IIITN Wolves'} vs {liveScores[0]?.away || 'Nagpur City'}</strong>
-                <small>{liveScores[0]?.competition || 'Live arena broadcast'}</small>
+                <strong>{liveScores[0]?.home || 'Verstappen'} vs {liveScores[0]?.away || 'Norris'}</strong>
+                <small>{liveScores[0]?.competition || 'Monaco Grand Prix Telemetry'}</small>
               </div>
-              <b>{liveScores[0] ? getScoreSummary(liveScores[0]) : '2 - 1'}</b>
+              <b>{liveScores[0] ? getScoreSummary(liveScores[0]) : 'P1 vs P2'}</b>
             </div>
           </div>
         </div>
@@ -263,9 +269,9 @@ export default function Dashboard({ activeSport, setActiveSport }) {
       <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
 
       <div className="section-head">
-        <h2>Live Score Wall</h2>
+        <h2>Casino Corner Telemetry Wall</h2>
         <button className="ghost-button" type="button" onClick={() => navigate('/live')}>
-          Full live center <ArrowRight size={16} />
+          Pit Command Center <ArrowRight size={16} />
         </button>
       </div>
 
@@ -273,7 +279,7 @@ export default function Dashboard({ activeSport, setActiveSport }) {
         <div className="loading-state">
           <div>
             <div className="loading-spinner" />
-            <div>Finding live scores...</div>
+            <div>Receiving telemetry data...</div>
           </div>
         </div>
       ) : liveScores.length ? (
@@ -283,19 +289,19 @@ export default function Dashboard({ activeSport, setActiveSport }) {
           ))}
         </div>
       ) : (
-        <div className="empty-state">No scorecards for this sport right now.</div>
+        <div className="empty-state">No live telemetry available for this track right now.</div>
       )}
 
       <div className="section-head">
-        <h2>Fantasy Matches</h2>
-        <span className="section-note">{filteredMatches.length} contests available</span>
+        <h2>Monaco GP Pools</h2>
+        <span className="section-note">{filteredMatches.length} events active</span>
       </div>
 
       {loadingMatches ? (
         <div className="loading-state">
           <div>
             <div className="loading-spinner" />
-            <div>Loading matches...</div>
+            <div>Loading pit board...</div>
           </div>
         </div>
       ) : (
@@ -303,7 +309,7 @@ export default function Dashboard({ activeSport, setActiveSport }) {
           {liveMatches.length > 0 && (
             <section>
               <div className="section-head">
-                <h2>Live Now</h2>
+                <h2>Cars on Track</h2>
                 <span className="live-badge">Live</span>
               </div>
               <div className="match-list">
@@ -317,8 +323,8 @@ export default function Dashboard({ activeSport, setActiveSport }) {
           {upcomingMatches.length > 0 && (
             <section>
               <div className="section-head">
-                <h2>Upcoming</h2>
-                <span className="section-note">Build teams before lock</span>
+                <h2>Qualifying & Warmups</h2>
+                <span className="section-note">Tune cars before lock</span>
               </div>
               <div className="match-list">
                 {upcomingMatches.map((match, index) => (
@@ -331,8 +337,8 @@ export default function Dashboard({ activeSport, setActiveSport }) {
           {completedMatches.length > 0 && (
             <section>
               <div className="section-head">
-                <h2>Completed</h2>
-                <span className="section-note">Review results</span>
+                <h2>Official Podium Results</h2>
+                <span className="section-note">Review podium and points</span>
               </div>
               <div className="match-list">
                 {completedMatches.map((match, index) => (
@@ -342,7 +348,7 @@ export default function Dashboard({ activeSport, setActiveSport }) {
             </section>
           )}
 
-          {!filteredMatches.length && <div className="empty-state">No fantasy matches for this sport yet.</div>}
+          {!filteredMatches.length && <div className="empty-state">No fantasy contests scheduled for this Grand Prix.</div>}
         </>
       )}
     </div>

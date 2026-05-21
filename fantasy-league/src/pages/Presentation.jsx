@@ -7,7 +7,7 @@ import {
 const slides = [
   {
     id: 'intro',
-    title: 'IIITN FANTASY ARENA',
+    title: 'FOFA FANTASY ARENA',
     subtitle: 'The Future of Multi-Sport Fantasy',
     description: 'A cutting-edge, Neo-Tokyo inspired platform bridging the gap between physical sports and digital excellence.',
     icon: <Zap size={80} />,
@@ -142,7 +142,7 @@ const Presentation = () => {
             <Zap size={20} color="#fff" />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.2rem', letterSpacing: '2px', fontFamily: 'var(--font-heading)', margin: 0 }}>IIITN ARENA</h1>
+            <h1 style={{ fontSize: '1.2rem', letterSpacing: '2px', fontFamily: 'var(--font-heading)', margin: 0 }}>FOFA ARENA</h1>
             <div style={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: '1px' }}>SYSTEM PRESENTATION v1.0.4</div>
           </div>
         </div>

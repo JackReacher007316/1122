@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'iiitn-backend',
+      name: 'fofa-backend',
       script: 'server.js',
       cwd: './backend',
       env: {
@@ -18,9 +18,9 @@ module.exports = {
       exp_backoff_restart_delay: 100
     },
     {
-      name: 'iiitn-tunnel',
-      script: './fantasy-league/cloudflared.exe',
-      args: 'tunnel --url http://localhost:3000',
+      name: 'fofa-tunnel',
+      script: 'cloudflared',
+      args: 'tunnel --protocol http2 --url http://localhost:3000',
       cwd: './',
       watch: false,
       autorestart: true,

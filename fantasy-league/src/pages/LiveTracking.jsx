@@ -121,12 +121,12 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
     <div className="page-shell">
       <div className="toolbar">
         <div>
-          <div className="eyebrow">All sports live desk</div>
+          <div className="eyebrow">Monaco Grand Prix Control Room</div>
           <h1 className="hero-title" style={{ fontSize: '3rem', marginBottom: 10 }}>
-            Live scores that keep moving.
+            Pit Wall Telemetry Desk
           </h1>
           <p className="hero-copy">
-            Scores refresh every 30 seconds across football, cricket, basketball, F1, tennis, baseball, hockey, and NFL.
+            Dynamic telemetry feeds refresh every 30 seconds. Track Real Madrid football matchups alongside F1 Monaco Grand Prix speed indicators.
           </p>
         </div>
         <div className="toolbar-actions">
@@ -147,10 +147,10 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
 
       <div className="stat-grid">
         {[
-          { label: 'Live now', value: totals.live, color: '#20df7f' },
-          { label: 'Upcoming', value: totals.upcoming, color: '#4bb7ff' },
-          { label: 'Final', value: totals.final, color: '#f2c94c' },
-          { label: 'Sports', value: visibleGroups.length, color: '#ff8a1c' },
+          { label: 'Live now', value: totals.live, color: '#00c0f9' },
+          { label: 'Upcoming', value: totals.upcoming, color: '#f3c623' },
+          { label: 'Final', value: totals.final, color: '#ffffff' },
+          { label: 'Sports', value: visibleGroups.length, color: '#5d2a8f' },
         ].map((stat) => (
           <div key={stat.label} className="stat-card">
             <div className="stat-label">{stat.label}</div>
@@ -169,7 +169,7 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
       ) : (
         <>
           <div className="section-head">
-            <h2>Sports Hub</h2>
+            <h2>Monaco GP & RM Hub</h2>
             <span className="section-note">Choose one for a full score page</span>
           </div>
           <div className="hub-grid">
@@ -179,7 +179,7 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
           </div>
 
           <div className="section-head">
-            <h2>Score Wall</h2>
+            <h2>Paddock Telemetry Stream</h2>
             <span className="section-note">{allScores.length} cards</span>
           </div>
 
