@@ -27,6 +27,17 @@ module.exports = {
       max_restarts: 50,
       restart_delay: 5000,
       exp_backoff_restart_delay: 100
+    },
+    {
+      name: 'fofa-localtunnel',
+      script: 'localtunnel.js',
+      cwd: './',
+      watch: false,
+      autorestart: true,
+      max_restarts: 50,
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 100
     }
   ]
 };
+
