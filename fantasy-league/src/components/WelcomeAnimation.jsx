@@ -1,215 +1,375 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sparkles } from '@react-three/drei';
-
-function IntroF1Car() {
-  const ref = useRef();
-  const wheelsRef = useRef([]);
-
-  useFrame((state, delta) => {
-    if (!ref.current) return;
-    ref.current.rotation.y += delta * 0.45;
-    ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.8) * 0.12;
-    ref.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 2.2) * 0.015);
-    
-    wheelsRef.current.forEach((wheel) => {
-      if (wheel) wheel.rotation.z += delta * 6;
-    });
-  });
-
-  return (
-    <Float speed={1.5} rotationIntensity={0.25} floatIntensity={0.4}>
-      <group ref={ref}>
-        {/* Chassis - Real Madrid White */}
-        <mesh castShadow>
-          <boxGeometry args={[1.8, 0.22, 0.58]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.15} metalness={0.8} emissive="#5d2a8f" emissiveIntensity={0.12} />
-        </mesh>
-
-        {/* Nose cone - Real Madrid White */}
-        <mesh position={[1.05, -0.02, 0]} rotation={[0, 0, -Math.PI / 18]} castShadow>
-          <boxGeometry args={[0.7, 0.15, 0.3]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.15} metalness={0.8} />
-        </mesh>
-
-        {/* Cockpit / Airbox - Royal Purple */}
-        <mesh position={[-0.1, 0.24, 0]} castShadow>
-          <boxGeometry args={[0.45, 0.28, 0.24]} />
-          <meshStandardMaterial color="#5d2a8f" roughness={0.3} metalness={0.6} />
-        </mesh>
-
-        {/* Halo - Royal Purple */}
-        <mesh position={[0.22, 0.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.14, 0.035, 8, 24, Math.PI]} />
-          <meshStandardMaterial color="#5d2a8f" roughness={0.6} />
-        </mesh>
-
-        {/* Front Wing - Casino Gold */}
-        <mesh position={[1.35, -0.06, 0]} castShadow>
-          <boxGeometry args={[0.2, 0.04, 1.1]} />
-          <meshStandardMaterial color="#f3c623" roughness={0.3} metalness={0.7} />
-        </mesh>
-
-        {/* Rear Wing - Casino Gold */}
-        <mesh position={[-0.85, 0.28, 0]} castShadow>
-          <boxGeometry args={[0.18, 0.03, 0.85]} />
-          <meshStandardMaterial color="#f3c623" roughness={0.3} metalness={0.7} />
-        </mesh>
-
-        {/* Sidepods - Royal Purple */}
-        <mesh position={[0.1, 0.02, 0.36]} castShadow>
-          <boxGeometry args={[0.9, 0.2, 0.18]} />
-          <meshStandardMaterial color="#5d2a8f" roughness={0.2} metalness={0.75} />
-        </mesh>
-        <mesh position={[0.1, 0.02, -0.36]} castShadow>
-          <boxGeometry args={[0.9, 0.2, 0.18]} />
-          <meshStandardMaterial color="#5d2a8f" roughness={0.2} metalness={0.75} />
-        </mesh>
-
-        {/* Spinning Wheels */}
-        {/* Front Left */}
-        <mesh
-          ref={(el) => (wheelsRef.current[0] = el)}
-          position={[0.72, -0.1, 0.46]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[0.26, 0.26, 0.26, 24]} />
-          <meshStandardMaterial color="#0b0f14" roughness={0.85} metalness={0.15} />
-        </mesh>
-        {/* Front Right */}
-        <mesh
-          ref={(el) => (wheelsRef.current[1] = el)}
-          position={[0.72, -0.1, -0.46]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[0.26, 0.26, 0.26, 24]} />
-          <meshStandardMaterial color="#0b0f14" roughness={0.85} metalness={0.15} />
-        </mesh>
-        {/* Rear Left */}
-        <mesh
-          ref={(el) => (wheelsRef.current[2] = el)}
-          position={[-0.6, -0.06, 0.48]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[0.3, 0.3, 0.32, 24]} />
-          <meshStandardMaterial color="#0b0f14" roughness={0.85} metalness={0.15} />
-        </mesh>
-        {/* Rear Right */}
-        <mesh
-          ref={(el) => (wheelsRef.current[3] = el)}
-          position={[-0.6, -0.06, -0.48]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[0.3, 0.3, 0.32, 24]} />
-          <meshStandardMaterial color="#0b0f14" roughness={0.85} metalness={0.15} />
-        </mesh>
-
-        {/* Orbit Ring */}
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[1.5, 0.02, 10, 80]} />
-          <meshBasicMaterial color="#f3c623" transparent opacity={0.45} />
-        </mesh>
-      </group>
-    </Float>
-  );
-}
-
-function IntroLights({ phase }) {
-  const lightsRef = useRef([]);
-
-  useFrame(() => {
-    lightsRef.current.forEach((light, index) => {
-      if (!light) return;
-      if (phase >= 5) {
-        light.material.color.setHex(0x111111);
-        light.material.emissive.setHex(0x000000);
-      } else if (phase > index) {
-        light.material.color.setHex(0xf3c623); // Royal Gold start lights
-        light.material.emissive.setHex(0xf3c623);
-      } else {
-        light.material.color.setHex(0x222222);
-        light.material.emissive.setHex(0x000000);
-      }
-    });
-  });
-
-  return (
-    <group position={[0, 1.8, 0]}>
-      {/* Lights backing board */}
-      <mesh position={[0, 0, -0.15]}>
-        <boxGeometry args={[3.2, 0.38, 0.15]} />
-        <meshStandardMaterial color="#141416" roughness={0.7} />
-      </mesh>
-
-      {/* 5 spheres representing the starting gantry lights */}
-      {Array.from({ length: 5 }).map((_, index) => (
-        <group key={index} position={[-1.1 + index * 0.55, 0, 0]}>
-          <mesh ref={(el) => (lightsRef.current[index] = el)}>
-            <sphereGeometry args={[0.12, 16, 16]} />
-            <meshStandardMaterial color="#222222" roughness={0.2} metalness={0.8} emissive="#000" emissiveIntensity={2.5} />
-          </mesh>
-          {phase > index && phase < 5 && (
-            <pointLight color="#f3c623" intensity={0.9} distance={4} />
-          )}
-        </group>
-      ))}
-    </group>
-  );
-}
+import React, { useEffect, useState, useRef } from 'react';
 
 export default function WelcomeAnimation() {
   const [show, setShow] = useState(() => !sessionStorage.getItem('arena_intro_seen'));
-  const [phase, setPhase] = useState(0);
-  const [fadeOut, setFadeOut] = useState(false);
+  const [stage, setStage] = useState('fade-in'); // 'fade-in', 'zoom-in', 'dissolve', 'done'
+  const [hasSoundPlayed, setHasSoundPlayed] = useState(false);
+  const [showAudioTip, setShowAudioTip] = useState(true);
+  const audioCtxRef = useRef(null);
+
+  // Dynamically load Bebas Neue Google Font
+  useEffect(() => {
+    if (!show) return;
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    return () => {
+      try {
+        document.head.removeChild(link);
+      } catch (e) {}
+    };
+  }, [show]);
+
+  // Synthesize Netflix "Ta-Dum" Sound
+  const playTaDum = () => {
+    if (hasSoundPlayed) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      
+      const ctx = new AudioContext();
+      audioCtxRef.current = ctx;
+
+      // Double-strike synth notes: "Ta" then "Dum"
+      const now = ctx.currentTime;
+
+      // --- STRIKE 1: "Ta" (low pluck, subtle) ---
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(90, now); // F#2
+      osc1.frequency.exponentialRampToValueAtTime(70, now + 0.35);
+
+      gain1.gain.setValueAtTime(0.001, now);
+      gain1.gain.linearRampToValueAtTime(0.4, now + 0.05);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      // --- STRIKE 2: "Dum" (deep booming sub and mid synth) ---
+      const osc2 = ctx.createOscillator(); // Sub frequency
+      const osc3 = ctx.createOscillator(); // Mid sawtooth frequency for texture
+      const gain2 = ctx.createGain();
+
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(55, now + 0.15); // A1
+      osc2.frequency.exponentialRampToValueAtTime(40, now + 0.8);
+
+      osc3.type = 'sawtooth';
+      osc3.frequency.setValueAtTime(110, now + 0.15); // A2
+      osc3.frequency.exponentialRampToValueAtTime(65, now + 0.7);
+
+      gain2.gain.setValueAtTime(0.001, now);
+      gain2.gain.setValueAtTime(0.001, now + 0.15);
+      gain2.gain.linearRampToValueAtTime(0.7, now + 0.22);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+
+      // Reverb / Shimmer high tail
+      const noiseOsc = ctx.createOscillator();
+      const noiseGain = ctx.createGain();
+      noiseOsc.type = 'sawtooth';
+      noiseOsc.frequency.setValueAtTime(220, now + 0.18);
+      noiseOsc.frequency.setValueAtTime(440, now + 0.3);
+      noiseGain.gain.setValueAtTime(0.001, now);
+      noiseGain.gain.setValueAtTime(0.001, now + 0.18);
+      noiseGain.gain.linearRampToValueAtTime(0.12, now + 0.28);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+      // Lowpass Filter to make it warm, dark and cinematic
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(280, now);
+      filter.frequency.exponentialRampToValueAtTime(90, now + 0.9);
+
+      // Connections
+      osc1.connect(gain1);
+      gain1.connect(filter);
+
+      osc2.connect(gain2);
+      osc3.connect(gain2);
+      gain2.connect(filter);
+
+      noiseOsc.connect(noiseGain);
+      noiseGain.connect(filter);
+
+      filter.connect(ctx.destination);
+
+      // Start oscillators
+      osc1.start(now);
+      osc1.stop(now + 0.4);
+
+      osc2.start(now + 0.15);
+      osc2.stop(now + 1.5);
+
+      osc3.start(now + 0.15);
+      osc3.stop(now + 1.5);
+
+      noiseOsc.start(now + 0.18);
+      noiseOsc.stop(now + 1.3);
+
+      setHasSoundPlayed(true);
+      setShowAudioTip(false);
+    } catch (e) {
+      console.warn("Web Audio API was blocked or failed:", e);
+    }
+  };
 
   useEffect(() => {
     if (!show) return undefined;
-    const timers = [
-      setTimeout(() => setPhase(1), 300),
-      setTimeout(() => setPhase(2), 900),
-      setTimeout(() => setPhase(3), 1500),
-      setTimeout(() => setPhase(4), 2100),
-      setTimeout(() => setPhase(5), 2700), // Lights out!
-      setTimeout(() => setFadeOut(true), 3500),
-      setTimeout(() => {
-        sessionStorage.setItem('arena_intro_seen', 'true');
-        setShow(false);
-      }, 4500),
-    ];
 
-    return () => timers.forEach(clearTimeout);
+    // Attempt autoplay sound (might be blocked by browser)
+    const playAttemptTimer = setTimeout(() => {
+      playTaDum();
+    }, 150);
+
+    // Stage 1: Logo appears and starts zooming (1.2s)
+    const zoomTimer = setTimeout(() => {
+      setStage('zoom-in');
+    }, 1200);
+
+    // Stage 2: Spectrum lines dissolve (2.4s)
+    const dissolveTimer = setTimeout(() => {
+      setStage('dissolve');
+    }, 2400);
+
+    // Stage 3: Transition finishes (3.4s)
+    const cleanupTimer = setTimeout(() => {
+      sessionStorage.setItem('arena_intro_seen', 'true');
+      setShow(false);
+      setStage('done');
+    }, 3400);
+
+    return () => {
+      clearTimeout(playAttemptTimer);
+      clearTimeout(zoomTimer);
+      clearTimeout(dissolveTimer);
+      clearTimeout(cleanupTimer);
+    };
   }, [show]);
 
   if (!show) return null;
 
   return (
-    <div className={`intro-overlay ${fadeOut ? 'is-leaving' : ''}`}>
-      <div className="intro-canvas">
-        <Suspense fallback={null}>
-          <Canvas camera={{ position: [0, 0.2, 4.5], fov: 48 }} gl={{ antialias: true, alpha: true }} dpr={[1, 1.5]}>
-            <Sparkles count={55} scale={[6, 4, 4]} size={1.4} speed={0.25} color="#f3c623" opacity={0.34} />
-            <Sparkles count={25} scale={[6, 4, 4]} size={1.0} speed={0.15} color="#5d2a8f" opacity={0.18} />
-            
-            <IntroF1Car />
-            <IntroLights phase={phase} />
+    <div 
+      className={`netflix-intro-overlay ${stage === 'dissolve' ? 'is-dissolving' : ''}`} 
+      onClick={playTaDum}
+      role="button"
+      tabIndex={0}
+      aria-label="FOFA Arena Cinematic Intro"
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="netflix-intro-content">
+        {/* Netflix-style Bold Cinematic Text Logo */}
+        <h1 className={`netflix-logo-text ${stage}`}>
+          FOFA
+        </h1>
 
-            <ambientLight intensity={0.26} />
-            <directionalLight position={[3, 3, 5]} color="#ffffff" intensity={1.4} />
-            <pointLight position={[-2.8, -1.5, 2]} color="#5d2a8f" intensity={1.6} distance={10} />
-            <pointLight position={[3, 1.8, 2]} color="#00c0f9" intensity={1.1} distance={10} />
-          </Canvas>
-        </Suspense>
+        {/* Exploding vertical spectrum light bars */}
+        {stage !== 'fade-in' && (
+          <div className="spectrum-bars">
+            {Array.from({ length: 42 }).map((_, i) => {
+              // Cycle colors of merged giants: Netflix Red, Spotify Green, Prime Blue, Hotstar Gold
+              const colors = ['#e50914', '#1db954', '#00a8e1', '#ffcc00'];
+              const color = colors[i % colors.length];
+              const left = (i * 2.4); // span across screen
+              const width = 2 + Math.random() * 5; // varied widths
+              const height = 50 + Math.random() * 50; // varied heights
+              const delay = Math.random() * 0.25;
+              const duration = 0.4 + Math.random() * 0.5;
+              return (
+                <div 
+                  key={i} 
+                  className={`spectrum-bar ${stage === 'dissolve' ? 'fade-out' : ''}`}
+                  style={{
+                    left: `${left}%`,
+                    width: `${width}px`,
+                    height: `${height}vh`,
+                    background: `linear-gradient(180deg, transparent, ${color}, transparent)`,
+                    animationDelay: `${delay}s`,
+                    animationDuration: `${duration}s`,
+                    boxShadow: `0 0 20px ${color}`
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Sub-note overlay prompting user for audio */}
+        {showAudioTip && !hasSoundPlayed && (
+          <div className="audio-tip">
+            Tap anywhere for sound 🔊
+          </div>
+        )}
       </div>
 
-      <div className="intro-copy">
-        <div className={`intro-kicker ${phase >= 1 ? 'is-visible' : ''}`}>
-          {phase >= 5 ? 'HALA MADRID! LIGHTS OUT AND AWAY WE GO!' : 'MONACO GP x REAL MADRID'}
-        </div>
-        <h1 className={phase >= 2 ? 'is-visible' : ''}>MONACO GRAND PRIX</h1>
-        <div className={`intro-line ${phase >= 3 ? 'is-visible' : ''}`}>
-          <span />
-        </div>
-      </div>
+      <style>{`
+        .netflix-intro-overlay {
+          position: fixed;
+          inset: 0;
+          background: #000000;
+          z-index: 99999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+          user-select: none;
+        }
+
+        .netflix-intro-overlay.is-dissolving {
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .netflix-intro-content {
+          position: relative;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Bold red cinematic text using Bebas Neue */
+        .netflix-logo-text {
+          font-family: 'Bebas Neue', Impact, sans-serif;
+          font-size: 10rem;
+          font-weight: normal;
+          color: #e50914; /* Netflix Red */
+          text-transform: uppercase;
+          letter-spacing: 12px;
+          margin: 0;
+          z-index: 10;
+          text-shadow: 
+            0 0 10px rgba(229, 9, 20, 0.8), 
+            0 0 30px rgba(229, 9, 20, 0.6), 
+            0 0 60px rgba(229, 9, 20, 0.4), 
+            0 0 100px rgba(229, 9, 20, 0.2);
+          transform: scale(0.85);
+          opacity: 0;
+          filter: blur(10px);
+          animation: logoReveal 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @media (max-width: 768px) {
+          .netflix-logo-text {
+            font-size: 6rem;
+            letter-spacing: 6px;
+          }
+        }
+
+        @keyframes logoReveal {
+          0% {
+            opacity: 0;
+            filter: blur(15px);
+            transform: scale(0.75);
+          }
+          100% {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.0);
+          }
+        }
+
+        /* Zoom-in stage */
+        .netflix-logo-text.zoom-in, .netflix-logo-text.dissolve {
+          animation: logoZoom 1.4s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+        }
+
+        @keyframes logoZoom {
+          0% {
+            transform: scale(1.0);
+            filter: blur(0);
+            opacity: 1;
+          }
+          30% {
+            filter: blur(2px);
+          }
+          100% {
+            transform: scale(22);
+            filter: blur(18px);
+            opacity: 0;
+          }
+        }
+
+        /* Spectrum lines container */
+        .spectrum-bars {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 5;
+          pointer-events: none;
+        }
+
+        /* Single spectrum bar */
+        .spectrum-bar {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          opacity: 0;
+          mix-blend-mode: screen;
+          animation: barFlash 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+
+        @keyframes barFlash {
+          0% {
+            opacity: 0;
+            transform: translateY(-50%) scaleY(0.05);
+          }
+          55% {
+            opacity: 0.95;
+            transform: translateY(-50%) scaleY(1.3);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(-50%) scaleY(1.0);
+          }
+        }
+
+        .spectrum-bar.fade-out {
+          animation: barFade 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes barFade {
+          0% {
+            opacity: 1;
+            transform: translateY(-50%) scaleY(1.0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-50%) scaleY(0.01) scaleX(0.1);
+            filter: blur(10px);
+          }
+        }
+
+        /* Audio tip overlay at the bottom */
+        .audio-tip {
+          position: absolute;
+          bottom: 12vh;
+          left: 50%;
+          transform: translateX(-50%);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.5);
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          z-index: 20;
+          animation: pulseTip 2s infinite ease-in-out;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 8px 16px;
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(5px);
+          pointer-events: none;
+        }
+
+        @keyframes pulseTip {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.9; }
+        }
+      `}</style>
     </div>
   );
 }

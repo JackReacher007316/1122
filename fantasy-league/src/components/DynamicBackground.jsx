@@ -18,10 +18,6 @@ const BACKGROUND_IMAGES = {
   cricket: [
     'https://images.unsplash.com/photo-1499591934245-40b55745b905?q=80&w=2560&auto=format&fit=crop', // Sunset landscape
     'https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2560&auto=format&fit=crop', // Dark moody cricket field
-  ],
-  hackathon: [
-    'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2560&auto=format&fit=crop', // Cyber Matrix code
-    'https://images.unsplash.com/photo-1510511459012-926b522a154e?q=80&w=2560&auto=format&fit=crop', // Tokyo Akihabara tech
   ]
 };
 

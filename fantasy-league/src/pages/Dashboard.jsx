@@ -1,7 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Radio } from 'lucide-react';
-import Icon3D from '../components/Icon3D';
+import { 
+  ArrowRight, 
+  Radio, 
+  Tv, 
+  Users, 
+  TrendingUp, 
+  Trophy, 
+  Flag, 
+  PlayCircle, 
+  Calendar 
+} from 'lucide-react';
 import SportTabs from '../components/SportTabs';
 import { fetchAllScores, getScoreSummary, getSportById, SPORT_CATALOG } from '../data/liveSports';
 
@@ -52,6 +61,49 @@ const demoMatches = [
   },
 ];
 
+const carouselSlides = [
+  {
+    id: 'slide-cricket',
+    title: 'India vs Pakistan Live Match',
+    subtitle: 'T20 CHAMPIONS TROPHY • LIVE STREAM',
+    desc: 'Watch the ultimate cricket clash live in high-fidelity 4D telemetry. Join active watch party rooms and compete on the global leaderboard.',
+    cta: 'Watch Live Now',
+    path: '/watch-live',
+    image: 'https://images.unsplash.com/photo-1531415080290-bc98529c113a?auto=format&fit=crop&q=80&w=1200',
+    tag: 'CRICKET'
+  },
+  {
+    id: 'slide-f1',
+    title: 'Silverstone Grand Prix race control',
+    subtitle: 'FORMULA 1 TELEMETRY • REPLAY STREAM',
+    desc: 'Take command of the pit wall. Monitor live telemetry, track gap intervals, and draft your ultimate fantasy driver lineup.',
+    cta: 'Enter Race Control',
+    path: '/live',
+    image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=1200',
+    tag: 'F1 RACING'
+  },
+  {
+    id: 'slide-football',
+    title: 'London Derby: Arsenal vs Chelsea',
+    subtitle: 'FOOTBALL CHAMPIONSHIP • LIVE STREAM',
+    desc: 'Catch every pass and tactic in real-time. Embed streams in your watch party room and co-watch with up to 12 friends.',
+    cta: 'Watch Now',
+    path: '/live/football',
+    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=1200',
+    tag: 'FOOTBALL'
+  },
+  {
+    id: 'slide-fantasy',
+    title: 'Draft your dream lineup',
+    subtitle: 'FOFA FANTASY LEAGUE • STAGED CONTESTS',
+    desc: 'Put your strategy to the test. Draft drivers, batsmen, and strikers. Earn points based on real telemetry data and top the leaderboard.',
+    cta: 'Create Fantasy Team',
+    path: '/create-team',
+    image: 'https://images.unsplash.com/photo-1540747737956-37872404a82a?auto=format&fit=crop&q=80&w=1200',
+    tag: 'FANTASY GARAGE'
+  }
+];
+
 function Countdown({ deadline }) {
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -76,95 +128,128 @@ function Countdown({ deadline }) {
   return <span>{timeLeft}</span>;
 }
 
-function sportMeta(sportId) {
-  return SPORT_CATALOG.find((sport) => sport.id === sportId) || {
-    id: sportId,
-    label: sportId || 'Sport',
-    color: '#5d2a8f',
-    shape: 'default',
-  };
-}
-
-function ScorePreview({ score }) {
+function ScorePreview({ score, setActiveMatch, navigate }) {
   const sport = getSportById(score.sportId);
-  const statusClass = score.statusState === 'in' ? 'is-live' : '';
+  const isLive = score.statusState === 'in';
+  const destination = `/live/${score.sportId}`;
 
   return (
-    <div className="score-card" style={{ '--sport-color': sport.color }}>
-      <div className="score-topline">
-        <span className="sport-pill">
-          <Icon3D color={sport.color} shape={sport.shape} size={24} active={score.statusState === 'in'} />
-          {sport.label}
-        </span>
-        <span className={`status-pill ${statusClass}`}>{score.statusText || 'Scheduled'}</span>
-      </div>
+    <div 
+      className="netflix-card-wrapper" 
+      onClick={() => {
+        if (setActiveMatch) {
+          setActiveMatch({
+            title: `${score.home} vs ${score.away}`,
+            teamALogo: '',
+            status: isLive ? 'LIVE' : 'UPCOMING',
+            venue: score.venue,
+          });
+        }
+        navigate(destination);
+      }}
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="score-card" style={{ width: '310px' }}>
+        <div className="score-topline">
+          <span className="sport-pill">
+            {score.sportId === 'cricket' && <Trophy size={14} style={{ color: 'var(--hotstar-gold)' }} />}
+            {score.sportId === 'f1' && <Flag size={14} style={{ color: 'var(--netflix-red)' }} />}
+            {score.sportId === 'football' && <PlayCircle size={14} style={{ color: 'var(--spotify-green)' }} />}
+            {score.sportId !== 'cricket' && score.sportId !== 'f1' && score.sportId !== 'football' && <Tv size={14} />}
+            {sport.label}
+          </span>
+          <span className={`status-pill ${isLive ? 'is-live' : ''}`}>
+            {isLive ? 'Live' : 'Scheduled'}
+          </span>
+        </div>
 
-      <div className="teams-row">
-        <div className="team-name">{score.home}</div>
-        <div className="score-number">{getScoreSummary(score)}</div>
-        <div className="team-name">{score.away}</div>
-      </div>
+        <div className="teams-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', margin: '16px 0 8px' }}>
+          <div className="team-name" style={{ fontSize: '0.85rem', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{score.home}</div>
+          <div className="score-number" style={{ fontSize: '1.15rem' }}>{getScoreSummary(score)}</div>
+          <div className="team-name" style={{ fontSize: '0.85rem', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{score.away}</div>
+        </div>
 
-      <div className="score-meta">
-        <strong>{score.competition}</strong>
-        <br />
-        {score.venue || 'Pitlane live telemetry'}
+        <div className="score-meta" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          <strong>{score.competition}</strong>
+          <div style={{ marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {score.venue || 'Pitlane live telemetry'}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function MatchCard({ match, index, navigate }) {
-  const sport = sportMeta(match.sport);
+function MatchCard({ match, navigate, setActiveMatch }) {
   const isLive = match.status === 'LIVE';
   const completed = match.status === 'COMPLETED';
   const isDemo = String(match.id).startsWith('demo-');
   const destination = isDemo ? `/live/${match.sport}` : `/match/${match.id}`;
 
   return (
-    <button
-      type="button"
-      className="match-card"
-      style={{ '--sport-color': sport.color, animationDelay: `${index * 70}ms` }}
-      onClick={() => navigate(destination)}
+    <div 
+      className="netflix-card-wrapper" 
+      onClick={() => {
+        if (setActiveMatch) setActiveMatch(match);
+        navigate(destination);
+      }} 
+      style={{ cursor: 'pointer' }}
     >
-      <div>
+      <div className="match-card" style={{ width: '310px' }}>
         <div className="score-topline">
           <span className="sport-pill">
-            <Icon3D color={sport.color} shape={sport.shape} size={24} active={isLive} />
-            {sport.label}
+            {match.sport === 'cricket' && <Trophy size={14} style={{ color: 'var(--hotstar-gold)' }} />}
+            {match.sport === 'f1' && <Flag size={14} style={{ color: 'var(--netflix-red)' }} />}
+            {match.sport === 'football' && <PlayCircle size={14} style={{ color: 'var(--spotify-green)' }} />}
+            {match.sport !== 'cricket' && match.sport !== 'f1' && match.sport !== 'football' && <Tv size={14} />}
+            {match.sport.toUpperCase()}
           </span>
-          {isLive && <span className="live-badge">Live</span>}
+          {isLive && <span className="status-pill is-live">Live</span>}
         </div>
-        <div className="match-title">
-          {match.teamA} vs {match.teamB}
-        </div>
-        <div className="match-subtitle">
-          {completed ? 'Final standings' : isLive ? 'Telemetry updates in the live center' : <>Green light in <Countdown deadline={match.deadline} /></>}
-        </div>
-      </div>
 
-      <div className="prize-block">
-        <small>Contest Prize</small>
-        <strong>{match.prize}</strong>
-        <div className="match-subtitle" style={{ marginTop: 8 }}>
-          {match.contestCount || 0} pools, {match._count?.teams || 0} teams registered
+        <div className="match-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
+          <span style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: match.sport === 'f1' ? 'var(--netflix-red)' : match.sport === 'cricket' ? 'var(--hotstar-gold)' : 'var(--spotify-green)',
+            display: 'inline-block',
+            boxShadow: `0 0 6px ${match.sport === 'f1' ? 'var(--netflix-red)' : match.sport === 'cricket' ? 'var(--hotstar-gold)' : 'var(--spotify-green)'}`
+          }} />
+          <span style={{ fontSize: '0.95rem' }}>{match.teamA} vs {match.teamB}</span>
+        </div>
+
+        <div className="match-subtitle">
+          {completed ? 'Final standings' : isLive ? 'Telemetry updates live' : <>Starts in <Countdown deadline={match.deadline} /></>}
+        </div>
+
+        <div className="prize-block">
+          <small>Contest Prize</small>
+          <strong>{match.prize}</strong>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
-export default function Dashboard({ activeSport, setActiveSport }) {
+export default function Dashboard({ activeSport, setActiveSport, setActiveMatch }) {
   const [matches, setMatches] = useState([]);
   const [scores, setScores] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
   const [loadingScores, setLoadingScores] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
+
+  // Auto cycle carousel slides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
-
     fetch('/api/matches')
       .then((response) => response.json())
       .then((data) => {
@@ -185,12 +270,10 @@ export default function Dashboard({ activeSport, setActiveSport }) {
 
   useEffect(() => {
     let mounted = true;
-
     const loadScores = () => {
       fetchAllScores()
         .then((groups) => {
           if (!mounted) return;
-          // Sort to put F1 telemetry first if possible
           const sortedScores = groups.flatMap((group) => group.scores).sort((a, b) => {
             if (a.sportId === 'f1') return -1;
             if (b.sportId === 'f1') return 1;
@@ -218,60 +301,119 @@ export default function Dashboard({ activeSport, setActiveSport }) {
   const completedMatches = filteredMatches.filter((match) => match.status === 'COMPLETED');
   const liveScores = scores.filter((score) => activeSport === 'all' || score.sportId === activeSport);
 
-  const stats = useMemo(
-    () => [
-      { label: 'Live telemetry', value: scores.filter((score) => score.statusState === 'in').length + ' feeds', color: '#00c0f9' },
-      { label: 'Championships', value: SPORT_CATALOG.length, color: '#5d2a8f' },
-      { label: 'Grand Prix entries', value: matches.reduce((sum, match) => sum + (match.contestCount || 0), 0) + ' pools', color: '#ffffff' },
-      { label: 'Prize pool', value: 'INR 2.5L+', color: '#f3c623' },
-    ],
-    [matches, scores]
-  );
+  const slide = carouselSlides[currentSlide];
 
   return (
     <div className="page-shell">
-      <section className="hero-layout">
-        <div>
-          <div className="eyebrow">
-            <Radio size={15} />
-            Monaco Grand Prix • Real Madrid Edition
+      {/* Netflix Cinematic Hero Banner */}
+      <section className="netflix-hero" style={{ backgroundImage: `url(${slide.image})` }}>
+        <div className="netflix-hero-overlay" />
+        <div className="netflix-hero-content">
+          <div className="netflix-hero-badge">
+            <Radio size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+            {slide.tag} • {slide.subtitle}
           </div>
-          <h1 className="hero-title">
-            Royal Victory. <span>Monaco Speed.</span>
-          </h1>
-          <p className="hero-copy">
-            Experience the legendary Monaco Street Circuit in high-fidelity 4D telemetry. Build your dream garage with Real Madrid precision, track live football matches, and command the pit lane.
-          </p>
-        </div>
-
-        <div className="hero-panel">
-          <div className="hero-panel-stage">
-            <div className="hero-score-chip">
-              <div>
-                <strong>{liveScores[0]?.home || 'Verstappen'} vs {liveScores[0]?.away || 'Norris'}</strong>
-                <small>{liveScores[0]?.competition || 'Monaco Grand Prix Telemetry'}</small>
-              </div>
-              <b>{liveScores[0] ? getScoreSummary(liveScores[0]) : 'P1 vs P2'}</b>
-            </div>
+          <h1 className="netflix-hero-title">{slide.title}</h1>
+          <p className="netflix-hero-desc">{slide.desc}</p>
+          <div className="netflix-hero-actions">
+            <button 
+              className="btn-netflix-play" 
+              onClick={() => {
+                const associatedMatch = matches.find(m => m.sport === slide.id.replace('slide-', ''));
+                if (associatedMatch && setActiveMatch) setActiveMatch(associatedMatch);
+                navigate(slide.path);
+              }}
+            >
+              <PlayCircle size={18} /> {slide.cta}
+            </button>
+            <button className="btn-netflix-info" onClick={() => navigate('/watch-party')}>
+              <Users size={18} /> Party Room
+            </button>
+          </div>
+          
+          {/* Carousel dots indicators */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
+            {carouselSlides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                style={{
+                  width: '24px',
+                  height: '4px',
+                  borderRadius: '2px',
+                  border: 'none',
+                  background: idx === currentSlide ? 'var(--netflix-red)' : 'rgba(255, 255, 255, 0.4)',
+                  transition: 'background 0.3s',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              />
+            ))}
           </div>
         </div>
       </section>
 
-      <div className="stat-grid">
-        {stats.map((stat) => (
-          <div className="stat-card" key={stat.label}>
-            <div className="stat-label">{stat.label}</div>
-            <div className="stat-value" style={{ color: stat.color }}>{stat.value}</div>
+      {/* Prime Video style Channel Brand Tiles */}
+      <section className="prime-brand-tiles">
+        <div className="prime-brand-tile" onClick={() => navigate('/watch-live')} style={{ '--sport-glow-color': 'var(--hotstar-gold)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', zIndex: 2 }}>
+            <span style={{ fontSize: '1.25rem' }}>🏏</span>
+            <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>IPL FANTASY</div>
           </div>
-        ))}
+        </div>
+        <div className="prime-brand-tile" onClick={() => navigate('/live')} style={{ '--sport-glow-color': 'var(--netflix-red)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', zIndex: 2 }}>
+            <span style={{ fontSize: '1.25rem' }}>🏎️</span>
+            <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>F1 CONTROL</div>
+          </div>
+        </div>
+        <div className="prime-brand-tile" onClick={() => navigate('/live/football')} style={{ '--sport-glow-color': 'var(--spotify-green)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', zIndex: 2 }}>
+            <span style={{ fontSize: '1.25rem' }}>⚽</span>
+            <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>PREMIER LIVE</div>
+          </div>
+        </div>
+        <div className="prime-brand-tile" onClick={() => navigate('/watch-party')} style={{ '--sport-glow-color': 'var(--prime-blue)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--prime-blue)', zIndex: 2 }}>
+            <Users size={28} />
+            <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Watch Party</div>
+          </div>
+        </div>
+        <div className="prime-brand-tile" onClick={() => navigate('/create-team')} style={{ '--sport-glow-color': 'var(--hotstar-gold)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--hotstar-gold)', zIndex: 2 }}>
+            <Trophy size={28} />
+            <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Fantasy</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Quick strip */}
+      <div className="stat-grid">
+        <div className="stat-card">
+          <div className="stat-label">Live Telemetry Feeds</div>
+          <div className="stat-value" style={{ color: 'var(--prime-blue)' }}>{scores.filter((score) => score.statusState === 'in').length} Feeds</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Grand Prix Active Pools</div>
+          <div className="stat-value" style={{ color: '#ffffff' }}>{matches.reduce((sum, match) => sum + (match.contestCount || 0), 0)} Pools</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Sports Leagues</div>
+          <div className="stat-value" style={{ color: 'var(--hotstar-gold)' }}>{SPORT_CATALOG.length} Leagues</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Leaderboard Prizes</div>
+          <div className="stat-value" style={{ color: 'var(--spotify-green)' }}>INR 2.5L+</div>
+        </div>
       </div>
 
       <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
 
+      {/* Live Telemetry Card Row */}
       <div className="section-head">
-        <h2>Casino Corner Telemetry Wall</h2>
+        <h2>Live telemetry board</h2>
         <button className="ghost-button" type="button" onClick={() => navigate('/live')}>
-          Pit Command Center <ArrowRight size={16} />
+          Enter Telemetry Wall <ArrowRight size={16} />
         </button>
       </div>
 
@@ -284,71 +426,78 @@ export default function Dashboard({ activeSport, setActiveSport }) {
         </div>
       ) : liveScores.length ? (
         <div className="score-grid">
-          {liveScores.slice(0, 6).map((score) => (
-            <ScorePreview key={score.id} score={score} />
+          {liveScores.map((score) => (
+            <ScorePreview key={score.id} score={score} setActiveMatch={setActiveMatch} navigate={navigate} />
           ))}
         </div>
       ) : (
         <div className="empty-state">No live telemetry available for this track right now.</div>
       )}
 
+      {/* Match Contests Card Row */}
       <div className="section-head">
-        <h2>Monaco GP Pools</h2>
-        <span className="section-note">{filteredMatches.length} events active</span>
+        <h2>Championship Contests</h2>
+        <span className="section-note">{filteredMatches.length} pools active</span>
       </div>
 
       {loadingMatches ? (
         <div className="loading-state">
           <div>
             <div className="loading-spinner" />
-            <div>Loading pit board...</div>
+            <div>Loading match roster...</div>
           </div>
         </div>
       ) : (
         <>
           {liveMatches.length > 0 && (
-            <section>
-              <div className="section-head">
-                <h2>Cars on Track</h2>
-                <span className="live-badge">Live</span>
+            <section style={{ marginBottom: '24px' }}>
+              <div className="section-head" style={{ margin: '12px 0' }}>
+                <h3 style={{ fontSize: '1.05rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff2e55', animation: 'pulse 1.5s infinite' }} />
+                  Live streams & events
+                </h3>
               </div>
               <div className="match-list">
-                {liveMatches.map((match, index) => (
-                  <MatchCard key={match.id} match={match} index={index} navigate={navigate} />
+                {liveMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} navigate={navigate} setActiveMatch={setActiveMatch} />
                 ))}
               </div>
             </section>
           )}
 
           {upcomingMatches.length > 0 && (
-            <section>
-              <div className="section-head">
-                <h2>Qualifying & Warmups</h2>
-                <span className="section-note">Tune cars before lock</span>
+            <section style={{ marginBottom: '24px' }}>
+              <div className="section-head" style={{ margin: '12px 0' }}>
+                <h3 style={{ fontSize: '1.05rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={16} style={{ color: '#1f80e0' }} />
+                  Upcoming qualifying Pools
+                </h3>
               </div>
               <div className="match-list">
-                {upcomingMatches.map((match, index) => (
-                  <MatchCard key={match.id} match={match} index={index} navigate={navigate} />
+                {upcomingMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} navigate={navigate} setActiveMatch={setActiveMatch} />
                 ))}
               </div>
             </section>
           )}
 
           {completedMatches.length > 0 && (
-            <section>
-              <div className="section-head">
-                <h2>Official Podium Results</h2>
-                <span className="section-note">Review podium and points</span>
+            <section style={{ marginBottom: '24px' }}>
+              <div className="section-head" style={{ margin: '12px 0' }}>
+                <h3 style={{ fontSize: '1.05rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Trophy size={16} style={{ color: '#f3c623' }} />
+                  Podium Match Results
+                </h3>
               </div>
               <div className="match-list">
-                {completedMatches.map((match, index) => (
-                  <MatchCard key={match.id} match={match} index={index} navigate={navigate} />
+                {completedMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} navigate={navigate} setActiveMatch={setActiveMatch} />
                 ))}
               </div>
             </section>
           )}
 
-          {!filteredMatches.length && <div className="empty-state">No fantasy contests scheduled for this Grand Prix.</div>}
+          {!filteredMatches.length && <div className="empty-state">No fantasy contests scheduled for this category.</div>}
         </>
       )}
     </div>

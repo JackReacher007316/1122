@@ -1,17 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
-import Icon3D from '../components/Icon3D';
+import { ArrowLeft, RefreshCw, Trophy, Flag, PlayCircle, Tv } from 'lucide-react';
 import { fetchSportScores, getScoreSummary, getSportById, getStatusLabel } from '../data/liveSports';
+
+function getSportIcon(sportId, size = 16) {
+  if (sportId === 'cricket') return <Trophy size={size} style={{ color: '#a855f7' }} />;
+  if (sportId === 'f1') return <Flag size={size} style={{ color: '#ff314a' }} />;
+  if (sportId === 'football') return <PlayCircle size={size} style={{ color: '#00c0f9' }} />;
+  return <Tv size={size} />;
+}
 
 function DetailCard({ score, sport }) {
   const isLive = score.statusState === 'in';
 
   return (
-    <div className="score-card" style={{ '--sport-color': sport.color }}>
+    <div className="score-card">
       <div className="score-topline">
         <span className="sport-pill">
-          <Icon3D color={sport.color} shape={sport.shape} size={24} active={isLive} />
+          {getSportIcon(score.sportId, 16)}
           {score.competition}
         </span>
         <span className={`status-pill ${isLive ? 'is-live' : ''}`}>
@@ -38,7 +44,7 @@ function DetailCard({ score, sport }) {
       {Array.isArray(score.innings) && score.innings.length > 0 && (
         <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
           {score.innings.map((inning, index) => (
-            <div key={`${inning.inning}-${index}`} className="status-pill" style={{ justifyContent: 'space-between', borderRadius: 12 }}>
+            <div key={`${inning.inning}-${index}`} className="status-pill" style={{ justifyContent: 'space-between', borderRadius: 6, padding: '4px 10px' }}>
               <span>{inning.inning}</span>
               <strong>{inning.r}/{inning.w} ({inning.o})</strong>
             </div>
@@ -108,43 +114,46 @@ export default function LiveScorePage({ fixedSport }) {
 
   return (
     <div className="page-shell">
-      <div className="toolbar">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px', marginBottom: '24px' }}>
         <div>
           <button className="ghost-button" type="button" onClick={() => navigate('/live')} style={{ marginBottom: 14 }}>
             <ArrowLeft size={16} />
             Back to live center
           </button>
-          <div className="eyebrow" style={{ color: sport.color, borderColor: `${sport.color}55`, background: `${sport.color}16` }}>
-            {sport.short} live scoreboard
+          <div className="eyebrow" style={{ color: '#1f80e0' }}>
+            {sport.short.toUpperCase()} Live Scoreboard
           </div>
-          <h1 className="hero-title" style={{ fontSize: '3rem', marginBottom: 10 }}>
-            {sport.label} in 3D focus.
+          <h1 className="hero-title" style={{ fontSize: '2.5rem', marginBottom: 10, color: '#ffffff' }}>
+            {sport.label} Live Telemetry
           </h1>
           <p className="hero-copy">
-            Auto-refreshing scorecards, live status, venues, and fallback data when a public feed is unavailable.
+            Auto-refreshing scorecards, live status, venues, and public stream partner data integrations.
           </p>
         </div>
 
-        <div className="hero-panel" style={{ width: 260, minHeight: 230, '--sport-color': sport.color }}>
-          <div className="hero-panel-stage" style={{ display: 'grid', placeItems: 'center' }}>
-            <Icon3D color={sport.color} shape={sport.shape} size={128} active />
-          </div>
+        <div style={{
+          width: 240, 
+          height: 180,
+          background: 'rgba(31, 128, 224, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          borderRadius: '8px',
+          display: 'grid',
+          placeItems: 'center'
+        }}>
+          {getSportIcon(sportId, 72)}
         </div>
       </div>
 
-      <div className="toolbar">
-        <div className="toolbar-actions">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button className="ghost-button" type="button" onClick={loadScores}>
             <RefreshCw size={16} className={loading ? 'spinning' : ''} />
             Refresh
           </button>
-          <label className="toggle-label">
+          <label className="toggle-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', color: '#8f98a9', cursor: 'pointer' }}>
             <input type="checkbox" checked={autoRefresh} onChange={(event) => setAutoRefresh(event.target.checked)} />
             Auto refresh
           </label>
-          <Link className="ghost-button" to="/live">
-            All sports
-          </Link>
         </div>
         <div className="section-note">
           {lastUpdated ? `Last updated ${lastUpdated.toLocaleTimeString()}` : 'Waiting for first update'}
@@ -153,14 +162,14 @@ export default function LiveScorePage({ fixedSport }) {
 
       <div className="stat-grid">
         {[
-          { label: 'Live', value: liveCount, color: '#20df7f' },
-          { label: 'Upcoming', value: upcomingCount, color: '#4bb7ff' },
-          { label: 'Final', value: finalCount, color: '#f2c94c' },
-          { label: 'Source', value: group?.source === 'live' ? 'Live' : 'Demo', color: sport.color },
+          { label: 'Live Now', value: liveCount, color: '#ff2e55' },
+          { label: 'Upcoming', value: upcomingCount, color: '#1f80e0' },
+          { label: 'Completed', value: finalCount, color: '#f3c623' },
+          { label: 'Source Feed', value: group?.source === 'live' ? 'ESPN Stream' : 'Demo Mode', color: '#ffffff' },
         ].map((stat) => (
           <div key={stat.label} className="stat-card">
             <div className="stat-label">{stat.label}</div>
-            <div className="stat-value" style={{ color: stat.color, fontSize: typeof stat.value === 'string' ? '1.45rem' : undefined }}>
+            <div className="stat-value" style={{ color: stat.color, fontSize: typeof stat.value === 'string' ? '1.35rem' : undefined }}>
               {stat.value}
             </div>
           </div>
@@ -168,25 +177,25 @@ export default function LiveScorePage({ fixedSport }) {
       </div>
 
       <div className="section-head">
-        <h2>{sport.label} Score Wall</h2>
-        <span className="section-note">{scores.length} scorecards</span>
+        <h2>{sport.label} matches</h2>
+        <span className="section-note">{scores.length} events found</span>
       </div>
 
       {loading && !scores.length ? (
         <div className="loading-state">
           <div>
             <div className="loading-spinner" />
-            <div>Fetching {sport.label.toLowerCase()} scores...</div>
+            <div>Fetching scores...</div>
           </div>
         </div>
       ) : scores.length ? (
-        <div className="score-grid">
+        <div className="score-grid" style={{ flexWrap: 'wrap', overflowX: 'visible' }}>
           {scores.map((score) => (
             <DetailCard key={score.id} score={score} sport={sport} />
           ))}
         </div>
       ) : (
-        <div className="empty-state">No scorecards found for {sport.label} right now.</div>
+        <div className="empty-state">No active matches found for {sport.label}.</div>
       )}
     </div>
   );

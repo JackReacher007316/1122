@@ -3,17 +3,17 @@ import { MessageCircle, X, Send, Bot, Sparkles } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
   "How do I draft a team?",
-  "What are Monaco GP scoring rules?",
-  "Tell me about Real Madrid's squad!",
+  "What are the fantasy scoring rules?",
+  "What sports can I track here?",
   "How does live F1 telemetry work?",
   "Tips for picking a Captain?",
-  "Show me Monaco GP standings!",
+  "Show me the current standings!",
 ];
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hey Manager! I'm **Carlo** ⚡ — your AI coach for the Monaco GP x Real Madrid Command Center. Ask me anything about drafting teams, live telemetry feeds, race strategies, or football tactics!", sender: 'ai' }
+    { id: 1, text: "Hey Manager! I'm **Carlo** ⚡ — your AI coach for the FOFA Sports Arena. Ask me anything about drafting teams, live telemetry feeds, race strategies, or sports statistics!", sender: 'ai' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -68,12 +68,9 @@ const Chatbot = () => {
       {/* Floating Action Button */}
       <div
         onClick={() => setIsOpen(!isOpen)}
+        className="chatbot-trigger"
         style={{
-          position: 'fixed', bottom: '32px', right: '32px', width: '60px', height: '60px', borderRadius: '50%',
-          background: 'linear-gradient(135deg, #f3c623, #5d2a8f)',
           display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(93, 42, 143, 0.4)', zIndex: 1000,
-          transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           transform: isOpen ? 'scale(0.85) rotate(90deg)' : 'scale(1)',
           animation: !isOpen ? 'float 3s ease-in-out infinite' : 'none'
         }}
@@ -84,13 +81,10 @@ const Chatbot = () => {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className="glass-panel"
+          className="glass-panel chatbot-panel"
           style={{
-            position: 'fixed', bottom: '110px', right: '32px', width: '380px', height: '520px',
-            zIndex: 1000, display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden',
-            borderRadius: '20px', border: '1px solid rgba(243,198,35,0.2)',
-            animation: 'slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            background: 'linear-gradient(180deg, rgba(15,12,25,0.95), rgba(10,8,18,0.98))'
+            display: 'flex', flexDirection: 'column', padding: 0,
+            animation: 'slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
           }}
         >
           {/* Header */}

@@ -1,9 +1,28 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { 
+  Home, 
+  Calendar, 
+  Radio, 
+  Shield, 
+  Award, 
+  Users, 
+  Tv, 
+  Settings, 
+  Play, 
+  Pause,
+  LogOut,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+  Repeat,
+  Volume2,
+  VolumeX,
+  Maximize2,
+  ListMusic
+} from 'lucide-react';
 import Background3D from './components/Background3D';
 import Chatbot from './components/Chatbot';
-import Icon3D from './components/Icon3D';
 import WelcomeAnimation from './components/WelcomeAnimation';
 
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -17,13 +36,17 @@ const WatchParty = React.lazy(() => import('./pages/WatchParty'));
 const Auth = React.lazy(() => import('./pages/Auth'));
 const Presentation = React.lazy(() => import('./pages/Presentation'));
 const FootballLive = React.lazy(() => import('./pages/FootballLive'));
+const F1Calendar = React.lazy(() => import('./pages/F1Calendar'));
+const CricketCalendar = React.lazy(() => import('./pages/CricketCalendar'));
+const FootballCalendar = React.lazy(() => import('./pages/FootballCalendar'));
+const WatchLive = React.lazy(() => import('./pages/WatchLive'));
 
 function PageLoader() {
   return (
     <div className="loading-state">
       <div>
         <div className="loading-spinner" />
-        <div>Warming up engines...</div>
+        <div>Preparing live streams...</div>
       </div>
     </div>
   );
@@ -43,17 +66,19 @@ function Sidebar({ setToken }) {
   const location = useLocation();
   const userStr = localStorage.getItem('fantasy_user');
   const user = userStr ? JSON.parse(userStr) : null;
-  const [hovered, setHovered] = useState(null);
 
   const navItems = [
-    { path: '/', label: 'Paddock', color: '#ffffff', shape: 'f1' },
-    { path: '/live', label: 'Race Control', color: '#00c0f9', shape: 'live', live: true },
-    { path: '/live/football', label: 'Football', color: '#5d2a8f', shape: 'football' },
-    { path: '/live/basketball', label: 'Basketball', color: '#f3c623', shape: 'basketball' },
-    { path: '/create-team', label: 'Garage', color: '#f3c623', shape: 'shield' },
-    { path: '/leaderboard', label: 'Championship', color: '#ffffff', shape: 'default' },
-    { path: '/watch-party', label: 'Team Radio', color: '#5d2a8f', shape: 'live' },
-    { path: '/admin', label: 'Race Engineer', color: '#00c0f9', shape: 'shield' },
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/f1-calendar', label: 'F1 Schedule', icon: Calendar },
+    { path: '/cricket-calendar', label: 'Cricket Schedule', icon: Calendar },
+    { path: '/football-calendar', label: 'Football Schedule', icon: Calendar },
+    { path: '/live', label: 'Race Control', icon: Radio, live: true },
+    { path: '/live/football', label: 'Football Live', icon: Play },
+    { path: '/create-team', label: 'Fantasy Garage', icon: Shield },
+    { path: '/leaderboard', label: 'Championship', icon: Award },
+    { path: '/watch-party', label: 'Watch Party Lobby', icon: Users },
+    { path: '/watch-live', label: 'Watch Live', icon: Tv },
+    { path: '/admin', label: 'Race Engineer', icon: Settings },
   ];
 
   const handleLogout = () => {
@@ -66,27 +91,26 @@ function Sidebar({ setToken }) {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="brand-mark">
-          <Icon3D color="#5d2a8f" shape="f1" size={42} active />
+          <Tv color="#ffffff" size={22} />
         </div>
-        <div className="brand-title">FOFA Monaco GP</div>
-        <div className="brand-subtitle">Real Madrid Edition</div>
+        <div className="brand-title">
+          <span style={{ fontWeight: 800 }}>FOFA</span>{' '}
+          <span style={{ color: '#1f80e0', fontWeight: 400 }}>ARENA</span>
+        </div>
       </div>
 
-      <div className="nav-section-label">Race menu</div>
       <nav className="nav-list" aria-label="Primary">
         {navItems.map((item) => {
           const active = isActivePath(location.pathname, item.path);
-          const isHovered = hovered === item.path;
+          const IconComponent = item.icon;
 
           return (
             <Link
               key={item.path}
               to={item.path}
               className={`nav-link ${active ? 'is-active' : ''}`}
-              onMouseEnter={() => setHovered(item.path)}
-              onMouseLeave={() => setHovered(null)}
             >
-              <Icon3D color={item.color} shape={item.shape} size={30} active={active} hovered={isHovered} />
+              <IconComponent />
               <span>{item.label}</span>
               {item.live && <span className="live-dot" />}
             </Link>
@@ -97,8 +121,8 @@ function Sidebar({ setToken }) {
       <div className="user-strip">
         <div className="user-avatar">{(user?.username || 'P').slice(0, 1).toUpperCase()}</div>
         <div>
-          <div className="user-name">{user?.username || 'Pilot'}</div>
-          <div className="user-role">Madridista Director</div>
+          <div className="user-name">{user?.username || 'Viewer'}</div>
+          <div className="user-role">Premium Member</div>
         </div>
         <button className="icon-button" type="button" title="Logout" onClick={handleLogout}>
           <LogOut size={16} />
@@ -111,34 +135,126 @@ function Sidebar({ setToken }) {
 function FloatingNav() {
   const location = useLocation();
   const links = [
-    { path: '/', label: 'Paddock' },
-    { path: '/live', label: 'Race Ctrl' },
-    { path: '/live/football', label: 'Football' },
-    { path: '/create-team', label: 'Garage' },
-    { path: '/leaderboard', label: 'Standings' },
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/live', label: 'Control', icon: Radio },
+    { path: '/live/football', label: 'Football', icon: Play },
+    { path: '/create-team', label: 'Fantasy', icon: Shield },
+    { path: '/leaderboard', label: 'Championship', icon: Award },
   ];
 
   return (
     <nav className="bottom-nav" aria-label="Quick navigation">
-      {links.map((link) => (
-        <Link key={link.path} to={link.path} className={isActivePath(location.pathname, link.path) ? 'is-active' : ''}>
-          {link.label}
-        </Link>
-      ))}
+      {links.map((link) => {
+        const IconComponent = link.icon;
+        const active = isActivePath(location.pathname, link.path);
+        return (
+          <Link 
+            key={link.path} 
+            to={link.path} 
+            className={active ? 'is-active' : ''}
+          >
+            <IconComponent size={20} />
+            <span>{link.label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }
 
-function AppRoutes({ activeSport, setActiveSport, token }) {
+function SpotifyPlayer({ activeMatch, onPlayPause, isPlaying, volume, onVolumeChange }) {
+  if (!activeMatch) return null;
+
+  return (
+    <div className="spotify-media-bar">
+      {/* Left section: Track Info */}
+      <div className="media-bar-left">
+        <div className="media-bar-thumb" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
+          color: '#fff',
+          fontWeight: 'bold',
+          fontSize: '1.25rem',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }}>
+          {activeMatch.sport === 'f1' ? '🏎️' : activeMatch.sport === 'cricket' ? '🏏' : '⚽'}
+        </div>
+        <div className="media-bar-info">
+          <p className="media-bar-title">{activeMatch.title}</p>
+          <div className="media-bar-subtitle">
+            <span className={`status-pill ${activeMatch.status === 'LIVE' ? 'is-live' : ''}`} style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '3px' }}>
+              {activeMatch.status}
+            </span>
+            <span>{activeMatch.venue || 'FOFA Arena'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Center section: Player Controls */}
+      <div className="media-bar-center">
+        <div className="media-controls">
+          <button className="media-btn" title="Shuffle"><Shuffle size={16} /></button>
+          <button className="media-btn" title="Previous"><SkipBack size={18} /></button>
+          <button className="media-btn media-btn-play" onClick={onPlayPause} title={isPlaying ? "Pause" : "Play"}>
+            {isPlaying ? <Pause size={18} fill="#000" /> : <Play size={18} fill="#000" style={{ marginLeft: '2px' }} />}
+          </button>
+          <button className="media-btn" title="Next"><SkipForward size={18} /></button>
+          <button className="media-btn" title="Repeat"><Repeat size={16} /></button>
+        </div>
+        <div className="media-progress-container">
+          <span className="media-time-lbl">0:00</span>
+          <div className="media-progress-bar">
+            <div className="media-progress-fill" style={{ width: isPlaying ? '35%' : '15%', transition: 'width 2s ease' }} />
+          </div>
+          <span className="media-time-lbl">{activeMatch.status === 'LIVE' ? 'LIVE' : '90:00'}</span>
+        </div>
+      </div>
+
+      {/* Right section: Utilities */}
+      <div className="media-bar-right">
+        <button className="media-btn" title="Queue"><ListMusic size={18} /></button>
+        <button className="media-btn" title="Stream View"><Tv size={18} /></button>
+        <div className="volume-container">
+          <button className="media-btn" onClick={() => onVolumeChange(volume === 0 ? 80 : 0)}>
+            {volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+          <input 
+            type="range" 
+            min="0" 
+            max="100" 
+            value={volume} 
+            onChange={(e) => onVolumeChange(Number(e.target.value))}
+            style={{ 
+              accentColor: 'var(--spotify-green)', 
+              width: '100%', 
+              height: '4px',
+              borderRadius: '2px',
+              cursor: 'pointer'
+            }} 
+          />
+        </div>
+        <button className="media-btn" title="Fullscreen"><Maximize2 size={16} /></button>
+      </div>
+    </div>
+  );
+}
+
+function AppRoutes({ activeSport, setActiveSport, token, activeMatch, setActiveMatch }) {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
+      <Route path="/" element={<Dashboard activeSport={activeSport} setActiveSport={setActiveSport} setActiveMatch={setActiveMatch} />} />
+      <Route path="/f1-calendar" element={<F1Calendar />} />
+      <Route path="/cricket-calendar" element={<CricketCalendar />} />
+      <Route path="/football-calendar" element={<FootballCalendar />} />
       <Route path="/football" element={<FootballLive />} />
       <Route path="/live/football" element={<FootballLive />} />
-      <Route path="/match/:id" element={<MatchDetail />} />
-      <Route path="/live" element={<LiveTracking activeSport={activeSport} setActiveSport={setActiveSport} />} />
+      <Route path="/match/:id" element={<MatchDetail setActiveMatch={setActiveMatch} />} />
+      <Route path="/live" element={<LiveTracking activeSport={activeSport} setActiveSport={setActiveSport} setActiveMatch={setActiveMatch} />} />
       <Route path="/live/:sport" element={<LiveScorePage />} />
       <Route path="/watch-party" element={<WatchParty activeSport={activeSport} setActiveSport={setActiveSport} />} />
+      <Route path="/watch-live" element={<WatchLive />} />
       <Route path="/leaderboard" element={<Leaderboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route
         path="/create-team"
@@ -161,13 +277,28 @@ function AppRoutes({ activeSport, setActiveSport, token }) {
 }
 
 export default function App() {
-  const [activeSport, setActiveSport] = useState('f1');
+  const [activeSport, setActiveSport] = useState('all');
   const [token, setToken] = useState(localStorage.getItem('fantasy_token'));
+  const [activeMatch, setActiveMatch] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(80);
 
   useEffect(() => {
     const handleStorage = () => setToken(localStorage.getItem('fantasy_token'));
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/matches')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const liveMatch = data.find(m => m.status === 'LIVE') || data[0];
+          setActiveMatch(liveMatch);
+        }
+      })
+      .catch(e => console.error("Error loading initial match:", e));
   }, []);
 
   return (
@@ -184,9 +315,60 @@ export default function App() {
               <div className="app-container">
                 <Sidebar setToken={setToken} />
                 <main className="main-content">
-                  <AppRoutes activeSport={activeSport} setActiveSport={setActiveSport} token={token} />
+                  {/* Top Netflix-style Brand Nav Header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '28px',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    paddingBottom: '16px'
+                  }}>
+                    <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--netflix-red)', fontWeight: 900, fontSize: '1.5rem', letterSpacing: '1px' }}>FOFA ARENA</span>
+                      <nav style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#e5e5e5' }}>
+                        <Link to="/" style={{ fontWeight: 600 }}>Home</Link>
+                        <Link to="/watch-live" style={{ opacity: 0.8 }}>Live Streams</Link>
+                        <Link to="/watch-party" style={{ opacity: 0.8 }}>Watch Parties</Link>
+                        <Link to="/leaderboard" style={{ opacity: 0.8 }}>Leaderboard</Link>
+                      </nav>
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Search sports, players..." 
+                        style={{
+                          background: 'rgba(0,0,0,0.6)',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          color: '#fff',
+                          fontSize: '0.8rem',
+                          outline: 'none',
+                          width: '200px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--spotify-green)'; e.target.style.width = '240px'; }}
+                        onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.15)'; e.target.style.width = '200px'; }}
+                      />
+                    </div>
+                  </div>
+                  <AppRoutes 
+                    activeSport={activeSport} 
+                    setActiveSport={setActiveSport} 
+                    token={token} 
+                    activeMatch={activeMatch} 
+                    setActiveMatch={setActiveMatch} 
+                  />
                 </main>
                 <FloatingNav />
+                <SpotifyPlayer 
+                  activeMatch={activeMatch} 
+                  isPlaying={isPlaying} 
+                  onPlayPause={() => setIsPlaying(!isPlaying)} 
+                  volume={volume} 
+                  onVolumeChange={setVolume} 
+                />
                 <Chatbot />
               </div>
             }

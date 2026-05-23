@@ -5,7 +5,7 @@ const localtunnel = require('localtunnel');
   try {
     const tunnel = await localtunnel({ 
       port: 3000, 
-      subdomain: 'fofa-gp' 
+      subdomain: 'fofa-arena-hub' 
     });
 
     console.log(`[Localtunnel] Tunnel is running at: ${tunnel.url}`);

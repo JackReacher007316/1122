@@ -34,12 +34,12 @@ export const MATCHES = [
   { id: 'ucl-1', league: 'ucl', home: 'Paris Saint-Germain', away: 'Arsenal', date: '2026-05-30T20:00', venue: 'Puskás Aréna, Budapest', round: 'FINAL', status: 'upcoming', featured: true },
 
   // ─── LA LIGA — Final Rounds (May 2026) ────────────────────────────
-  { id: 'll-1', league: 'laliga', home: 'Real Madrid', away: 'Barcelona', date: '2026-05-10T20:00', venue: 'Santiago Bernabéu', round: 'MD 35', status: 'upcoming', featured: true },
+  { id: 'll-1', league: 'laliga', home: 'Valencia', away: 'Barcelona', date: '2026-05-10T20:00', venue: 'Mestalla', round: 'MD 35', status: 'upcoming', featured: true },
   { id: 'll-2', league: 'laliga', home: 'Atlético Madrid', away: 'Real Sociedad', date: '2026-05-10T17:30', venue: 'Metropolitano', round: 'MD 35', status: 'upcoming' },
   { id: 'll-3', league: 'laliga', home: 'Barcelona', away: 'Sevilla', date: '2026-05-13T20:00', venue: 'Camp Nou', round: 'MD 36', status: 'upcoming' },
-  { id: 'll-4', league: 'laliga', home: 'Real Madrid', away: 'Villarreal', date: '2026-05-17T20:00', venue: 'Santiago Bernabéu', round: 'MD 37', status: 'upcoming' },
+  { id: 'll-4', league: 'laliga', home: 'Sevilla', away: 'Villarreal', date: '2026-05-17T20:00', venue: 'Ramón Sánchez Pizjuán', round: 'MD 37', status: 'upcoming' },
   { id: 'll-5', league: 'laliga', home: 'Athletic Bilbao', away: 'Barcelona', date: '2026-05-24T18:00', venue: 'San Mamés', round: 'MD 38 (Final)', status: 'upcoming' },
-  { id: 'll-6', league: 'laliga', home: 'Atlético Madrid', away: 'Real Madrid', date: '2026-05-24T18:00', venue: 'Metropolitano', round: 'MD 38 (Final)', status: 'upcoming' },
+  { id: 'll-6', league: 'laliga', home: 'Atlético Madrid', away: 'Villarreal', date: '2026-05-24T18:00', venue: 'Metropolitano', round: 'MD 38 (Final)', status: 'upcoming' },
 
   // ─── SERIE A — Final Rounds ───────────────────────────────────────
   { id: 'sa-1', league: 'seriea', home: 'Inter Milan', away: 'AC Milan', date: '2026-05-10T19:45', venue: 'San Siro', round: 'MD 36', status: 'upcoming', featured: true },

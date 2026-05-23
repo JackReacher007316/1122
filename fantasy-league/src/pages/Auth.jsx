@@ -1,57 +1,80 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Icon3D from '../components/Icon3D';
+import { ShieldCheck, ArrowLeft, Tv, Mail, Phone, Lock, User } from 'lucide-react';
+
+const OTP_LENGTH = 6;
+const RESEND_COOLDOWN = 30;
 
 const Auth = ({ setToken }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [maskedEmail, setMaskedEmail] = useState('');
+  const [maskedPhone, setMaskedPhone] = useState('');
   const navigate = useNavigate();
-  const cardRef = useRef(null);
 
-  const handleMouseMove = (e) => {
-    const card = cardRef.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -6;
-    const rotateY = ((x - centerX) / centerX) * 6;
-    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  const [step, setStep] = useState(1); // 1 = credentials, 2 = OTP
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
+  const [otpShake, setOtpShake] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [focusedOtpIdx, setFocusedOtpIdx] = useState(-1);
+  const otpRefs = useRef([]);
+
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const id = setInterval(() => setResendTimer(t => t - 1), 1000);
+    return () => clearInterval(id);
+  }, [resendTimer]);
+
+  const storeAuthAndNavigate = (data) => {
+    localStorage.setItem('fantasy_token', data.token);
+    localStorage.setItem('fantasy_user', JSON.stringify(data.user));
+    setToken(data.token);
+    navigate('/');
   };
 
-  const handleMouseLeave = () => {
-    const card = cardRef.current;
-    if (!card) return;
-    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
-  };
+  const startResendTimer = () => setResendTimer(RESEND_COOLDOWN);
 
-  const handleSubmit = async (e) => {
+  const handleCredentialSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
 
     try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      
-      if (data.token) {
-        localStorage.setItem('fantasy_token', data.token);
-        localStorage.setItem('fantasy_user', JSON.stringify(data.user));
-        setToken(data.token);
-        navigate('/');
+      if (isLogin) {
+        const res = await fetch('/api/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setMaskedEmail(data.maskedEmail || '');
+          setMaskedPhone(data.maskedPhone || '');
+          setStep(2);
+          setOtp(Array(OTP_LENGTH).fill(''));
+          startResendTimer();
+          setTimeout(() => otpRefs.current[0]?.focus(), 120);
+        } else {
+          setError(data.error || 'Failed to send OTP');
+        }
       } else {
-        setError(data.error || 'Authentication failed');
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, email, phone })
+        });
+        const data = await res.json();
+        if (data.token) {
+          storeAuthAndNavigate(data);
+        } else {
+          setError(data.error || 'Registration failed');
+        }
       }
     } catch (err) {
       console.error(err);
@@ -61,279 +84,460 @@ const Auth = ({ setToken }) => {
     }
   };
 
+  const handleOtpSubmit = async (otpValue) => {
+    const code = otpValue || otp.join('');
+    if (code.length !== OTP_LENGTH) return;
+    setError('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, otp: code })
+      });
+      const data = await res.json();
+      if (data.token) {
+        storeAuthAndNavigate(data);
+      } else {
+        setError(data.error || 'Invalid OTP');
+        triggerShake();
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Server error. Please try again.');
+      triggerShake();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOtp(Array(OTP_LENGTH).fill(''));
+        startResendTimer();
+        otpRefs.current[0]?.focus();
+      } else {
+        setError(data.error || 'Failed to resend OTP');
+      }
+    } catch {
+      setError('Server error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const triggerShake = () => {
+    setOtpShake(true);
+    setTimeout(() => setOtpShake(false), 500);
+  };
+
+  const handleOtpChange = useCallback((idx, value) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    setOtp(prev => {
+      const next = [...prev];
+      next[idx] = digit;
+      return next;
+    });
+    if (digit && idx < OTP_LENGTH - 1) {
+      otpRefs.current[idx + 1]?.focus();
+    }
+    if (digit && idx === OTP_LENGTH - 1) {
+      setOtp(prev => {
+        const next = [...prev];
+        next[idx] = digit;
+        const full = next.join('');
+        if (full.length === OTP_LENGTH) {
+          setTimeout(() => handleOtpSubmit(full), 80);
+        }
+        return next;
+      });
+    }
+  }, []);
+
+  const handleOtpKeyDown = useCallback((idx, e) => {
+    if (e.key === 'Backspace') {
+      if (!otp[idx] && idx > 0) {
+        otpRefs.current[idx - 1]?.focus();
+        setOtp(prev => {
+          const next = [...prev];
+          next[idx - 1] = '';
+          return next;
+        });
+      } else {
+        setOtp(prev => {
+          const next = [...prev];
+          next[idx] = '';
+          return next;
+        });
+      }
+      e.preventDefault();
+    }
+    if (e.key === 'ArrowLeft' && idx > 0) otpRefs.current[idx - 1]?.focus();
+    if (e.key === 'ArrowRight' && idx < OTP_LENGTH - 1) otpRefs.current[idx + 1]?.focus();
+  }, [otp]);
+
+  const handleOtpPaste = useCallback((e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+    if (!pasted) return;
+    const digits = pasted.split('');
+    setOtp(prev => {
+      const next = [...prev];
+      digits.forEach((d, i) => { next[i] = d; });
+      return next;
+    });
+    const focusIdx = Math.min(digits.length, OTP_LENGTH - 1);
+    otpRefs.current[focusIdx]?.focus();
+    if (digits.length === OTP_LENGTH) {
+      setTimeout(() => handleOtpSubmit(digits.join('')), 80);
+    }
+  }, []);
+
+  const handleBackToLogin = () => {
+    setStep(1);
+    setOtp(Array(OTP_LENGTH).fill(''));
+    setError('');
+    setResendTimer(0);
+  };
+
   return (
-    <div style={{ 
-      height: '100vh', 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      background: '#020206', 
-      position: 'relative', 
-      overflow: 'hidden' 
-    }}>
-      {/* Perspective grid floor */}
+    <div className="auth-container">
+      {/* Background Star Overlay */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(93,42,143,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(93,42,143,0.04) 1px, transparent 1px)',
-        backgroundSize: '50px 50px',
-        transform: 'perspective(500px) rotateX(60deg) translateY(30%)',
-        transformOrigin: 'center top',
-        opacity: 0.5
+        background: 'radial-gradient(circle at center, #071630 0%, #020712 100%)',
+        zIndex: 1
       }} />
 
-      {/* Animated gradient orbs */}
       <div style={{
-        position: 'absolute', top: '5%', left: '5%', width: '400px', height: '400px',
-        background: 'radial-gradient(circle, rgba(93,42,143,0.2) 0%, transparent 60%)',
-        borderRadius: '50%', filter: 'blur(60px)',
-        animation: 'morphBg 8s ease-in-out infinite'
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '5%', right: '5%', width: '350px', height: '350px',
-        background: 'radial-gradient(circle, rgba(243,198,35,0.15) 0%, transparent 60%)',
-        borderRadius: '50%', filter: 'blur(60px)',
-        animation: 'morphBg 10s ease-in-out infinite reverse'
-      }} />
-      <div style={{
-        position: 'absolute', top: '40%', right: '30%', width: '250px', height: '250px',
-        background: 'radial-gradient(circle, rgba(0,192,249,0.12) 0%, transparent 60%)',
-        borderRadius: '50%', filter: 'blur(60px)',
-        animation: 'morphBg 12s ease-in-out infinite 3s'
-      }} />
-
-      {/* Floating particles */}
-      {Array.from({ length: 20 }).map((_, i) => (
-        <div key={i} style={{
-          position: 'absolute',
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          width: `${2 + Math.random() * 3}px`,
-          height: `${2 + Math.random() * 3}px`,
-          background: i % 2 === 0 ? '#f3c623' : '#5d2a8f',
-          borderRadius: '50%',
-          boxShadow: `0 0 10px ${i % 2 === 0 ? '#f3c623' : '#5d2a8f'}`,
-          opacity: 0.3 + Math.random() * 0.4,
-          animation: `float ${3 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 5}s`
-        }} />
-      ))}
-
-      {/* Scanlines overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'repeating-linear-gradient(transparent 0px, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px)',
-        pointerEvents: 'none', zIndex: 5
-      }} />
-
-      {/* Auth Card */}
-      <div
-        ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          width: '100%', maxWidth: '420px',
-          position: 'relative', zIndex: 10,
-          transition: 'transform 0.3s ease',
-          transformStyle: 'preserve-3d',
-          animation: 'slideInUp 0.8s ease both'
-        }}
-      >
-        {/* Card glow */}
-        <div style={{
-          position: 'absolute', inset: '-2px', borderRadius: '24px',
-          background: 'linear-gradient(135deg, rgba(93,42,143,0.4), transparent 40%, rgba(243,198,35,0.4))',
-          zIndex: -1, filter: 'blur(1px)', opacity: 0.7
-        }} />
-        
-        <div className="glass-panel" style={{ 
-          padding: '44px 36px', 
-          borderRadius: '22px',
-          background: 'linear-gradient(135deg, rgba(15,12,25,0.92) 0%, rgba(25,20,40,0.85) 100%)',
-        }}>
-          {/* Logo section */}
-          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <div style={{ 
-              display: 'inline-flex', 
-              padding: '16px', 
-              borderRadius: '50%', 
-              border: '1px solid rgba(243,198,35,0.2)',
-              marginBottom: '20px',
-              position: 'relative',
-              animation: 'float 4s ease-in-out infinite'
+        position: 'relative', zIndex: 10,
+        width: '100%', maxWidth: '420px',
+        animation: 'slideInUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both'
+      }}>
+        <div className="auth-card" style={{ padding: '40px 32px' }}>
+          {/* Logo Title Section */}
+          <div className="auth-logo">
+            <div style={{
+              display: 'inline-flex',
+              padding: '12px',
+              borderRadius: '50%',
+              background: 'rgba(31, 128, 224, 0.1)',
+              border: '1px solid rgba(31, 128, 224, 0.2)',
+              marginBottom: '16px'
             }}>
-              <Icon3D color="#f3c623" shape="f1" size={54} active />
-              <div style={{
-                position: 'absolute', inset: '-3px', borderRadius: '50%',
-                border: '1px solid rgba(93,42,143,0.15)',
-                animation: 'spin 15s linear infinite'
-              }} />
+              <Tv color="#1f80e0" size={32} />
             </div>
-            <h1 className="heading-gradient" style={{ fontSize: '2.8rem', margin: '0 0 6px 0', filter: 'drop-shadow(0 0 20px rgba(93,42,143,0.4))' }}>MONACO GP</h1>
-            <p style={{ 
-              color: '#f3c623', 
-              textTransform: 'uppercase', 
-              letterSpacing: '4px', 
-              fontSize: '0.7rem',
-              fontFamily: 'var(--font-heading)'
-            }}>Real Madrid Edition</p>
+            <h2>
+              <span style={{ fontWeight: 800, color: '#ffffff' }}>FOFA</span>{' '}
+              <span style={{ color: '#1f80e0', fontWeight: 300 }}>ARENA</span>
+            </h2>
+            <p>Premium Sports Stream & Fantasy Portal</p>
           </div>
 
-          {/* Toggle Login/Register */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '0', 
+          {/* Form Step Indicator */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             marginBottom: '28px',
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '12px',
-            padding: '4px',
-            border: '1px solid rgba(255,255,255,0.05)'
           }}>
-            <button onClick={() => setIsLogin(true)} style={{
-              flex: 1, padding: '10px', border: 'none', borderRadius: '10px', cursor: 'pointer',
-              fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px',
-              background: isLogin ? 'linear-gradient(135deg, rgba(93,42,143,0.3), rgba(243,198,35,0.2))' : 'transparent',
-              color: isLogin ? '#fff' : 'var(--text-muted)',
+            <div style={{
+              width: '24px', height: '24px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '0.75rem', fontWeight: 700,
+              background: step >= 1 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
+              color: '#ffffff',
+              boxShadow: step >= 1 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
               transition: 'all 0.3s ease',
-              boxShadow: isLogin ? '0 0 20px rgba(93,42,143,0.2)' : 'none'
-            }}>LOGIN</button>
-            <button onClick={() => setIsLogin(false)} style={{
-              flex: 1, padding: '10px', border: 'none', borderRadius: '10px', cursor: 'pointer',
-              fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px',
-              background: !isLogin ? 'linear-gradient(135deg, rgba(0,192,249,0.3), rgba(243,198,35,0.2))' : 'transparent',
-              color: !isLogin ? '#fff' : 'var(--text-muted)',
+            }}>1</div>
+            <div style={{
+              width: '40px', height: '1px',
+              background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.08)',
+              transition: 'background 0.3s ease',
+            }} />
+            <div style={{
+              width: '24px', height: '24px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '0.75rem', fontWeight: 700,
+              background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
+              color: step >= 2 ? '#ffffff' : '#8f98a9',
+              boxShadow: step >= 2 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
               transition: 'all 0.3s ease',
-              boxShadow: !isLogin ? '0 0 20px rgba(0,192,249,0.2)' : 'none'
-            }}>REGISTER</button>
+            }}>2</div>
           </div>
 
+          {/* Error Message Box */}
           {error && (
-            <div style={{ 
-              padding: '12px 16px', 
-              background: 'rgba(229,9,20,0.1)', 
-              border: '1px solid rgba(229,9,20,0.3)', 
-              color: '#ff4444', 
-              borderRadius: '12px', 
-              marginBottom: '20px', 
-              textAlign: 'center', 
+            <div style={{
+              padding: '10px 14px',
+              background: 'rgba(255, 46, 85, 0.1)',
+              border: '1px solid rgba(255, 46, 85, 0.3)',
+              color: '#ff2e55',
+              borderRadius: '6px',
+              marginBottom: '20px',
+              textAlign: 'center',
               fontSize: '0.85rem',
-              animation: 'slideInUp 0.3s ease',
-              backdropFilter: 'blur(10px)'
             }}>{error}</div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ position: 'relative' }}>
-              <label style={{ 
-                fontSize: '0.7rem', 
-                color: focusedField === 'user' ? '#5d2a8f' : 'var(--text-muted)', 
-                fontFamily: 'var(--font-heading)', 
-                letterSpacing: '2px',
-                display: 'block', marginBottom: '8px',
-                transition: 'color 0.3s'
-              }}>USERNAME</label>
-              <input 
-                type="text" 
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                onFocus={() => setFocusedField('user')}
-                onBlur={() => setFocusedField(null)}
-                required
-                placeholder="Enter your codename"
-                style={{ 
-                  width: '100%', padding: '14px 16px', 
-                  background: 'rgba(0,0,0,0.4)', 
-                  border: focusedField === 'user' ? '1px solid rgba(93,42,143,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px', color: '#fff', outline: 'none',
-                  fontSize: '0.95rem', fontFamily: 'var(--font-body)',
-                  transition: 'all 0.3s ease',
-                  boxShadow: focusedField === 'user' ? '0 0 20px rgba(93,42,143,0.15)' : 'none'
-                }} 
-              />
-            </div>
-            
-            <div style={{ position: 'relative' }}>
-              <label style={{ 
-                fontSize: '0.7rem', 
-                color: focusedField === 'pass' ? '#f3c623' : 'var(--text-muted)',
-                fontFamily: 'var(--font-heading)', 
-                letterSpacing: '2px',
-                display: 'block', marginBottom: '8px',
-                transition: 'color 0.3s'
-              }}>PASSWORD</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                onFocus={() => setFocusedField('pass')}
-                onBlur={() => setFocusedField(null)}
-                required
-                placeholder="••••••••"
-                style={{ 
-                  width: '100%', padding: '14px 16px', 
-                  background: 'rgba(0,0,0,0.4)', 
-                  border: focusedField === 'pass' ? '1px solid rgba(243,198,35,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px', color: '#fff', outline: 'none',
-                  fontSize: '0.95rem', fontFamily: 'var(--font-body)',
-                  transition: 'all 0.3s ease',
-                  boxShadow: focusedField === 'pass' ? '0 0 20px rgba(243,198,35,0.15)' : 'none'
-                }} 
-              />
-            </div>
+          {/* Step 1: Submit Credentials */}
+          {step === 1 && (
+            <div style={{ animation: 'fadeInStep 0.4s ease both' }}>
+              {/* Tab Selector */}
+              <div style={{
+                display: 'flex',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: '6px',
+                padding: '3px',
+                marginBottom: '24px',
+                border: '1px solid rgba(255,255,255,0.05)'
+              }}>
+                <button 
+                  onClick={() => { setIsLogin(true); setError(''); }} 
+                  style={{
+                    flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
+                    fontSize: '0.8rem', fontWeight: 600,
+                    background: isLogin ? '#1f80e0' : 'transparent',
+                    color: isLogin ? '#ffffff' : '#8f98a9',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  LOGIN
+                </button>
+                <button 
+                  onClick={() => { setIsLogin(false); setError(''); }} 
+                  style={{
+                    flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
+                    fontSize: '0.8rem', fontWeight: 600,
+                    background: !isLogin ? '#1f80e0' : 'transparent',
+                    color: !isLogin ? '#ffffff' : '#8f98a9',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  REGISTER
+                </button>
+              </div>
 
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="btn-primary" 
-              style={{ 
-                marginTop: '8px', padding: '16px', fontSize: '0.9rem', 
-                borderRadius: '12px', letterSpacing: '2px',
-                position: 'relative', overflow: 'hidden',
-                opacity: loading ? 0.7 : 1
-              }}
-            >
-              {loading ? (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <span style={{ width: '16px', height: '16px', border: '2px solid rgba(0,0,0,0.2)', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 0.6s linear infinite', display: 'inline-block' }}></span>
-                  Connecting...
-                </span>
-              ) : (
-                isLogin ? '⚡ Initialize Session' : '🚀 Create Account'
+              <form onSubmit={handleCredentialSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="form-group">
+                  <label>Username</label>
+                  <div style={{ position: 'relative' }}>
+                    <User size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: '#8f98a9' }} />
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      required
+                      placeholder="Enter username"
+                      className="form-input"
+                      style={{ paddingLeft: '38px' }}
+                    />
+                  </div>
+                </div>
+
+                {!isLogin && (
+                  <>
+                    <div className="form-group">
+                      <label>Email Address</label>
+                      <div style={{ position: 'relative' }}>
+                        <Mail size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: '#8f98a9' }} />
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={e => setEmail(e.target.value)}
+                          required
+                          placeholder="Enter your email"
+                          className="form-input"
+                          style={{ paddingLeft: '38px' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Mobile Number</label>
+                      <div style={{ position: 'relative' }}>
+                        <Phone size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: '#8f98a9' }} />
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={e => setPhone(e.target.value)}
+                          required
+                          placeholder="Enter mobile number"
+                          className="form-input"
+                          style={{ paddingLeft: '38px' }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="form-group">
+                  <label>Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: '12px', top: '14px', color: '#8f98a9' }} />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                      placeholder="Enter password"
+                      className="form-input"
+                      style={{ paddingLeft: '38px' }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="submit-btn"
+                >
+                  {loading ? 'Processing...' : isLogin ? 'Send Verification OTP' : 'Create Premium Account'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Step 2: Verify OTP Screen */}
+          {step === 2 && (
+            <div style={{ animation: 'fadeInStep 0.4s ease both' }} className={otpShake ? 'shake-element' : ''}>
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <ShieldCheck size={40} style={{ color: '#1f80e0', margin: '0 auto 12px' }} />
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#ffffff', margin: '0 0 4px 0' }}>Security verification</h3>
+                <p style={{ fontSize: '0.82rem', color: '#8f98a9', margin: 0 }}>Please enter the 6-digit code logged in your server console.</p>
+              </div>
+
+              {/* Masked destination feedback */}
+              {(maskedEmail || maskedPhone) && (
+                <div style={{
+                  padding: '10px 14px',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  color: '#8f98a9',
+                  lineHeight: '1.5',
+                  marginBottom: '20px'
+                }}>
+                  {maskedEmail && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Mail size={12} /> OTP sent to: <span style={{ color: '#1f80e0', fontWeight: 600 }}>{maskedEmail}</span>
+                    </div>
+                  )}
+                  {maskedPhone && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: maskedEmail ? '6px' : 0 }}>
+                      <Phone size={12} /> OTP sent to: <span style={{ color: '#27d06d', fontWeight: 600 }}>{maskedPhone}</span>
+                    </div>
+                  )}
+                </div>
               )}
-            </button>
-          </form>
 
-          <div style={{ marginTop: '28px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-            {isLogin ? "Don't have an account?" : "Already a manager?"}{' '}
-            <span 
-              onClick={() => { setIsLogin(!isLogin); setError(''); }} 
-              style={{ 
-                color: '#00c0f9', cursor: 'pointer', fontWeight: 'bold',
-                textShadow: '0 0 10px rgba(0,192,249,0.3)',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={e => e.target.style.textShadow = '0 0 20px rgba(0,192,249,0.6)'}
-              onMouseLeave={e => e.target.style.textShadow = '0 0 10px rgba(0,192,249,0.3)'}
-            >
-              {isLogin ? 'Register Here' : 'Login Here'}
-            </span>
-          </div>
+              {/* OTP Digit Boxes Row */}
+              <div className="otp-inputs-row">
+                {otp.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={el => otpRefs.current[idx] = el}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={e => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={e => handleOtpKeyDown(idx, e)}
+                    onPaste={idx === 0 ? handleOtpPaste : undefined}
+                    onFocus={() => setFocusedOtpIdx(idx)}
+                    onBlur={() => setFocusedOtpIdx(-1)}
+                    autoComplete="one-time-code"
+                    className="otp-input-box"
+                    style={{
+                      borderColor: digit 
+                        ? '#f3c623' 
+                        : focusedOtpIdx === idx 
+                          ? '#1f80e0' 
+                          : 'rgba(255,255,255,0.08)'
+                    }}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={() => handleOtpSubmit()}
+                disabled={loading || otp.join('').length !== OTP_LENGTH}
+                className="submit-btn"
+                style={{
+                  opacity: (loading || otp.join('').length !== OTP_LENGTH) ? 0.5 : 1,
+                  cursor: (loading || otp.join('').length !== OTP_LENGTH) ? 'not-allowed' : 'pointer',
+                  marginBottom: '20px'
+                }}
+              >
+                {loading ? 'Verifying...' : 'Verify & Log In'}
+              </button>
+
+              {/* Action back and resend links */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+                <span
+                  onClick={handleBackToLogin}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#8f98a9',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <ArrowLeft size={14} /> Back to login
+                </span>
+
+                <span
+                  onClick={handleResendOtp}
+                  style={{
+                    color: resendTimer > 0 ? '#8f98a9' : '#1f80e0',
+                    fontSize: '0.8rem',
+                    cursor: resendTimer > 0 ? 'default' : 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       <style>{`
-        @keyframes morphBg {
-          0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-          50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes slideInUp {
-          from { opacity: 0; transform: translateY(40px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        input::placeholder { color: rgba(255,255,255,0.15); }
+        @keyframes fadeInStep {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .shake-element {
+          animation: otpShake 0.4s ease;
+        }
+        @keyframes otpShake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-6px); }
+          40%, 80% { transform: translateX(6px); }
+        }
       `}</style>
     </div>
   );

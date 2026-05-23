@@ -23,14 +23,53 @@ const ROLE_CONFIG = {
     min: { DRV: 11 },
     max: { DRV: 11 },
     total: 11,
-  },
-  hackathon: {
-    roles: ['DEV', 'DES'],
-    labels: { DEV: 'Developer', DES: 'Designer' },
-    min: { DEV: 8, DES: 1 },
-    max: { DEV: 11, DES: 3 },
-    total: 11,
   }
+};
+
+const PlayerAvatar = ({ player, size = '40px' }) => {
+  const [error, setError] = useState(false);
+  const isUrl = player.img && (player.img.startsWith('http') || player.img.startsWith('/')) && !error;
+
+  if (isUrl) {
+    return (
+      <img
+        src={player.img}
+        alt={player.name}
+        onError={() => setError(true)}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          border: '1px solid rgba(255,255,255,0.15)',
+          display: 'block'
+        }}
+      />
+    );
+  }
+
+  const initials = player.name 
+    ? player.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() 
+    : '👤';
+
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
+      border: '1px solid rgba(255,255,255,0.15)',
+      color: '#e5e5e5',
+      fontSize: size === '40px' ? '0.8rem' : '0.7rem',
+      fontWeight: 'bold',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+    }}>
+      {initials}
+    </div>
+  );
 };
 
 const CreateTeam = ({ activeSport }) => {
@@ -128,7 +167,7 @@ const CreateTeam = ({ activeSport }) => {
   };
 
   const getSportColor = () => {
-    const c = { cricket: '#FFD700', football: '#00ff87', f1: '#ff2800', hackathon: '#00e5ff' };
+    const c = { cricket: '#FFD700', football: '#00ff87', f1: '#ff2800' };
     return c[sport] || 'var(--neon-pink)';
   };
 
@@ -158,7 +197,7 @@ const CreateTeam = ({ activeSport }) => {
               borderLeft: captainId === player.id ? '4px solid #FFD700' : vcId === player.id ? '4px solid #c0c0c0' : '4px solid transparent'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <span style={{ fontSize: '1.5rem' }}>{player.img}</span>
+                <PlayerAvatar player={player} size="40px" />
                 <div>
                   <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{player.name}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{player.team} • {player.role}</div>
@@ -330,46 +369,75 @@ const CreateTeam = ({ activeSport }) => {
       </div>
 
       {/* Player List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {/* Header Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 0.8fr 0.8fr 60px', padding: '8px 16px', fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>
-          <span>PLAYER</span><span>TEAM</span><span style={{ textAlign: 'center' }}>PTS</span><span style={{ textAlign: 'center' }}>CR</span><span />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {/* Spotify-style Header Row */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '40px 2fr 1fr 0.8fr 0.8fr 60px', 
+          padding: '12px 16px', 
+          fontSize: '0.75rem', 
+          color: 'var(--text-muted)', 
+          fontFamily: 'var(--font-heading)', 
+          letterSpacing: '1px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          marginBottom: '8px'
+        }}>
+          <span style={{ textAlign: 'center' }}>#</span>
+          <span>PLAYER</span>
+          <span>TEAM</span>
+          <span style={{ textAlign: 'center' }}>PTS</span>
+          <span style={{ textAlign: 'center' }}>CR</span>
+          <span />
         </div>
 
         {filteredPlayers.map((player, i) => {
           const isSelected = selected.find(p => p.id === player.id);
           const canPick = canSelect(player);
           return (
-            <div key={player.id} onClick={() => canPick && togglePlayer(player)} style={{
-              display: 'grid', gridTemplateColumns: '2fr 1fr 0.8fr 0.8fr 60px',
-              padding: '14px 16px', borderRadius: '10px', alignItems: 'center',
-              background: isSelected ? `${color}10` : 'rgba(255,255,255,0.02)',
-              border: isSelected ? `1px solid ${color}40` : '1px solid rgba(255,255,255,0.05)',
-              cursor: canPick ? 'pointer' : 'not-allowed', opacity: !canPick && !isSelected ? 0.4 : 1,
-              transition: 'all 0.2s', animation: `slideInUp 0.3s ease ${0.03 * i}s both`,
-            }}
-            onMouseEnter={e => { if (canPick) e.currentTarget.style.background = isSelected ? `${color}15` : 'rgba(255,255,255,0.04)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${color}10` : 'rgba(255,255,255,0.02)'; }}
+            <div 
+              key={player.id} 
+              onClick={() => canPick && togglePlayer(player)} 
+              style={{
+                display: 'grid', 
+                gridTemplateColumns: '40px 2fr 1fr 0.8fr 0.8fr 60px',
+                padding: '10px 16px', 
+                borderRadius: '6px', 
+                alignItems: 'center',
+                background: isSelected ? 'rgba(29, 185, 84, 0.1)' : 'transparent',
+                cursor: canPick ? 'pointer' : 'not-allowed', 
+                opacity: !canPick && !isSelected ? 0.4 : 1,
+                transition: 'all 0.2s', 
+                animation: `slideInUp 0.3s ease ${0.03 * i}s both`,
+              }}
+              onMouseEnter={e => { if (canPick) e.currentTarget.style.background = isSelected ? 'rgba(29, 185, 84, 0.15)' : 'rgba(255,255,255,0.06)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = isSelected ? 'rgba(29, 185, 84, 0.1)' : 'transparent'; }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{player.img}</span>
+              <div style={{ textAlign: 'center', color: isSelected ? 'var(--spotify-green)' : 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>
+                {i + 1}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <PlayerAvatar player={player} size="36px" />
                 <div>
-                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{player.name}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{player.role} • {player.selectedByPct}% sel</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: isSelected ? 'var(--spotify-green)' : '#fff' }}>{player.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{player.role} • {player.selectedByPct}% sel</div>
                 </div>
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{player.team}</span>
-              <span style={{ textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '0.85rem', color: 'var(--neon-blue)' }}>{player.points}</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{player.team}</span>
+              <span style={{ textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '0.85rem', color: 'var(--neon-blue)', fontWeight: 600 }}>{player.points}</span>
               <span style={{ textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '0.9rem', fontWeight: 'bold' }}>{player.credits}</span>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
-                  border: isSelected ? `2px solid ${color}` : '2px solid rgba(255,255,255,0.15)',
-                  background: isSelected ? color : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '24px', 
+                  height: '24px', 
+                  borderRadius: '50%',
+                  border: isSelected ? '2px solid var(--spotify-green)' : '2px solid rgba(255,255,255,0.2)',
+                  background: isSelected ? 'var(--spotify-green)' : 'transparent',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
                   transition: 'all 0.2s'
                 }}>
-                  {isSelected && <Check size={14} color="#000" strokeWidth={3} />}
+                  {isSelected && <Check size={12} color="#000000" strokeWidth={4} />}
                 </div>
               </div>
             </div>
@@ -377,13 +445,10 @@ const CreateTeam = ({ activeSport }) => {
         })}
       </div>
 
+
       {/* Bottom CTA */}
       {selected.length > 0 && (
-        <div style={{
-          position: 'fixed', bottom: '0', left: '260px', right: '0',
-          padding: '16px 32px', background: 'linear-gradient(180deg, transparent, rgba(5,5,10,0.95) 30%)',
-          zIndex: 200, display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-        }}>
+        <div className="create-team-cta-bar">
           <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', fontSize: '0.8rem' }}>
             {selected.length}/{config.total} selected
             {!isValid && <span style={{ color: '#ff2800', marginLeft: '12px' }}><AlertCircle size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> Complete role requirements</span>}

@@ -123,14 +123,6 @@ const AdminPanel = ({ activeSport, setActiveSport }) => {
                   <option>Duck (-5 pts)</option>
                 </>
               )}
-              {eventTheme === 'hackathon' && (
-                <>
-                  <option>Task Completion (+15 pts)</option>
-                  <option>UI/UX Bonus (+10 pts)</option>
-                  <option>Bug Found (-5 pts)</option>
-                  <option>Judges Score Input (+0 pts)</option>
-                </>
-              )}
             </select>
           </div>
 

@@ -1,11 +1,30 @@
 import React, { useState } from 'react';
-import Icon3D from './Icon3D';
+import { Layers, Tv, PlayCircle, Flag, Trophy } from 'lucide-react';
 import { SPORT_CATALOG } from '../data/liveSports';
 
 const tabs = [
-  { id: 'all', label: 'All Sports', short: 'ALL', color: '#f8fafc', shape: 'live' },
+  { id: 'all', label: 'All Sports', short: 'ALL', color: '#f8fafc' },
   ...SPORT_CATALOG,
 ];
+
+function getSportTabIcon(tabId, isActive) {
+  if (tabId === 'all') return <Layers size={14} />;
+  
+  if (tabId === 'f1') {
+    return <Flag size={14} style={{ color: isActive ? 'var(--netflix-red)' : 'var(--muted)' }} />;
+  }
+  
+  if (tabId === 'cricket') {
+    return <Trophy size={14} style={{ color: isActive ? 'var(--hotstar-gold)' : 'var(--muted)' }} />;
+  }
+  
+  if (tabId === 'football') {
+    return <PlayCircle size={14} style={{ color: isActive ? 'var(--spotify-green)' : 'var(--muted)' }} />;
+  }
+  
+  if (tabId === 'basketball') return <PlayCircle size={14} style={{ color: '#f3c623' }} />;
+  return <Tv size={14} />;
+}
 
 export default function SportTabs({ activeSport, setActiveSport }) {
   const [hovered, setHovered] = useState(null);
@@ -27,7 +46,7 @@ export default function SportTabs({ activeSport, setActiveSport }) {
             aria-selected={isActive}
             style={{ '--sport-color': tab.color }}
           >
-            <Icon3D color={tab.color} shape={tab.shape} size={28} active={isActive} hovered={isHovered} />
+            {getSportTabIcon(tab.id, isActive || isHovered)}
             <span>{tab.label}</span>
           </button>
         );
