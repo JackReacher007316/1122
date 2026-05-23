@@ -246,36 +246,38 @@ const Auth = ({ setToken }) => {
           </div>
 
           {/* Form Step Indicator */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '28px',
-          }}>
+          {isLogin && (
             <div style={{
-              width: '24px', height: '24px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.75rem', fontWeight: 700,
-              background: step >= 1 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
-              color: '#ffffff',
-              boxShadow: step >= 1 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
-              transition: 'all 0.3s ease',
-            }}>1</div>
-            <div style={{
-              width: '40px', height: '1px',
-              background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.08)',
-              transition: 'background 0.3s ease',
-            }} />
-            <div style={{
-              width: '24px', height: '24px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.75rem', fontWeight: 700,
-              background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
-              color: step >= 2 ? '#ffffff' : '#8f98a9',
-              boxShadow: step >= 2 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
-              transition: 'all 0.3s ease',
-            }}>2</div>
-          </div>
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '28px',
+            }}>
+              <div style={{
+                width: '24px', height: '24px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.75rem', fontWeight: 700,
+                background: step >= 1 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
+                color: '#ffffff',
+                boxShadow: step >= 1 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
+                transition: 'all 0.3s ease',
+              }}>1</div>
+              <div style={{
+                width: '40px', height: '1px',
+                background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.08)',
+                transition: 'background 0.3s ease',
+              }} />
+              <div style={{
+                width: '24px', height: '24px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.75rem', fontWeight: 700,
+                background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
+                color: step >= 2 ? '#ffffff' : '#8f98a9',
+                boxShadow: step >= 2 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
+                transition: 'all 0.3s ease',
+              }}>2</div>
+            </div>
+          )}
 
           {/* Error Message Box */}
           {error && (
