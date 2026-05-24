@@ -2,18 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, Sparkles } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
-  "How do I draft a team?",
-  "What are the fantasy scoring rules?",
   "What sports can I track here?",
-  "How does live F1 telemetry work?",
-  "Tips for picking a Captain?",
-  "Show me the current standings!",
+  "How do I draft a team?",
+  "Scoring rules breakdown",
+  "Show me the current standings",
+  "How does F1 telemetry work?",
+  "Tips for picking a Captain",
 ];
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hey Manager! I'm **Carlo** ⚡ — your AI coach for the FOFA Sports Arena. Ask me anything about drafting teams, live telemetry feeds, race strategies, or sports statistics!", sender: 'ai' }
+    { id: 1, text: "Hey — I'm **Carlos** 🏎️, your AI companion for FOFA Arena. Ask me anything about drafts, live scores, streaming, or sports strategy.", sender: 'ai' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -102,9 +102,9 @@ const Chatbot = () => {
               <Bot size={22} color="#fff" />
             </div>
             <div style={{ flex: 1 }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>Carlo</h3>
+              <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>Carlos</h3>
               <span style={{ fontSize: '0.7rem', color: '#00c0f9', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00c0f9', boxShadow: '0 0 8px #00c0f9' }}></span> AI COACH
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00c0f9', boxShadow: '0 0 8px #00c0f9' }}></span> AI COMPANION
               </span>
             </div>
             <Sparkles size={18} color="#f3c623" style={{ opacity: 0.6 }} />
@@ -174,7 +174,7 @@ const Chatbot = () => {
           }}>
             <input
               type="text" value={input} onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Carlo anything..."
+              placeholder="Ask Carlos anything..."
               style={{
                 flex: 1, padding: '10px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)',
                 background: 'rgba(255,255,255,0.04)', color: '#fff', outline: 'none', fontSize: '0.85rem',
