@@ -15,5 +15,26 @@ export default defineConfig({
         ws: true
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'three-bundle';
+            }
+            if (id.includes('flv.js')) {
+              return 'flv-bundle';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons-bundle';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    }
   }
 })
