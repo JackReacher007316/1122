@@ -1,44 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ArrowLeft, Tv, Mail, Phone, Lock, User } from 'lucide-react';
+import MercedesStarLogo from '../components/MercedesStarLogo';
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 30;
 
-const MercedesStarLogo = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <circle cx="50" cy="50" r="45" stroke="url(#metallic-border-auth)" strokeWidth="5" fill="url(#metallic-bg-auth)" />
-    <path d="M50 50 L50 12 L43 50 Z" fill="url(#light-metal-auth)" />
-    <path d="M50 50 L50 12 L57 50 Z" fill="url(#dark-metal-auth)" />
-    <path d="M50 50 L17 69 L22 62 Z" fill="url(#light-metal-auth)" />
-    <path d="M50 50 L17 69 L13 76 Z" fill="url(#dark-metal-auth)" />
-    <path d="M50 50 L83 69 L87 76 Z" fill="url(#light-metal-auth)" />
-    <path d="M50 50 L83 69 L78 62 Z" fill="url(#dark-metal-auth)" />
-    <circle cx="50" cy="50" r="3" fill="#ffffff" />
-    <defs>
-      <linearGradient id="metallic-border-auth" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#ffffff" />
-        <stop offset="30%" stopColor="#a1a1aa" />
-        <stop offset="50%" stopColor="#3f3f46" />
-        <stop offset="70%" stopColor="#d4d4d8" />
-        <stop offset="100%" stopColor="#18181b" />
-      </linearGradient>
-      <radialGradient id="metallic-bg-auth" cx="50" cy="50" r="45" fx="30" fy="30" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#1c1917" />
-        <stop offset="60%" stopColor="#090514" />
-        <stop offset="100%" stopColor="#020105" />
-      </radialGradient>
-      <linearGradient id="light-metal-auth" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#ffffff" />
-        <stop offset="100%" stopColor="#94a3b8" />
-      </linearGradient>
-      <linearGradient id="dark-metal-auth" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#475569" />
-        <stop offset="100%" stopColor="#0f172a" />
-      </linearGradient>
-    </defs>
-  </svg>
-);
 
 const Auth = ({ setToken }) => {
   const [isLogin, setIsLogin] = useState(true);
