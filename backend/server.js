@@ -207,11 +207,14 @@ app.get('/api/matches/:id', async (req, res) => {
 app.get('/api/matches/:id/players', async (req, res) => {
   const match = await prisma.match.findUnique({ where: { id: parseInt(req.params.id) } });
   if (!match) return res.status(404).json({ error: 'Match not found' });
+
+  const query = { theme: match.sport };
+  if (match.sport !== 'f1') {
+    query.team = { in: [match.teamA, match.teamB] };
+  }
+
   const players = await prisma.player.findMany({
-    where: {
-      theme: match.sport,
-      team: { in: [match.teamA, match.teamB] }
-    },
+    where: query,
     orderBy: { credits: 'desc' }
   });
   res.json(players);

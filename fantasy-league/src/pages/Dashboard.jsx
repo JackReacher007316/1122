@@ -132,10 +132,25 @@ function ScorePreview({ score, setActiveMatch, navigate }) {
   const sport = getSportById(score.sportId);
   const isLive = score.statusState === 'in';
   const destination = `/live/${score.sportId}`;
+  const [hovered, setHovered] = useState(false);
+
+  const getSportColor = (s) => {
+    if (s === 'f1') return 'var(--netflix-red)';
+    if (s === 'cricket') return 'var(--hotstar-gold)';
+    if (s === 'football') return 'var(--spotify-green)';
+    return '#1f80e0';
+  };
+  const getSportGlow = (s) => {
+    if (s === 'f1') return 'rgba(229, 9, 20, 0.4)';
+    if (s === 'cricket') return 'rgba(243, 198, 35, 0.4)';
+    if (s === 'football') return 'rgba(29, 185, 84, 0.4)';
+    return 'rgba(31, 128, 224, 0.4)';
+  };
 
   return (
     <div 
-      className="netflix-card-wrapper" 
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={() => {
         if (setActiveMatch) {
           setActiveMatch({
@@ -147,9 +162,22 @@ function ScorePreview({ score, setActiveMatch, navigate }) {
         }
         navigate(destination);
       }}
-      style={{ cursor: 'pointer' }}
+      style={{ 
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        transform: hovered ? 'scale(1.06) translateY(-4px)' : 'scale(1)',
+        zIndex: hovered ? 5 : 1
+      }}
     >
-      <div className="score-card" style={{ width: '310px' }}>
+      <div 
+        className="score-card" 
+        style={{ 
+          width: '310px',
+          borderColor: hovered ? getSportColor(score.sportId) : 'rgba(255,255,255,0.05)',
+          boxShadow: hovered ? `0 12px 24px rgba(0, 0, 0, 0.5), 0 0 15px ${getSportGlow(score.sportId)}` : '0 6px 12px rgba(0, 0, 0, 0.2)',
+          transition: 'all 0.3s ease'
+        }}
+      >
         <div className="score-topline">
           <span className="sport-pill">
             {score.sportId === 'cricket' && <Trophy size={14} style={{ color: 'var(--hotstar-gold)' }} />}
@@ -185,17 +213,45 @@ function MatchCard({ match, navigate, setActiveMatch }) {
   const completed = match.status === 'COMPLETED';
   const isDemo = String(match.id).startsWith('demo-');
   const destination = isDemo ? `/live/${match.sport}` : `/match/${match.id}`;
+  const [hovered, setHovered] = useState(false);
+
+  const getSportColor = (s) => {
+    if (s === 'f1') return 'var(--netflix-red)';
+    if (s === 'cricket') return 'var(--hotstar-gold)';
+    if (s === 'football') return 'var(--spotify-green)';
+    return '#1f80e0';
+  };
+  const getSportGlow = (s) => {
+    if (s === 'f1') return 'rgba(229, 9, 20, 0.4)';
+    if (s === 'cricket') return 'rgba(243, 198, 35, 0.4)';
+    if (s === 'football') return 'rgba(29, 185, 84, 0.4)';
+    return 'rgba(31, 128, 224, 0.4)';
+  };
 
   return (
     <div 
-      className="netflix-card-wrapper" 
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={() => {
         if (setActiveMatch) setActiveMatch(match);
         navigate(destination);
       }} 
-      style={{ cursor: 'pointer' }}
+      style={{ 
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        transform: hovered ? 'scale(1.06) translateY(-4px)' : 'scale(1)',
+        zIndex: hovered ? 5 : 1
+      }}
     >
-      <div className="match-card" style={{ width: '310px' }}>
+      <div 
+        className="match-card" 
+        style={{ 
+          width: '310px',
+          borderColor: hovered ? getSportColor(match.sport) : 'rgba(255,255,255,0.05)',
+          boxShadow: hovered ? `0 12px 24px rgba(0, 0, 0, 0.5), 0 0 15px ${getSportGlow(match.sport)}` : '0 6px 12px rgba(0, 0, 0, 0.2)',
+          transition: 'all 0.3s ease'
+        }}
+      >
         <div className="score-topline">
           <span className="sport-pill">
             {match.sport === 'cricket' && <Trophy size={14} style={{ color: 'var(--hotstar-gold)' }} />}
@@ -305,15 +361,23 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
 
   return (
     <div className="page-shell">
-      {/* Netflix Cinematic Hero Banner */}
-      <section className="netflix-hero" style={{ backgroundImage: `url(${slide.image})` }}>
-        <div className="netflix-hero-overlay" />
+      {/* Amazon Prime & JioCinema Style Premium Hero Banner */}
+      <section 
+        className="netflix-hero" 
+        style={{ 
+          background: `linear-gradient(to right, rgba(2, 6, 16, 0.95) 0%, rgba(2, 6, 16, 0.8) 30%, rgba(2, 6, 16, 0.4) 60%, transparent 100%), url(${slide.image})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderRadius: '16px',
+          border: '1px solid rgba(255,255,255,0.06)'
+        }}
+      >
         <div className="netflix-hero-content">
-          <div className="netflix-hero-badge">
-            <Radio size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+          <div className="netflix-hero-badge" style={{ background: 'linear-gradient(135deg, #1f80e0, #0052a3)', borderRadius: '20px', padding: '6px 14px' }}>
+            <Radio size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle', animation: 'pulse 1s infinite' }} />
             {slide.tag} • {slide.subtitle}
           </div>
-          <h1 className="netflix-hero-title">{slide.title}</h1>
+          <h1 className="netflix-hero-title" style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '-0.5px' }}>{slide.title}</h1>
           <p className="netflix-hero-desc">{slide.desc}</p>
           <div className="netflix-hero-actions">
             <button 
@@ -323,11 +387,24 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
                 if (associatedMatch && setActiveMatch) setActiveMatch(associatedMatch);
                 navigate(slide.path);
               }}
+              style={{
+                background: 'linear-gradient(135deg, #ffcc00, #ffaa00)',
+                color: '#000000',
+                border: 'none',
+                boxShadow: '0 0 15px rgba(255, 204, 0, 0.4)'
+              }}
             >
               <PlayCircle size={18} /> {slide.cta}
             </button>
-            <button className="btn-netflix-info" onClick={() => navigate('/watch-party')}>
-              <Users size={18} /> Party Room
+            <button 
+              className="btn-netflix-info" 
+              onClick={() => navigate('/watch-party')}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}
+            >
+              <Users size={18} /> Co-Watch Room
             </button>
           </div>
           
@@ -342,7 +419,7 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
                   height: '4px',
                   borderRadius: '2px',
                   border: 'none',
-                  background: idx === currentSlide ? 'var(--netflix-red)' : 'rgba(255, 255, 255, 0.4)',
+                  background: idx === currentSlide ? '#ffcc00' : 'rgba(255, 255, 255, 0.4)',
                   transition: 'background 0.3s',
                   cursor: 'pointer',
                   padding: 0

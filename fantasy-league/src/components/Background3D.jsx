@@ -57,17 +57,33 @@ function CameraDrift() {
   return null;
 }
 
-export default function Background3D() {
+export default function Background3D({ disabled }) {
+  if (disabled) {
+    return (
+      <div 
+        className="arena-canvas" 
+        aria-hidden="true" 
+        style={{
+          background: 'radial-gradient(circle at 50% 15%, #0b1426 0%, #020610 100%)',
+          position: 'fixed',
+          inset: 0,
+          zIndex: -1,
+          pointerEvents: 'none'
+        }}
+      />
+    );
+  }
+
   return (
     <div className="arena-canvas" aria-hidden="true">
       <Canvas
         camera={{ position: [0, 0, 10], fov: 60 }}
-        gl={{ antialias: true, alpha: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
-        dpr={[1, 1.5]}
+        gl={{ antialias: false, alpha: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
+        dpr={[1, 1.2]}
       >
         <Suspense fallback={null}>
-          <color attach="background" args={['#030b17']} />
-          <fog attach="fog" args={['#030b17', 5, 25]} />
+          <color attach="background" args={['#020610']} />
+          <fog attach="fog" args={['#020610', 5, 25]} />
           
           <CameraDrift />
           <AmbientGlows />

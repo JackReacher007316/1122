@@ -62,6 +62,41 @@ function isActivePath(locationPath, itemPath) {
   return locationPath === itemPath || locationPath.startsWith(`${itemPath}/`);
 }
 
+const MercedesStarLogo = ({ size = 20, color = "#ffffff" }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100" fill="none" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <circle cx="50" cy="50" r="45" stroke="url(#metallic-border-app)" strokeWidth="5" fill="url(#metallic-bg-app)" />
+    <path d="M50 50 L50 12 L43 50 Z" fill="url(#light-metal-app)" />
+    <path d="M50 50 L50 12 L57 50 Z" fill="url(#dark-metal-app)" />
+    <path d="M50 50 L17 69 L22 62 Z" fill="url(#light-metal-app)" />
+    <path d="M50 50 L17 69 L13 76 Z" fill="url(#dark-metal-app)" />
+    <path d="M50 50 L83 69 L87 76 Z" fill="url(#light-metal-app)" />
+    <path d="M50 50 L83 69 L78 62 Z" fill="url(#dark-metal-app)" />
+    <circle cx="50" cy="50" r="3" fill="#ffffff" />
+    <defs>
+      <linearGradient id="metallic-border-app" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#ffffff" />
+        <stop offset="30%" stopColor="#a1a1aa" />
+        <stop offset="50%" stopColor="#3f3f46" />
+        <stop offset="70%" stopColor="#d4d4d8" />
+        <stop offset="100%" stopColor="#18181b" />
+      </linearGradient>
+      <radialGradient id="metallic-bg-app" cx="50" cy="50" r="45" fx="30" fy="30" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#1c1917" />
+        <stop offset="60%" stopColor="#090514" />
+        <stop offset="100%" stopColor="#020105" />
+      </radialGradient>
+      <linearGradient id="light-metal-app" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#ffffff" />
+        <stop offset="100%" stopColor="#94a3b8" />
+      </linearGradient>
+      <linearGradient id="dark-metal-app" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#475569" />
+        <stop offset="100%" stopColor="#0f172a" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
 function Sidebar({ setToken }) {
   const location = useLocation();
   const userStr = localStorage.getItem('fantasy_user');
@@ -89,10 +124,8 @@ function Sidebar({ setToken }) {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-brand">
-        <div className="brand-mark">
-          <Tv color="#ffffff" size={22} />
-        </div>
+      <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <MercedesStarLogo size={24} />
         <div className="brand-title">
           <span style={{ fontWeight: 800 }}>FOFA</span>{' '}
           <span style={{ color: '#1f80e0', fontWeight: 400 }}>ARENA</span>
@@ -282,6 +315,7 @@ export default function App() {
   const [activeMatch, setActiveMatch] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(80);
+  const [disable3D, setDisable3D] = useState(() => localStorage.getItem('arena_disable_3d') === 'true');
 
   useEffect(() => {
     const handleStorage = () => setToken(localStorage.getItem('fantasy_token'));
@@ -303,7 +337,7 @@ export default function App() {
 
   return (
     <Router>
-      <Background3D />
+      <Background3D disabled={disable3D} />
       <WelcomeAnimation />
       <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -325,7 +359,10 @@ export default function App() {
                     paddingBottom: '16px'
                   }}>
                     <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                      <span style={{ color: 'var(--netflix-red)', fontWeight: 900, fontSize: '1.5rem', letterSpacing: '1px' }}>FOFA ARENA</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <MercedesStarLogo size={28} />
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '2px', fontFamily: 'Inter, sans-serif' }}>FOFA <span style={{ color: '#1f80e0' }}>ARENA</span></span>
+                      </div>
                       <nav style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#e5e5e5' }}>
                         <Link to="/" style={{ fontWeight: 600 }}>Home</Link>
                         <Link to="/watch-live" style={{ opacity: 0.8 }}>Live Streams</Link>
@@ -334,6 +371,41 @@ export default function App() {
                       </nav>
                     </div>
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      {/* Performance Mode / 3D Toggle */}
+                      <button
+                        onClick={() => {
+                          const newValue = !disable3D;
+                          setDisable3D(newValue);
+                          localStorage.setItem('arena_disable_3d', String(newValue));
+                        }}
+                        style={{
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          padding: '6px 12px',
+                          borderRadius: '16px',
+                          color: disable3D ? '#a1a1aa' : '#38bdf8',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.3s ease',
+                          outline: 'none',
+                          boxShadow: disable3D ? 'none' : '0 0 10px rgba(56,189,248,0.2)'
+                        }}
+                        title={disable3D ? "Enable 3D background (may lag on slower systems)" : "Disable 3D background (improves performance)"}
+                      >
+                        <span style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: disable3D ? '#71717a' : '#38bdf8',
+                          boxShadow: disable3D ? 'none' : '0 0 6px #38bdf8',
+                          display: 'inline-block'
+                        }} />
+                        {disable3D ? "3D OFF" : "3D ON"}
+                      </button>
                       <input 
                         type="text" 
                         placeholder="Search sports, players..." 
