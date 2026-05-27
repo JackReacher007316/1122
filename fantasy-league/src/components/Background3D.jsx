@@ -4,9 +4,9 @@ import { Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 
 const IMAGES = {
-  f1: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1920&auto=format&fit=crop',
-  cricket: 'https://images.unsplash.com/photo-1531415080290-bc98529c113a?q=80&w=1920&auto=format&fit=crop',
-  football: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1920&auto=format&fit=crop'
+  f1: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=50&w=640&auto=format&fit=crop',
+  cricket: 'https://images.unsplash.com/photo-1531415080290-bc98529c113a?q=50&w=640&auto=format&fit=crop',
+  football: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=50&w=640&auto=format&fit=crop'
 };
 
 function FloatingMesh({ position, color, size, speed }) {

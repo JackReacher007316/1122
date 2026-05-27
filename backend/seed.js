@@ -32,15 +32,15 @@ async function main() {
     { name: 'Shivam Dube', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Shivam_Dube.jpg', credits: 8.5, team: 'CSK', playerType: 'AR', rating: 8.0, selectedByPct: 68 },
     { name: 'Matheesha Pathirana', role: 'Bowler', cost: 16, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Matheesha_Pathirana_2023.jpg', credits: 9.0, team: 'CSK', playerType: 'BOWL', rating: 8.6, selectedByPct: 70 },
     { name: 'Devon Conway', role: 'Wicketkeeper', cost: 15, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Devon_Conway.jpg', credits: 8.5, team: 'CSK', playerType: 'WK', rating: 8.3, selectedByPct: 62 },
-    { name: 'Sameer Rizvi', role: 'Batsman', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Sameer_Rizvi.jpg', credits: 7.5, team: 'CSK', playerType: 'BAT', rating: 7.0, selectedByPct: 24 },
-    { name: 'Ajinkya Rahane', role: 'Batsman', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Ajinkya_Rahane_2018.jpg', credits: 8.0, team: 'CSK', playerType: 'BAT', rating: 7.5, selectedByPct: 40 },
-    { name: 'Deepak Chahar', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Deepak_Chahar_bowling.jpg', credits: 8.0, team: 'CSK', playerType: 'BOWL', rating: 7.5, selectedByPct: 52 },
-    { name: 'Tushar Deshpande', role: 'Bowler', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Tushar_Deshpande.jpg', credits: 7.5, team: 'CSK', playerType: 'BOWL', rating: 7.0, selectedByPct: 38 },
-    { name: 'Shardul Thakur', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/6/69/Shardul_Thakur_in_2018.jpg', credits: 8.0, team: 'CSK', playerType: 'BOWL', rating: 7.4, selectedByPct: 50 },
-    { name: 'Mitchell Santner', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Mitchell_Santner.jpg', credits: 8.5, team: 'CSK', playerType: 'AR', rating: 8.1, selectedByPct: 45 },
-    { name: 'Daryl Mitchell', role: 'Batsman', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Daryl_Mitchell_in_2022.jpg', credits: 8.5, team: 'CSK', playerType: 'BAT', rating: 8.2, selectedByPct: 60 },
     { name: 'Rachin Ravindra', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/4/46/Rachin_Ravindra.jpg', credits: 8.5, team: 'CSK', playerType: 'AR', rating: 8.0, selectedByPct: 58 },
-    { name: 'Maheesh Theekshana', role: 'Bowler', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Maheesh_Theekshana.jpg', credits: 8.0, team: 'CSK', playerType: 'BOWL', rating: 7.8, selectedByPct: 48 },
+    { name: 'Ravichandran Ashwin', role: 'All-Rounder', cost: 15, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Ravichandran_Ashwin.jpg', credits: 8.5, team: 'CSK', playerType: 'AR', rating: 8.5, selectedByPct: 75 },
+    { name: 'Noor Ahmad', role: 'Bowler', cost: 16, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Noor_Ahmad.jpg', credits: 8.8, team: 'CSK', playerType: 'BOWL', rating: 8.8, selectedByPct: 68 },
+    { name: 'Khaleel Ahmed', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Khaleel_Ahmed.jpg', credits: 8.0, team: 'CSK', playerType: 'BOWL', rating: 8.0, selectedByPct: 54 },
+    { name: 'Rahul Tripathi', role: 'Batsman', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Rahul_Tripathi.jpg', credits: 8.0, team: 'CSK', playerType: 'BAT', rating: 8.0, selectedByPct: 42 },
+    { name: 'Sam Curran', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Sam_Curran.jpg', credits: 8.2, team: 'CSK', playerType: 'AR', rating: 8.2, selectedByPct: 60 },
+    { name: 'Nathan Ellis', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Nathan_Ellis.jpg', credits: 7.8, team: 'CSK', playerType: 'BOWL', rating: 7.8, selectedByPct: 32 },
+    { name: 'Mukesh Choudhary', role: 'Bowler', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Mukesh_Choudhary.jpg', credits: 7.5, team: 'CSK', playerType: 'BOWL', rating: 7.5, selectedByPct: 24 },
+    { name: 'Shreyas Gopal', role: 'Bowler', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Shreyas_Gopal.jpg', credits: 7.5, team: 'CSK', playerType: 'BOWL', rating: 7.5, selectedByPct: 18 },
 
     // RCB (Royal Challengers Bengaluru)
     { name: 'Virat Kohli', role: 'Batsman', cost: 20, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Virat_Kohli_during_the_2015_World_Cup.jpg', credits: 10.0, team: 'RCB', playerType: 'BAT', rating: 9.8, selectedByPct: 94 },
@@ -53,11 +53,11 @@ async function main() {
     { name: 'Yash Dayal', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Yash_Dayal.jpg', credits: 8.0, team: 'RCB', playerType: 'BOWL', rating: 7.8, selectedByPct: 55 },
     { name: 'Rasikh Salam', role: 'Bowler', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Rasikh_Salam.jpg', credits: 7.5, team: 'RCB', playerType: 'BOWL', rating: 7.2, selectedByPct: 32 },
     { name: 'Suyash Sharma', role: 'Bowler', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Suyash_Sharma.jpg', credits: 7.5, team: 'RCB', playerType: 'BOWL', rating: 7.4, selectedByPct: 35 },
-    { name: 'Jacob Duffy', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/d/df/Jacob_Duffy_NZ.jpg', credits: 8.0, team: 'RCB', playerType: 'BOWL', rating: 7.5, selectedByPct: 28 },
     { name: 'Swapnil Singh', role: 'All-Rounder', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Swapnil_Singh.jpg', credits: 7.5, team: 'RCB', playerType: 'AR', rating: 7.1, selectedByPct: 30 },
     { name: 'Devdutt Padikkal', role: 'Batsman', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Devdutt_Padikkal.jpg', credits: 8.0, team: 'RCB', playerType: 'BAT', rating: 7.4, selectedByPct: 42 },
     { name: 'Manoj Bhandage', role: 'All-Rounder', cost: 8, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Manoj_Bhandage.jpg', credits: 7.0, team: 'RCB', playerType: 'AR', rating: 6.8, selectedByPct: 15 },
-    { name: 'Vijaykumar Vyshak', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Vijaykumar_Vyshak.jpg', credits: 8.0, team: 'RCB', playerType: 'BOWL', rating: 7.6, selectedByPct: 48 },
+    { name: 'Bhuvneshwar Kumar', role: 'Bowler', cost: 15, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Bhuvneshwar_Kumar_in_2018.jpg', credits: 8.5, team: 'RCB', playerType: 'BOWL', rating: 8.4, selectedByPct: 60 },
+    { name: 'Tim David', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Tim_David.jpg', credits: 8.2, team: 'RCB', playerType: 'AR', rating: 8.1, selectedByPct: 50 },
 
     // IND (India National Team)
     { name: 'Rohit Sharma', role: 'Batsman', cost: 18, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Rohit_Sharma_November_2016.jpg', credits: 9.5, team: 'IND', playerType: 'BAT', rating: 9.2, selectedByPct: 88 },
@@ -73,7 +73,7 @@ async function main() {
     { name: 'Axar Patel', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/d/da/Axar_Patel_2018.jpg', credits: 8.5, team: 'IND', playerType: 'AR', rating: 8.4, selectedByPct: 72 },
     { name: 'Arshdeep Singh', role: 'Bowler', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Arshdeep_Singh.jpg', credits: 8.5, team: 'IND', playerType: 'BOWL', rating: 8.3, selectedByPct: 60 },
     { name: 'Rinku Singh', role: 'Batsman', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Rinku_Singh.jpg', credits: 8.0, team: 'IND', playerType: 'BAT', rating: 8.1, selectedByPct: 50 },
-    { name: 'Virat Kohli', role: 'Batsman', cost: 20, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Virat_Kohli_during_the_2015_World_Cup.jpg', credits: 10.0, team: 'IND', playerType: 'BAT', rating: 9.8, selectedByPct: 92 },
+    { name: 'Washington Sundar', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Washington_Sundar.jpg', credits: 8.5, team: 'IND', playerType: 'AR', rating: 8.3, selectedByPct: 55 },
     { name: 'Yuzvendra Chahal', role: 'Bowler', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/6/6c/Yuzvendra_Chahal_2018.jpg', credits: 8.5, team: 'IND', playerType: 'BOWL', rating: 8.0, selectedByPct: 45 },
 
     // AUS (Australia National Team)
@@ -82,7 +82,7 @@ async function main() {
     { name: 'Glenn Maxwell', role: 'All-Rounder', cost: 16, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Glenn_Maxwell_SCG_Jan_2022.jpg', credits: 9.0, team: 'AUS', playerType: 'AR', rating: 8.6, selectedByPct: 78 },
     { name: 'Marcus Stoinis', role: 'All-Rounder', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/Marcus_Stoinis_in_2022.jpg', credits: 8.5, team: 'AUS', playerType: 'AR', rating: 8.2, selectedByPct: 62 },
     { name: 'Tim David', role: 'Batsman', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Tim_David.jpg', credits: 8.0, team: 'AUS', playerType: 'BAT', rating: 7.8, selectedByPct: 48 },
-    { name: 'Matthew Wade', role: 'Wicketkeeper', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/b/bd/Matthew_Wade.jpg', credits: 8.0, team: 'AUS', playerType: 'WK', rating: 7.6, selectedByPct: 35 },
+    { name: 'Jake Fraser-McGurk', role: 'Batsman', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Jake_Fraser-McGurk.jpg', credits: 8.5, team: 'AUS', playerType: 'BAT', rating: 8.4, selectedByPct: 65 },
     { name: 'Josh Inglis', role: 'Wicketkeeper', cost: 14, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Josh_Inglis.jpg', credits: 8.5, team: 'AUS', playerType: 'WK', rating: 8.1, selectedByPct: 52 },
     { name: 'Pat Cummins', role: 'Bowler', cost: 18, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Pat_Cummins_in_2022.jpg', credits: 9.5, team: 'AUS', playerType: 'BOWL', rating: 9.3, selectedByPct: 82 },
     { name: 'Mitchell Starc', role: 'Bowler', cost: 16, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/5/54/Mitchell_Starc_in_2022.jpg', credits: 9.0, team: 'AUS', playerType: 'BOWL', rating: 8.8, selectedByPct: 72 },
@@ -91,7 +91,7 @@ async function main() {
     { name: 'Steve Smith', role: 'Batsman', cost: 16, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Steve_Smith_at_SCG_in_2022.jpg', credits: 9.0, team: 'AUS', playerType: 'BAT', rating: 8.5, selectedByPct: 60 },
     { name: 'Cameron Green', role: 'All-Rounder', cost: 15, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Cameron_Green_in_2022.jpg', credits: 8.5, team: 'AUS', playerType: 'AR', rating: 8.2, selectedByPct: 55 },
     { name: 'Nathan Ellis', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Nathan_Ellis.jpg', credits: 8.0, team: 'AUS', playerType: 'BOWL', rating: 7.7, selectedByPct: 30 },
-    { name: 'Adam Voges', role: 'Batsman', cost: 10, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Adam_Voges.jpg', credits: 7.5, team: 'AUS', playerType: 'BAT', rating: 7.0, selectedByPct: 12 }
+    { name: 'Xavier Bartlett', role: 'Bowler', cost: 12, theme: 'cricket', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Xavier_Bartlett.jpg', credits: 8.0, team: 'AUS', playerType: 'BOWL', rating: 8.0, selectedByPct: 40 }
   ];
 
   // ===================================
@@ -105,7 +105,7 @@ async function main() {
     { name: 'Bernardo Silva', role: 'Midfielder', cost: 15, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Bernardo_Silva_2018.jpg', credits: 9.0, team: 'Man City', playerType: 'MID', rating: 8.8, selectedByPct: 72 },
     { name: 'Rodri', role: 'Midfielder', cost: 17, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/c/c5/Rodrigo_Hern%C3%A1ndez_Cascante_2022.jpg', credits: 9.5, team: 'Man City', playerType: 'MID', rating: 9.7, selectedByPct: 85 },
     { name: 'Jeremy Doku', role: 'Forward', cost: 14, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/e/ee/J%C3%A9r%C3%A9my_Doku_2021.jpg', credits: 8.5, team: 'Man City', playerType: 'FWD', rating: 8.1, selectedByPct: 40 },
-    { name: 'Jack Grealish', role: 'Forward', cost: 14, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Jack_Grealish_2021.jpg', credits: 8.5, team: 'Man City', playerType: 'FWD', rating: 8.2, selectedByPct: 48 },
+    { name: 'Savinho', role: 'Forward', cost: 15, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Savinho.jpg', credits: 9.0, team: 'Man City', playerType: 'FWD', rating: 8.7, selectedByPct: 64 },
     { name: 'Ruben Dias', role: 'Defender', cost: 14, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/R%C3%BAben_Dias_2021.jpg', credits: 9.0, team: 'Man City', playerType: 'DEF', rating: 8.5, selectedByPct: 62 },
     { name: 'John Stones', role: 'Defender', cost: 13, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/John_Stones_2018.jpg', credits: 8.5, team: 'Man City', playerType: 'DEF', rating: 8.4, selectedByPct: 50 },
     { name: 'Kyle Walker', role: 'Defender', cost: 13, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/a/af/Kyle_Walker_2018.jpg', credits: 8.5, team: 'Man City', playerType: 'DEF', rating: 8.3, selectedByPct: 54 },
@@ -122,7 +122,7 @@ async function main() {
     { name: 'Diogo Jota', role: 'Forward', cost: 15, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/c/cf/Diogo_Jota_2020.jpg', credits: 9.0, team: 'Liverpool', playerType: 'FWD', rating: 8.5, selectedByPct: 52 },
     { name: 'Alexis Mac Allister', role: 'Midfielder', cost: 15, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/c/c2/Alexis_Mac_Allister_2022.jpg', credits: 9.0, team: 'Liverpool', playerType: 'MID', rating: 8.8, selectedByPct: 76 },
     { name: 'Dominik Szoboszlai', role: 'Midfielder', cost: 15, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Dominik_Szoboszlai_2023.jpg', credits: 9.0, team: 'Liverpool', playerType: 'MID', rating: 8.6, selectedByPct: 70 },
-    { name: 'Wataru Endo', role: 'Midfielder', cost: 12, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Wataru_Endo_2018.jpg', credits: 8.0, team: 'Liverpool', playerType: 'MID', rating: 7.9, selectedByPct: 35 },
+    { name: 'Ryan Gravenberch', role: 'Midfielder', cost: 15, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Ryan_Gravenberch.jpg', credits: 9.0, team: 'Liverpool', playerType: 'MID', rating: 8.9, selectedByPct: 78 },
     { name: 'Curtis Jones', role: 'Midfielder', cost: 13, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Curtis_Jones.jpg', credits: 8.0, team: 'Liverpool', playerType: 'MID', rating: 8.0, selectedByPct: 40 },
     { name: 'Virgil van Dijk', role: 'Defender', cost: 15, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/b/be/Virgil_van_Dijk_2018.jpg', credits: 9.0, team: 'Liverpool', playerType: 'DEF', rating: 8.8, selectedByPct: 72 },
     { name: 'Trent Alexander-Arnold', role: 'Defender', cost: 14, theme: 'football', img: 'https://upload.wikimedia.org/wikipedia/commons/6/65/Trent_Alexander-Arnold_2021.jpg', credits: 9.0, team: 'Liverpool', playerType: 'DEF', rating: 8.5, selectedByPct: 70 },
@@ -139,7 +139,7 @@ async function main() {
   const f1Players = [
     // Red Bull Racing
     { name: 'Max Verstappen', role: 'Driver', cost: 25, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/Max_Verstappen_2019_FIA_Prize_Giving_cropped.jpg', credits: 10.5, team: 'Red Bull', playerType: 'DRV', rating: 9.9, selectedByPct: 95 },
-    { name: 'Liam Lawson', role: 'Driver', cost: 12, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Liam_Lawson_2023.jpg', credits: 7.5, team: 'Red Bull', playerType: 'DRV', rating: 7.8, selectedByPct: 38 },
+    { name: 'Yuki Tsunoda', role: 'Driver', cost: 13, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Yuki_Tsunoda_2023.jpg', credits: 8.0, team: 'Red Bull', playerType: 'DRV', rating: 8.1, selectedByPct: 48 },
 
     // Scuderia Ferrari
     { name: 'Lewis Hamilton', role: 'Driver', cost: 22, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/1/18/Lewis_Hamilton_2021_cropped.jpg', credits: 10.0, team: 'Ferrari', playerType: 'DRV', rating: 9.3, selectedByPct: 85 },
@@ -174,7 +174,7 @@ async function main() {
     { name: 'Gabriel Bortoleto', role: 'Driver', cost: 10, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Gabriel_Bortoleto.jpg', credits: 7.0, team: 'Kick Sauber', playerType: 'DRV', rating: 7.3, selectedByPct: 25 },
 
     // Visa Cash App RB
-    { name: 'Yuki Tsunoda', role: 'Driver', cost: 13, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Yuki_Tsunoda_2023.jpg', credits: 8.0, team: 'RB', playerType: 'DRV', rating: 8.1, selectedByPct: 48 },
+    { name: 'Liam Lawson', role: 'Driver', cost: 12, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Liam_Lawson_2023.jpg', credits: 7.5, team: 'RB', playerType: 'DRV', rating: 7.8, selectedByPct: 38 },
     { name: 'Isack Hadjar', role: 'Driver', cost: 10, theme: 'f1', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Isack_Hadjar.jpg', credits: 7.0, team: 'RB', playerType: 'DRV', rating: 7.2, selectedByPct: 18 }
   ];
 

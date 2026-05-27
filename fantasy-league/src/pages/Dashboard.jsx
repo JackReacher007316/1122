@@ -69,7 +69,7 @@ const carouselSlides = [
     desc: 'Watch the ultimate cricket clash live in high-fidelity 4D telemetry. Join active watch party rooms and compete on the global leaderboard.',
     cta: 'Watch Live Now',
     path: '/watch-live',
-    image: 'https://images.unsplash.com/photo-1531415080290-bc98529c113a?auto=format&fit=crop&q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1531415080290-bc98529c113a?auto=format&fit=crop&q=70&w=900',
     tag: 'CRICKET'
   },
   {
@@ -79,7 +79,7 @@ const carouselSlides = [
     desc: 'Take command of the pit wall. Monitor live telemetry, track gap intervals, and draft your ultimate fantasy driver lineup.',
     cta: 'Enter Race Control',
     path: '/live',
-    image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=70&w=900',
     tag: 'F1 RACING'
   },
   {
@@ -89,7 +89,7 @@ const carouselSlides = [
     desc: 'Catch every pass and tactic in real-time. Embed streams in your watch party room and co-watch with up to 12 friends.',
     cta: 'Watch Now',
     path: '/live/football',
-    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=70&w=900',
     tag: 'FOOTBALL'
   },
   {
@@ -99,7 +99,7 @@ const carouselSlides = [
     desc: 'Put your strategy to the test. Draft drivers, batsmen, and strikers. Earn points based on real telemetry data and top the leaderboard.',
     cta: 'Create Fantasy Team',
     path: '/create-team',
-    image: 'https://images.unsplash.com/photo-1540747737956-37872404a82a?auto=format&fit=crop&q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1540747737956-37872404a82a?auto=format&fit=crop&q=70&w=900',
     tag: 'FANTASY GARAGE'
   }
 ];
