@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, RefreshCw, Tv, Trophy, Flag, PlayCircle } from 'lucide-react';
 import SportTabs from '../components/SportTabs';
 import { fetchAllScores, getScoreSummary, SPORT_CATALOG } from '../data/liveSports';
+import UpcomingFixtures from '../components/UpcomingFixtures';
 
 function getSportIcon(sportId, size = 16) {
   if (sportId === 'cricket') return <Trophy size={size} style={{ color: '#a855f7' }} />;
@@ -250,6 +251,7 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
           )}
         </>
       )}
+      <UpcomingFixtures limit={9} />
     </div>
   );
 }

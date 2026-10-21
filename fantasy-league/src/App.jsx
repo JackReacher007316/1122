@@ -43,6 +43,7 @@ const CricketCalendar = React.lazy(() => import('./pages/CricketCalendar'));
 const FootballCalendar = React.lazy(() => import('./pages/FootballCalendar'));
 const WatchLive = React.lazy(() => import('./pages/WatchLive'));
 const SportsurgeLive = React.lazy(() => import('./pages/SportsurgeLive'));
+const PlayerStats = React.lazy(() => import('./pages/PlayerStats'));
 
 function PageLoader() {
   return (
@@ -83,6 +84,7 @@ function Sidebar({ setToken }) {
     { path: '/watch-party', label: 'Watch Party Lobby', icon: Users },
     { path: '/watch-live', label: 'Watch Live', icon: Tv },
     { path: '/sportsurge', label: 'Sportsurge Live', icon: Zap, live: true },
+    { path: '/stats', label: 'Player Stats', icon: Award },
     { path: '/admin', label: 'Race Engineer', icon: Settings },
   ];
 
@@ -259,6 +261,7 @@ function AppRoutes({ activeSport, setActiveSport, token, activeMatch, setActiveM
       <Route path="/watch-party" element={<WatchParty activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route path="/watch-live" element={<WatchLive />} />
       <Route path="/sportsurge" element={<SportsurgeLive />} />
+      <Route path="/stats" element={<PlayerStats />} />
       <Route path="/leaderboard" element={<Leaderboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route
         path="/create-team"
@@ -344,6 +347,7 @@ export default function App() {
                         <Link to="/" style={{ fontWeight: 600 }}>Home</Link>
                         <Link to="/watch-live" style={{ opacity: 0.8 }}>Live Streams</Link>
                         <Link to="/sportsurge" style={{ opacity: 0.8 }}>Sportsurge</Link>
+                        <Link to="/stats" style={{ opacity: 0.8 }}>Player Stats</Link>
                         <Link to="/watch-party" style={{ opacity: 0.8 }}>Watch Parties</Link>
                         <Link to="/leaderboard" style={{ opacity: 0.8 }}>Leaderboard</Link>
                       </nav>
