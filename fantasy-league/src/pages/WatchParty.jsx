@@ -1,31 +1,61 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { MonitorUp, Users, VideoOff, Radio, Tv, Copy, Check } from 'lucide-react';
+import { Users, Copy, Check, LogOut, Send, Radio, Tv, VideoOff, MonitorUp, MessageCircle } from 'lucide-react';
 import flvjs from 'flv.js';
 import SportTabs from '../components/SportTabs';
 
+const USERNAME_COLORS = [
+  '#38bdf8', '#60a5fa', '#f3c623', '#a78bfa', '#34d399', '#f87171',
+  '#22d3ee', '#818cf8', '#fbbf24', '#f472b6', '#38bdf8', '#fb7185',
+];
+
+const getUsernameColor = (username) => {
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return USERNAME_COLORS[Math.abs(hash) % USERNAME_COLORS.length];
+};
+
 const WatchParty = ({ activeSport, setActiveSport }) => {
-  const [mode, setMode] = useState('obs'); // 'obs' or 'webrtc'
-  const [isBroadcasting, setIsBroadcasting] = useState(false);
-  const [viewers, setViewers] = useState(0);
-  const [hasRemoteStream, setHasRemoteStream] = useState(false);
+  const username = JSON.parse(localStorage.getItem('fantasy_user'))?.username || 'Guest';
+
+  // State machine: 'lobby' | 'room'
+  const [view, setView] = useState('lobby');
+  const [roomCode, setRoomCode] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [members, setMembers] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [mode, setMode] = useState('obs');
   const [obsLive, setObsLive] = useState(false);
   const [obsUptime, setObsUptime] = useState(0);
-  const [copied, setCopied] = useState(null);
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [hasRemoteStream, setHasRemoteStream] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
-  const localVideoRef = useRef();
-  const remoteVideoRef = useRef();
-  const obsVideoRef = useRef();
-  const socketRef = useRef();
-  const peerConnectionRef = useRef();
-  const streamRef = useRef();
-  const flvPlayerRef = useRef();
+  const socketRef = useRef(null);
+  const obsVideoRef = useRef(null);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const flvPlayerRef = useRef(null);
+  const streamRef = useRef(null);
+  const peerConnectionRef = useRef(null);
+  const chatEndRef = useRef(null);
+  const uptimeInterval = useRef(null);
   const isBroadcastingRef = useRef(false);
-  const uptimeInterval = useRef();
 
   useEffect(() => { isBroadcastingRef.current = isBroadcasting; }, [isBroadcasting]);
 
-  // Check OBS stream status
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
   const checkObsStatus = useCallback(async () => {
     try {
       const res = await fetch('/api/stream/status');
@@ -35,7 +65,6 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
     } catch { /* ignore */ }
   }, []);
 
-  // Initialize FLV player for OBS stream
   const initFlvPlayer = useCallback(() => {
     if (!obsVideoRef.current || !flvjs.isSupported()) return;
     if (flvPlayerRef.current) { flvPlayerRef.current.destroy(); flvPlayerRef.current = null; }
@@ -51,215 +80,630 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
     flvPlayerRef.current = player;
   }, []);
 
-  // Socket.io + WebRTC setup
   useEffect(() => {
-    function initPeerConnection(target) {
-      const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-      peer.onicecandidate = (e) => { if (e.candidate && socketRef.current) socketRef.current.emit('ice-candidate', { target, candidate: e.candidate }); };
-      peer.ontrack = (e) => { if (remoteVideoRef.current) { remoteVideoRef.current.srcObject = e.streams[0]; setHasRemoteStream(true); } };
-      if (streamRef.current) streamRef.current.getTracks().forEach(t => peer.addTrack(t, streamRef.current));
-      return peer;
-    }
-    async function createOffer(target) {
-      const peer = initPeerConnection(target); peerConnectionRef.current = peer;
-      const offer = await peer.createOffer(); await peer.setLocalDescription(offer);
-      if (socketRef.current) socketRef.current.emit('offer', { target, sdp: peer.localDescription });
-    }
-    async function handleOffer(p) {
-      const peer = initPeerConnection(p.caller); peerConnectionRef.current = peer;
-      await peer.setRemoteDescription(new RTCSessionDescription(p.sdp));
-      const answer = await peer.createAnswer(); await peer.setLocalDescription(answer);
-      if (socketRef.current) socketRef.current.emit('answer', { target: p.caller, sdp: peer.localDescription });
-    }
-    async function handleAnswer(p) { if (peerConnectionRef.current) await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(p.sdp)); }
-    async function handleIce(p) { if (peerConnectionRef.current) await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(p.candidate)); }
+    const socket = io();
+    socketRef.current = socket;
 
-    socketRef.current = io();
-    socketRef.current.on('connect', () => socketRef.current.emit('join-stream'));
-    socketRef.current.on('user-joined', (uid) => { setViewers(v => v + 1); if (isBroadcastingRef.current && streamRef.current) createOffer(uid); });
-    socketRef.current.on('user-left', () => { setViewers(v => Math.max(0, v - 1)); setHasRemoteStream(false); });
-    socketRef.current.on('offer', handleOffer);
-    socketRef.current.on('answer', handleAnswer);
-    socketRef.current.on('ice-candidate', handleIce);
-    socketRef.current.on('obs-stream-live', (data) => { setObsLive(data.live); if (data.live && mode === 'obs') setTimeout(initFlvPlayer, 1000); });
+    socket.on('room-created', ({ roomCode: code, members: m }) => {
+      setRoomCode(code);
+      setMembers(m);
+      setView('room');
+      setIsCreating(false);
+      setError('');
+      addSystemMessage(`Room ${code} created. Share the code with friends!`);
+    });
+
+    socket.on('room-joined', ({ roomCode: code, members: m }) => {
+      setRoomCode(code);
+      setMembers(m);
+      setView('room');
+      setIsJoining(false);
+      setError('');
+      addSystemMessage(`You joined room ${code}`);
+    });
+
+    socket.on('room-error', ({ error: err }) => {
+      setError(err);
+      setIsCreating(false);
+      setIsJoining(false);
+    });
+
+    socket.on('room-user-joined', ({ username: user, members: m }) => {
+      setMembers(m);
+      addSystemMessage(`${user} joined the room`);
+    });
+
+    socket.on('room-user-left', ({ username: user, members: m }) => {
+      setMembers(m);
+      addSystemMessage(`${user} left the room`);
+    });
+
+    socket.on('room-chat-message', (msg) => {
+      setMessages(prev => [...prev, { ...msg, type: 'chat' }]);
+    });
+
+    socket.on('user-joined', (uid) => {
+      if (isBroadcastingRef.current && streamRef.current) createOffer(uid);
+    });
+    socket.on('user-left', () => { setHasRemoteStream(false); });
+    socket.on('offer', handleOffer);
+    socket.on('answer', handleAnswer);
+    socket.on('ice-candidate', handleIce);
+    socket.on('obs-stream-live', (data) => {
+      setObsLive(data.live);
+      if (data.live && mode === 'obs') setTimeout(initFlvPlayer, 1000);
+    });
 
     checkObsStatus();
     const pollId = setInterval(checkObsStatus, 5000);
 
     return () => {
       clearInterval(pollId);
-      if (socketRef.current) socketRef.current.disconnect();
+      socket.disconnect();
       if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
       if (flvPlayerRef.current) { flvPlayerRef.current.destroy(); flvPlayerRef.current = null; }
+      if (peerConnectionRef.current) peerConnectionRef.current.close();
+      if (uptimeInterval.current) clearInterval(uptimeInterval.current);
     };
-  }, [checkObsStatus, initFlvPlayer, mode]);
+  }, [mode, checkObsStatus, initFlvPlayer]);
 
-  // Auto-connect FLV player when OBS goes live
   useEffect(() => {
-    if (obsLive && mode === 'obs') initFlvPlayer();
-    if (obsLive) { uptimeInterval.current = setInterval(() => setObsUptime(u => u + 1), 1000); }
-    return () => clearInterval(uptimeInterval.current);
-  }, [obsLive, mode, initFlvPlayer]);
+    if (view === 'room' && mode === 'obs' && obsLive) {
+      setTimeout(initFlvPlayer, 500);
+    }
+  }, [view, mode, obsLive, initFlvPlayer]);
 
+  useEffect(() => {
+    if (obsLive && obsUptime > 0) {
+      if (uptimeInterval.current) clearInterval(uptimeInterval.current);
+      uptimeInterval.current = setInterval(() => {
+        setObsUptime(prev => prev + 1);
+      }, 1000);
+    }
+    return () => { if (uptimeInterval.current) clearInterval(uptimeInterval.current); };
+  }, [obsLive, obsUptime]);
+
+  const addSystemMessage = (msg) => {
+    setMessages(prev => [...prev, {
+      id: Math.random().toString(),
+      type: 'system',
+      message: msg,
+      timestamp: new Date().toISOString()
+    }]);
+  };
+
+  const createRoom = () => {
+    if (!socketRef.current) return;
+    setIsCreating(true);
+    setError('');
+    socketRef.current.emit('create-room', { username });
+  };
+
+  const joinRoom = () => {
+    const code = joinCode.trim().toUpperCase();
+    if (!code || !socketRef.current) return;
+    setIsJoining(true);
+    setError('');
+    socketRef.current.emit('join-room', { roomCode: code, username });
+  };
+
+  const leaveRoom = () => {
+    if (socketRef.current) socketRef.current.emit('leave-room');
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    if (flvPlayerRef.current) { flvPlayerRef.current.destroy(); flvPlayerRef.current = null; }
+    if (peerConnectionRef.current) { peerConnectionRef.current.close(); peerConnectionRef.current = null; }
+    setView('lobby');
+    setRoomCode('');
+    setMembers([]);
+    setMessages([]);
+    setIsBroadcasting(false);
+    setHasRemoteStream(false);
+    setError('');
+  };
+
+  const sendChatMessage = () => {
+    const text = chatInput.trim();
+    if (!text || !socketRef.current) return;
+    socketRef.current.emit('room-chat', { roomCode, message: text, username });
+    setChatInput('');
+  };
+
+  // WebRTC logic
   const startBroadcast = async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: true });
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
       streamRef.current = stream;
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
       setIsBroadcasting(true);
-      stream.getVideoTracks()[0].onended = () => stopBroadcast();
-    } catch { alert("Failed to capture screen."); }
+      socketRef.current.emit('webrtc-ready', { roomCode });
+    } catch {
+      setError('Could not access screen media.');
+    }
   };
 
   const stopBroadcast = () => {
-    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     setIsBroadcasting(false);
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
-    if (peerConnectionRef.current) peerConnectionRef.current.close();
   };
 
-  const copyToClipboard = (text, key) => {
-    navigator.clipboard.writeText(text); setCopied(key);
-    setTimeout(() => setCopied(null), 2000);
+  const createOffer = async (uid) => {
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19002' }] });
+    peerConnectionRef.current = pc;
+    streamRef.current.getTracks().forEach(track => pc.addTrack(track, streamRef.current));
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate && socketRef.current) {
+        socketRef.current.emit('ice-candidate', { roomCode, candidate: e.candidate, to: uid });
+      }
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socketRef.current.emit('offer', { roomCode, sdp: offer, to: uid });
   };
 
-  const formatUptime = (s) => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+  const handleOffer = async ({ sdp, from }) => {
+    if (isBroadcasting) return;
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19002' }] });
+    peerConnectionRef.current = pc;
 
-  const obsSettings = { server: `rtmp://${window.location.hostname}:1935/live`, key: 'fofa' };
+    pc.onicecandidate = (e) => {
+      if (e.candidate && socketRef.current) {
+        socketRef.current.emit('ice-candidate', { roomCode, candidate: e.candidate, to: from });
+      }
+    };
+
+    pc.ontrack = (e) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = e.streams[0];
+        setHasRemoteStream(true);
+      }
+    };
+
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    socketRef.current.emit('answer', { roomCode, sdp: answer, to: from });
+  };
+
+  const handleAnswer = async ({ sdp }) => {
+    if (peerConnectionRef.current) {
+      await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(sdp));
+    }
+  };
+
+  const handleIce = async ({ candidate }) => {
+    if (peerConnectionRef.current) {
+      await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+  };
+
+  const copyRoomCode = () => {
+    navigator.clipboard.writeText(roomCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const formatTimestamp = (iso) => {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch { return ''; }
+  };
+
+  const formatUptime = (sec) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   return (
-    <div style={{ animation: 'fadeIn 0.5s ease', paddingBottom: '100px' }}>
-      <header style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="page-shell" style={{ animation: 'fadeIn 0.5s ease' }}>
+      {/* ── LOBBY VIEW ── */}
+      {view === 'lobby' && (
         <div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--neon-pink)', fontFamily: 'var(--font-heading)', letterSpacing: '4px', marginBottom: '6px' }}>⬡ BROADCAST CENTER</div>
-          <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Watch <span className="heading-gradient">Party</span></h1>
-          <p style={{ color: 'var(--text-muted)', marginTop: '4px' }}>Stream via OBS Studio or share your screen directly.</p>
-        </div>
-        <div className="glass-panel" style={{ display: 'flex', gap: '20px', padding: '12px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={18} color="var(--neon-blue)" /><span style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{viewers + 1} Online</span></div>
-          <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: obsLive || isBroadcasting ? '#ff2800' : '#00ff87', boxShadow: `0 0 8px ${obsLive || isBroadcasting ? '#ff2800' : '#00ff87'}`, animation: obsLive || isBroadcasting ? 'pulse 1.5s infinite' : 'none' }} />
-            <span style={{ color: obsLive || isBroadcasting ? '#ff2800' : 'var(--text-muted)', fontSize: '0.8rem', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>
-              {obsLive ? 'OBS LIVE' : isBroadcasting ? 'SCREEN LIVE' : 'OFFLINE'}
-            </span>
-          </div>
-        </div>
-      </header>
+          <section style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1f80e0', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <Users size={16} />
+              CO-WATCHING PARTY ROOMS
+            </div>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '8px 0 12px', color: '#ffffff' }}>
+              Watch Party Lobby
+            </h1>
+            <p style={{ color: '#8f98a9', fontSize: '0.95rem', margin: 0, maxWidth: '800px', lineHeight: '1.6' }}>
+              Create a private cinema room for up to 12 friends. Stream high-fidelity sports feeds, co-watch via screen share, and enjoy instant synchronized chat.
+            </p>
+          </section>
 
-      <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
+          {error && (
+            <div style={{
+              padding: '10px 14px',
+              background: 'rgba(255, 46, 85, 0.1)',
+              border: '1px solid rgba(255, 46, 85, 0.3)',
+              color: '#ff2e55',
+              borderRadius: '6px',
+              marginBottom: '24px',
+              maxWidth: '720px'
+            }}>{error}</div>
+          )}
 
-      {/* Mode Selector */}
-      <div style={{ display: 'flex', gap: '0', marginBottom: '24px', background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '4px', border: '1px solid rgba(255,255,255,0.05)', maxWidth: '400px' }}>
-        <button onClick={() => setMode('obs')} style={{
-          flex: 1, padding: '12px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-          background: mode === 'obs' ? 'linear-gradient(135deg, rgba(229,9,20,0.3), rgba(168,85,247,0.15))' : 'transparent',
-          color: mode === 'obs' ? '#fff' : 'var(--text-muted)', transition: 'all 0.3s', boxShadow: mode === 'obs' ? '0 0 20px rgba(229,9,20,0.15)' : 'none'
-        }}><Radio size={16} /> OBS STUDIO</button>
-        <button onClick={() => setMode('webrtc')} style={{
-          flex: 1, padding: '12px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-          background: mode === 'webrtc' ? 'linear-gradient(135deg, rgba(0,229,255,0.3), rgba(168,85,247,0.15))' : 'transparent',
-          color: mode === 'webrtc' ? '#fff' : 'var(--text-muted)', transition: 'all 0.3s', boxShadow: mode === 'webrtc' ? '0 0 20px rgba(0,229,255,0.15)' : 'none'
-        }}><Tv size={16} /> SCREEN SHARE</button>
-      </div>
-
-      {/* ===== OBS MODE ===== */}
-      {mode === 'obs' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-          {/* Video Player */}
-          <div className="glass-panel" style={{ padding: 0, overflow: 'hidden', borderTop: obsLive ? '2px solid #ff2800' : '2px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ width: '100%', aspectRatio: '16/9', background: '#0a0b10', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <video ref={obsVideoRef} autoPlay playsInline controls style={{ width: '100%', height: '100%', objectFit: 'contain', display: obsLive ? 'block' : 'none' }} />
-              {!obsLive && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', color: 'var(--text-muted)' }}>
-                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', border: '2px solid rgba(229,9,20,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Radio size={28} style={{ opacity: 0.4 }} />
-                  </div>
-                  <p style={{ fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '2px' }}>WAITING FOR OBS STREAM...</p>
-                  <p style={{ fontSize: '0.8rem', maxWidth: '300px', textAlign: 'center' }}>Configure OBS with the settings on the right and start streaming.</p>
+          <div className="lobby-layout" style={{ maxWidth: '840px' }}>
+            {/* Create Room Box */}
+            <div className="action-card">
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  padding: '12px',
+                  borderRadius: '50%',
+                  background: 'rgba(31, 128, 224, 0.1)',
+                  marginBottom: '20px',
+                  color: '#1f80e0'
+                }}>
+                  <Users size={28} />
                 </div>
-              )}
-              {obsLive && (
-                <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span className="live-badge">● LIVE</span>
-                  <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-heading)', color: 'var(--text-muted)', letterSpacing: '1px' }}>{formatUptime(obsUptime)}</span>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', margin: '0 0 8px 0' }}>Host a Party Room</h3>
+                <p style={{ color: '#8f98a9', fontSize: '0.88rem', margin: '0 0 24px 0', lineHeight: '1.5' }}>
+                  Generate a unique room invitation code. You can control the stream format and invite up to 12 members.
+                </p>
+              </div>
+              <button 
+                onClick={createRoom} 
+                disabled={isCreating}
+                className="submit-btn"
+              >
+                {isCreating ? 'Creating room...' : 'Host Room'}
+              </button>
+            </div>
+
+            {/* Join Room Box */}
+            <div className="action-card">
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  padding: '12px',
+                  borderRadius: '50%',
+                  background: 'rgba(243, 198, 35, 0.1)',
+                  marginBottom: '20px',
+                  color: '#f3c623'
+                }}>
+                  <Tv size={28} />
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* OBS Config Panel */}
-          <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <h3 style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-              <Radio size={18} color="var(--neon-red)" /> OBS Settings
-            </h3>
-
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <label style={{ fontSize: '0.65rem', fontFamily: 'var(--font-heading)', letterSpacing: '2px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>RTMP SERVER</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <code style={{ flex: 1, padding: '10px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px', fontSize: '0.8rem', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', wordBreak: 'break-all' }}>{obsSettings.server}</code>
-                <button onClick={() => copyToClipboard(obsSettings.server, 'server')} style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', color: '#fff', display: 'flex' }}>
-                  {copied === 'server' ? <Check size={16} color="#00ff87" /> : <Copy size={16} />}
-                </button>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', margin: '0 0 8px 0' }}>Join with Code</h3>
+                <p style={{ color: '#8f98a9', fontSize: '0.88rem', margin: '0 0 20px 0', lineHeight: '1.5' }}>
+                  Have an invitation link or room code? Enter the 6-character room key below to enter your friends room.
+                </p>
+                <div className="form-group" style={{ marginBottom: '24px' }}>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    placeholder="ENTER 6-CHAR CODE"
+                    className="form-input"
+                    style={{ textAlign: 'center', fontSize: '1.1rem', letterSpacing: '2px', fontWeight: 'bold' }}
+                  />
+                </div>
               </div>
-            </div>
-
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <label style={{ fontSize: '0.65rem', fontFamily: 'var(--font-heading)', letterSpacing: '2px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>STREAM KEY</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <code style={{ flex: 1, padding: '10px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--gold)', border: '1px solid rgba(255,215,0,0.15)', fontWeight: 'bold' }}>{obsSettings.key}</code>
-                <button onClick={() => copyToClipboard(obsSettings.key, 'key')} style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', color: '#fff', display: 'flex' }}>
-                  {copied === 'key' ? <Check size={16} color="#00ff87" /> : <Copy size={16} />}
-                </button>
-              </div>
-            </div>
-
-            <div style={{ background: 'rgba(229,9,20,0.06)', borderRadius: '12px', padding: '16px', border: '1px solid rgba(229,9,20,0.15)' }}>
-              <h4 style={{ fontSize: '0.7rem', fontFamily: 'var(--font-heading)', letterSpacing: '2px', color: 'var(--neon-red)', marginBottom: '12px' }}>QUICK SETUP</h4>
-              <ol style={{ fontSize: '0.8rem', color: 'var(--text-muted)', paddingLeft: '16px', lineHeight: 1.8 }}>
-                <li>Open <strong style={{ color: '#fff' }}>OBS Studio</strong></li>
-                <li>Go to <strong style={{ color: '#fff' }}>Settings → Stream</strong></li>
-                <li>Service: <strong style={{ color: '#fff' }}>Custom</strong></li>
-                <li>Paste the <strong style={{ color: 'var(--gold)' }}>Server</strong> and <strong style={{ color: 'var(--gold)' }}>Key</strong> above</li>
-                <li>Click <strong style={{ color: '#00ff87' }}>Start Streaming</strong></li>
-              </ol>
-            </div>
-
-            <div style={{ padding: '12px', background: obsLive ? 'rgba(0,255,135,0.08)' : 'rgba(255,255,255,0.03)', borderRadius: '10px', border: `1px solid ${obsLive ? 'rgba(0,255,135,0.2)' : 'rgba(255,255,255,0.05)'}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: obsLive ? '#00ff87' : '#666', boxShadow: obsLive ? '0 0 10px #00ff87' : 'none', animation: obsLive ? 'pulse 2s infinite' : 'none' }} />
-              <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-heading)', letterSpacing: '1px', color: obsLive ? '#00ff87' : 'var(--text-muted)' }}>
-                {obsLive ? `STREAM ACTIVE — ${formatUptime(obsUptime)}` : 'WAITING FOR OBS...'}
-              </span>
+              <button 
+                onClick={joinRoom} 
+                disabled={isJoining || !joinCode.trim()}
+                className="submit-btn"
+                style={{ background: '#f3c623', color: '#030b17' }}
+              >
+                {isJoining ? 'Entering room...' : 'Join Room'}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ===== WEBRTC SCREEN SHARE MODE ===== */}
-      {mode === 'webrtc' && (
-        <div className="glass-panel" style={{ padding: 0, overflow: 'hidden', borderTop: isBroadcasting ? '2px solid var(--neon-red)' : '2px solid var(--neon-blue)' }}>
-          <div style={{ width: '100%', aspectRatio: '16/9', background: '#0a0b10', position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <video ref={localVideoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'contain', display: isBroadcasting ? 'block' : 'none' }} />
-            <video ref={remoteVideoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'contain', display: !isBroadcasting ? 'block' : 'none' }} />
-            {!isBroadcasting && !hasRemoteStream && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--text-muted)', gap: '12px' }}>
-                <VideoOff size={48} style={{ opacity: 0.4 }} />
-                <p style={{ fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '2px' }}>NO STREAM AVAILABLE</p>
-                <p style={{ fontSize: '0.8rem' }}>Click below to share your screen</p>
+      {/* ── ACTIVE ROOM VIEW ── */}
+      {view === 'room' && (
+        <div>
+          {/* Room Header Info */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            marginBottom: '20px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.9rem', color: '#8f98a9', fontWeight: 600 }}>Room Code:</span>
+                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff', letterSpacing: '1px' }}>{roomCode}</span>
+                <button
+                  onClick={copyRoomCode}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: copied ? '#27d06d' : '#1f80e0',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    padding: 4
+                  }}
+                  title="Copy room code"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                </button>
               </div>
-            )}
-            {isBroadcasting && <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="live-badge">● REC</span></div>}
+              <span className="status-pill" style={{ background: 'rgba(31,128,224,0.12)', color: '#1f80e0', fontWeight: 700 }}>
+                {members.length}/12 Active Users
+              </span>
+            </div>
+
+            <button
+              onClick={leaveRoom}
+              style={{
+                background: 'rgba(255, 46, 85, 0.1)',
+                border: '1px solid rgba(255, 46, 85, 0.2)',
+                color: '#ff2e55',
+                borderRadius: '4px',
+                padding: '8px 16px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 46, 85, 0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 46, 85, 0.1)'}
+            >
+              <LogOut size={16} /> Exit Room
+            </button>
           </div>
-          <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
-            {!isBroadcasting ? (
-              <button className="btn-primary" onClick={startBroadcast} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 32px' }}>
-                <MonitorUp size={20} /> Share Screen & Broadcast
-              </button>
-            ) : (
-              <button onClick={stopBroadcast} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 32px', background: 'transparent', color: 'var(--neon-red)', border: '1px solid var(--neon-red)', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '1px' }}>
-                <VideoOff size={20} /> Stop Broadcasting
-              </button>
-            )}
+
+          <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
+
+          {/* Video + Chat columns */}
+          <div className="room-layout">
+            {/* Left: Media Area */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Media selection bar */}
+              <div style={{
+                display: 'flex',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: '6px',
+                padding: '3px',
+                border: '1px solid rgba(255,255,255,0.05)',
+                maxWidth: '320px'
+              }}>
+                <button
+                  onClick={() => setMode('obs')}
+                  style={{
+                    flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
+                    fontSize: '0.78rem', fontWeight: 600,
+                    background: mode === 'obs' ? '#1f80e0' : 'transparent',
+                    color: mode === 'obs' ? '#ffffff' : '#8f98a9',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Radio size={14} /> OBS Broadcast
+                </button>
+                <button
+                  onClick={() => setMode('webrtc')}
+                  style={{
+                    flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
+                    fontSize: '0.78rem', fontWeight: 600,
+                    background: mode === 'webrtc' ? '#1f80e0' : 'transparent',
+                    color: mode === 'webrtc' ? '#ffffff' : '#8f98a9',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <MonitorUp size={14} /> Screen Share
+                </button>
+              </div>
+
+              {/* Theater Video Frame */}
+              <div className="video-player-container">
+                {/* OBS Stream view */}
+                {mode === 'obs' && (
+                  <>
+                    <video
+                      ref={obsVideoRef}
+                      autoPlay
+                      playsInline
+                      controls
+                      style={{
+                        width: '100%', height: '100%', objectFit: 'contain',
+                        display: obsLive ? 'block' : 'none',
+                      }}
+                    />
+                    {!obsLive && (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', color: '#8f98a9', textAlign: 'center', padding: '40px' }}>
+                        <div style={{
+                          width: '54px', height: '54px', borderRadius: '50%',
+                          border: '2px solid rgba(255,255,255,0.1)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          marginBottom: '8px'
+                        }}>
+                          <Radio size={24} style={{ opacity: 0.5 }} />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: '#ffffff', fontWeight: 700, margin: 0 }}>WAITING FOR BROADCAST FEED...</p>
+                        <p style={{ fontSize: '0.8rem', margin: 0, maxWidth: '280px' }}>Connect your OBS Studio stream to start hosting a watch party.</p>
+                      </div>
+                    )}
+                    {obsLive && (
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '8px', alignItems: 'center', zIndex: 10 }}>
+                        <span className="status-pill is-live">● LIVE</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#ffffff' }}>{formatUptime(obsUptime)}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* WebRTC co-sharing view */}
+                {mode === 'webrtc' && (
+                  <>
+                    <video
+                      ref={localVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      style={{
+                        width: '100%', height: '100%', objectFit: 'contain',
+                        display: isBroadcasting ? 'block' : 'none',
+                      }}
+                    />
+                    <video
+                      ref={remoteVideoRef}
+                      autoPlay
+                      playsInline
+                      style={{
+                        width: '100%', height: '100%', objectFit: 'contain',
+                        display: !isBroadcasting && hasRemoteStream ? 'block' : 'none',
+                      }}
+                    />
+                    {!isBroadcasting && !hasRemoteStream && (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#8f98a9', gap: '12px', textAlign: 'center', padding: '40px' }}>
+                        <div style={{
+                          width: '54px', height: '54px', borderRadius: '50%',
+                          border: '2px solid rgba(255,255,255,0.1)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          marginBottom: '8px'
+                        }}>
+                          <VideoOff size={24} style={{ opacity: 0.5 }} />
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: '#ffffff', fontWeight: 700, margin: 0 }}>NO SCREEN SHARE ACTIVE</p>
+                        <p style={{ fontSize: '0.8rem', margin: 0 }}>Click the button below to stream your screen to this room.</p>
+                      </div>
+                    )}
+                    {isBroadcasting && (
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10 }}>
+                        <span className="status-pill is-live" style={{ background: '#27d06d' }}>● SHARING SCREEN</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* WebRTC controls (Only visible in screen sharing mode) */}
+              {mode === 'webrtc' && (
+                <div style={{
+                  padding: '12px', display: 'flex', justifyContent: 'center',
+                  background: '#0c111b', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '6px'
+                }}>
+                  {!isBroadcasting ? (
+                    <button
+                      onClick={startBroadcast}
+                      className="submit-btn"
+                      style={{ width: 'auto', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <MonitorUp size={16} /> Broadcast Screen
+                    </button>
+                  ) : (
+                    <button
+                      onClick={stopBroadcast}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px',
+                        background: 'rgba(255, 46, 85, 0.1)', color: '#ff2e55', border: '1px solid rgba(255, 46, 85, 0.2)',
+                        borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem'
+                      }}
+                    >
+                      <VideoOff size={16} /> Stop Sharing
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Side Chat Panel */}
+            <div className="live-chat-panel" style={{ height: 'auto', minHeight: '520px' }}>
+              {/* Chat Header */}
+              <div className="chat-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <MessageCircle size={16} color="#1f80e0" />
+                  <h3>Room Chat</h3>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: '#8f98a9', fontWeight: 600 }}>
+                  {members.length} members
+                </span>
+              </div>
+
+              {/* Connected members horizontal avatars strip */}
+              <div className="members-strip">
+                {members.map((member, idx) => {
+                  const mName = typeof member === 'string' ? member : member.username || 'User';
+                  const color = getUsernameColor(mName);
+                  return (
+                    <div 
+                      key={idx} 
+                      className="member-avatar"
+                      style={{
+                        background: `linear-gradient(135deg, ${color}44, ${color}22)`,
+                        border: `1.5px solid ${color}`,
+                        color: color
+                      }}
+                      title={mName}
+                    >
+                      {mName.charAt(0).toUpperCase()}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Chat messages */}
+              <div className="chat-messages">
+                {messages.length === 0 && (
+                  <div style={{ margin: 'auto', textAlign: 'center', color: '#8f98a9', fontSize: '0.85rem', padding: '24px 16px' }}>
+                    <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.3, color: '#1f80e0' }} />
+                    <p style={{ margin: 0 }}>Start typing to chat with room participants.</p>
+                  </div>
+                )}
+                {messages.map((msg) => {
+                  if (msg.type === 'system') {
+                    return (
+                      <div key={msg.id} className="system-message">
+                        {msg.message}
+                      </div>
+                    );
+                  }
+                  const color = getUsernameColor(msg.username);
+                  return (
+                    <div key={msg.id} className="message-item" style={{
+                      background: 'rgba(255,255,255,0.015)',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      borderLeft: `2.5px solid ${color}`
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                        <span className="message-user" style={{ color }}>{msg.username}</span>
+                        <span style={{ fontSize: '0.65rem', color: '#8f98a9' }}>{formatTimestamp(msg.timestamp)}</span>
+                      </div>
+                      <span className="message-text">{msg.message}</span>
+                    </div>
+                  );
+                })}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Bottom message input */}
+              <div className="chat-input-area">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') sendChatMessage(); }}
+                  placeholder="Chat with friends..."
+                  className="chat-input"
+                />
+                <button onClick={sendChatMessage} className="chat-send-btn">
+                  <Send size={14} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

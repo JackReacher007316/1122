@@ -2,6 +2,66 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Trophy, Clock, Users, ArrowLeft, Star, Zap, Crown, ChevronRight } from 'lucide-react';
 
+const TeamBadge = ({ teamName, sport, size = '80px' }) => {
+  const getSportColor = (s) => {
+    const c = { cricket: '#FFD700', football: '#00ff87', f1: '#ff2800' };
+    return c[s] || 'var(--neon-pink)';
+  };
+
+  const color = getSportColor(sport);
+  const initials = teamName ? teamName.substring(0, 2).toUpperCase() : 'TM';
+  const getEmoji = (s) => {
+    if (s === 'f1') return '🏎️';
+    if (s === 'cricket') return '🏏';
+    if (s === 'football') return '⚽';
+    return '🏆';
+  };
+
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: '20px',
+      background: 'linear-gradient(135deg, rgba(20,20,20,0.9), rgba(5,5,5,0.95))',
+      border: `2px solid ${color}`,
+      boxShadow: `0 0 16px ${color}33, inset 0 0 8px rgba(255,255,255,0.05)`,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      margin: '0 auto 10px',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '-50%',
+        left: '-50%',
+        width: '200%',
+        height: '200%',
+        background: `radial-gradient(circle, ${color}15 0%, transparent 60%)`,
+        pointerEvents: 'none'
+      }} />
+      <span style={{ 
+        fontFamily: 'var(--font-heading)', 
+        fontSize: '1.6rem', 
+        fontWeight: 900, 
+        color: '#fff', 
+        letterSpacing: '1px',
+        textShadow: `0 0 8px ${color}60`
+      }}>
+        {initials}
+      </span>
+      <span style={{ 
+        fontSize: '0.85rem',
+        marginTop: '2px'
+      }}>
+        {getEmoji(sport)}
+      </span>
+    </div>
+  );
+};
+
 const MatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,7 +93,7 @@ const MatchDetail = () => {
   }, [id, token]);
 
   const getSportColor = (sport) => {
-    const c = { cricket: '#FFD700', football: '#00ff87', f1: '#ff2800', hackathon: '#00e5ff' };
+    const c = { cricket: '#FFD700', football: '#00ff87', f1: '#ff2800' };
     return c[sport] || 'var(--neon-pink)';
   };
 
@@ -83,7 +143,7 @@ const MatchDetail = () => {
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: `radial-gradient(circle at 50% 0%, ${color}08 0%, transparent 60%)`, pointerEvents: 'none' }} />
 
           <div style={{ textAlign: 'center', flex: 1, zIndex: 1 }}>
-            <div style={{ fontSize: '3rem', marginBottom: '10px' }}>{match.teamALogo}</div>
+            <TeamBadge teamName={match.teamA} sport={match.sport} />
             <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '2px' }}>{match.teamA}</div>
           </div>
 
@@ -104,7 +164,7 @@ const MatchDetail = () => {
           </div>
 
           <div style={{ textAlign: 'center', flex: 1, zIndex: 1 }}>
-            <div style={{ fontSize: '3rem', marginBottom: '10px' }}>{match.teamBLogo}</div>
+            <TeamBadge teamName={match.teamB} sport={match.sport} />
             <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '2px' }}>{match.teamB}</div>
           </div>
         </div>

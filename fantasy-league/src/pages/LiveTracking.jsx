@@ -1,19 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, RefreshCw } from 'lucide-react';
-import Icon3D from '../components/Icon3D';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowRight, RefreshCw, Tv, Trophy, Flag, PlayCircle } from 'lucide-react';
 import SportTabs from '../components/SportTabs';
 import { fetchAllScores, getScoreSummary, SPORT_CATALOG } from '../data/liveSports';
+
+function getSportIcon(sportId, size = 16) {
+  if (sportId === 'cricket') return <Trophy size={size} style={{ color: '#a855f7' }} />;
+  if (sportId === 'f1') return <Flag size={size} style={{ color: '#ff314a' }} />;
+  if (sportId === 'football') return <PlayCircle size={size} style={{ color: '#00c0f9' }} />;
+  return <Tv size={size} />;
+}
 
 function ScoreCard({ score, onOpen }) {
   const sport = SPORT_CATALOG.find((item) => item.id === score.sportId) || SPORT_CATALOG[0];
   const isLive = score.statusState === 'in';
 
   return (
-    <button type="button" className="score-card" style={{ '--sport-color': sport.color }} onClick={onOpen}>
+    <button type="button" className="score-card" onClick={onOpen}>
       <div className="score-topline">
         <span className="sport-pill">
-          <Icon3D color={sport.color} shape={sport.shape} size={24} active={isLive} />
+          {getSportIcon(score.sportId, 16)}
           {sport.label}
         </span>
         <span className={`status-pill ${isLive ? 'is-live' : ''}`}>{score.statusText || 'Scheduled'}</span>
@@ -31,8 +37,8 @@ function ScoreCard({ score, onOpen }) {
         {score.venue || sport.sourceLabel}
       </div>
 
-      <span className="card-action">
-        Open sport <ArrowRight size={15} />
+      <span className="ghost-button" style={{ fontSize: '0.8rem', marginTop: '12px' }}>
+        Open feed <ArrowRight size={14} />
       </span>
     </button>
   );
@@ -44,16 +50,28 @@ function HubCard({ group, onOpen }) {
   const final = group.scores.filter((score) => score.statusState === 'post').length;
 
   return (
-    <button type="button" className="sport-hub-card" style={{ '--sport-color': group.sport.color }} onClick={onOpen}>
-      <div className="sport-hub-title">
-        <Icon3D color={group.sport.color} shape={group.sport.shape} size={34} active={live > 0} />
+    <button
+      type="button"
+      className="category-tile"
+      onClick={onOpen}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        padding: '20px',
+        width: '100%',
+        aspectRatio: 'auto',
+        minHeight: '140px'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', fontWeight: 'bold', color: '#ffffff' }}>
+        {getSportIcon(group.sport.id, 20)}
         {group.sport.label}
       </div>
-      <div className="sport-hub-stat">{group.scores.length}</div>
-      <div className="score-meta">
-        {live} live, {upcoming} upcoming, {final} final
-        <br />
-        Source: {group.source === 'live' ? group.sport.sourceLabel : 'demo fallback'}
+      <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff', margin: '8px 0' }}>{group.scores.length} Events</div>
+      <div className="score-meta" style={{ textAlign: 'left' }}>
+        {live} live • {upcoming} scheduled • {final} final
       </div>
     </button>
   );
@@ -119,22 +137,22 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
 
   return (
     <div className="page-shell">
-      <div className="toolbar">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px', marginBottom: '24px' }}>
         <div>
-          <div className="eyebrow">Monaco Grand Prix Control Room</div>
-          <h1 className="hero-title" style={{ fontSize: '3rem', marginBottom: 10 }}>
-            Pit Wall Telemetry Desk
+          <div className="eyebrow" style={{ color: '#1f80e0' }}>FOFA Sports Telemetry Desk</div>
+          <h1 className="hero-title" style={{ fontSize: '2.5rem', marginBottom: 10, color: '#ffffff' }}>
+            Arena Live Center
           </h1>
           <p className="hero-copy">
-            Dynamic telemetry feeds refresh every 30 seconds. Track Real Madrid football matchups alongside F1 Monaco Grand Prix speed indicators.
+            Dynamic telemetry feeds refresh every 30 seconds. Track Football, Cricket, and Formula 1 matches side-by-side.
           </p>
         </div>
-        <div className="toolbar-actions">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button className="ghost-button" type="button" onClick={loadScores}>
             <RefreshCw size={16} className={loading ? 'spinning' : ''} />
             Refresh
           </button>
-          <label className="toggle-label">
+          <label className="toggle-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', color: '#8f98a9', cursor: 'pointer' }}>
             <input type="checkbox" checked={autoRefresh} onChange={(event) => setAutoRefresh(event.target.checked)} />
             Auto refresh
           </label>
@@ -145,12 +163,50 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
 
       <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
 
+      {/* Stream Alert Panel */}
+      <div className="glass-panel" style={{
+        margin: '20px 0',
+        padding: '16px 24px',
+        background: 'linear-gradient(90deg, rgba(31, 128, 224, 0.15) 0%, rgba(3, 11, 23, 0.2) 100%)',
+        borderLeft: '4px solid #1f80e0',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Tv size={20} color="#1f80e0" style={{ minWidth: '20px' }} />
+          <span style={{ fontSize: '0.9rem', color: '#ffffff' }}>
+            <strong>Live Multicast:</strong> Watch F1 (fullraces.com), Cricket (eplayhd.com), and Football (colatvia.live) embedded streams directly on this platform.
+          </span>
+        </div>
+        <Link
+          to="/watch-live"
+          className="submit-btn"
+          style={{
+            textDecoration: 'none',
+            fontSize: '0.85rem',
+            padding: '8px 20px',
+            width: 'auto',
+            marginTop: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          Watch Broadcasts <ArrowRight size={14} />
+        </Link>
+      </div>
+
       <div className="stat-grid">
         {[
-          { label: 'Live now', value: totals.live, color: '#00c0f9' },
-          { label: 'Upcoming', value: totals.upcoming, color: '#f3c623' },
-          { label: 'Final', value: totals.final, color: '#ffffff' },
-          { label: 'Sports', value: visibleGroups.length, color: '#5d2a8f' },
+          { label: 'Live now', value: totals.live, color: '#ff2e55' },
+          { label: 'Upcoming', value: totals.upcoming, color: '#1f80e0' },
+          { label: 'Completed', value: totals.final, color: '#f3c623' },
+          { label: 'Sports', value: visibleGroups.length, color: '#ffffff' },
         ].map((stat) => (
           <div key={stat.label} className="stat-card">
             <div className="stat-label">{stat.label}</div>
@@ -169,28 +225,28 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
       ) : (
         <>
           <div className="section-head">
-            <h2>Monaco GP & RM Hub</h2>
-            <span className="section-note">Choose one for a full score page</span>
+            <h2>Sports Categories</h2>
+            <span className="section-note">Click a card for full dashboard</span>
           </div>
-          <div className="hub-grid">
+          <div className="category-tiles-container" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             {visibleGroups.map((group) => (
               <HubCard key={group.sport.id} group={group} onOpen={() => navigate(`/live/${group.sport.id}`)} />
             ))}
           </div>
 
           <div className="section-head">
-            <h2>Paddock Telemetry Stream</h2>
-            <span className="section-note">{allScores.length} cards</span>
+            <h2>Live Telemetry Wall</h2>
+            <span className="section-note">{allScores.length} feeds loaded</span>
           </div>
 
           {allScores.length ? (
-            <div className="score-grid">
+            <div className="score-grid" style={{ flexWrap: 'wrap', overflowX: 'visible' }}>
               {allScores.map((score) => (
                 <ScoreCard key={score.id} score={score} onOpen={() => navigate(`/live/${score.sportId}`)} />
               ))}
             </div>
           ) : (
-            <div className="empty-state">No scorecards available for this filter.</div>
+            <div className="empty-state">No score feeds available under this category.</div>
           )}
         </>
       )}

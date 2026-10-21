@@ -1,0 +1,4 @@
+# Redirect rules for Netlify
+/api/*  https://fofa-arena-hub.loca.lt/api/:splat  200
+/socket.io/*  https://fofa-arena-hub.loca.lt/socket.io/:splat  200!
+/*  /index.html  200

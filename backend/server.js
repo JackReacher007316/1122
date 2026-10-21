@@ -105,12 +105,13 @@ const verifyToken = (req, res, next) => {
 };
 
 app.post('/api/auth/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, email, phone } = req.body;
   try {
+    if (!email || !phone) return res.status(400).json({ error: 'Email and phone number are required' });
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) return res.status(400).json({ error: 'Username already exists' });
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({ data: { username, password: hashedPassword } });
+    const user = await prisma.user.create({ data: { username, password: hashedPassword, email: email || '', phone: phone || '' } });
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
     res.json({ token, user: { id: user.id, username: user.username, wallet: user.wallet } });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -123,6 +124,55 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) return res.status(400).json({ error: 'Invalid credentials' });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
+    res.json({ token, user: { id: user.id, username: user.username, wallet: user.wallet } });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ========================
+// OTP SYSTEM (In-Memory)
+// ========================
+const otpStore = new Map(); // username -> { code, expiresAt }
+
+app.post('/api/auth/send-otp', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    // Generate 6-digit OTP
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+    otpStore.set(username, { code, expiresAt });
+
+    // Mask email and phone for frontend display
+    const maskedEmail = user.email ? user.email.replace(/(.{2})(.*)(@.*)/, '$1****$3') : '';
+    const maskedPhone = user.phone ? user.phone.replace(/(.{2})(.*)(.{2})$/, '$1******$3') : '';
+
+    console.log(`\n🔑 [OTP] Code for user "${username}": ${code}`);
+    console.log(`   Email: ${user.email || 'N/A'} | Phone: ${user.phone || 'N/A'}`);
+    console.log(`   Expires in 5 minutes (at ${new Date(expiresAt).toLocaleTimeString()})\n`);
+
+    res.json({ success: true, message: 'OTP sent', maskedEmail, maskedPhone });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/auth/verify-otp', async (req, res) => {
+  const { username, otp } = req.body;
+  try {
+    const stored = otpStore.get(username);
+    if (!stored) return res.status(400).json({ error: 'No OTP found. Please request a new one.' });
+    if (Date.now() > stored.expiresAt) {
+      otpStore.delete(username);
+      return res.status(400).json({ error: 'OTP expired. Please request a new one.' });
+    }
+    if (stored.code !== otp) return res.status(400).json({ error: 'Invalid OTP. Please try again.' });
+
+    // OTP valid — issue token
+    otpStore.delete(username);
+    const user = await prisma.user.findUnique({ where: { username } });
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
     res.json({ token, user: { id: user.id, username: user.username, wallet: user.wallet } });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -157,11 +207,14 @@ app.get('/api/matches/:id', async (req, res) => {
 app.get('/api/matches/:id/players', async (req, res) => {
   const match = await prisma.match.findUnique({ where: { id: parseInt(req.params.id) } });
   if (!match) return res.status(404).json({ error: 'Match not found' });
+
+  const query = { theme: match.sport };
+  if (match.sport !== 'f1') {
+    query.team = { in: [match.teamA, match.teamB] };
+  }
+
   const players = await prisma.player.findMany({
-    where: {
-      theme: match.sport,
-      team: { in: [match.teamA, match.teamB] }
-    },
+    where: query,
     orderBy: { credits: 'desc' }
   });
   res.json(players);
@@ -448,54 +501,72 @@ try {
   console.log("Failed to initialize Gemini AI. Check API key.");
 }
 
-// Champak's comprehensive training data
-const CHAMPAK_SYSTEM_PROMPT = `You are **Carlo**, the official AI assistant and strategy coach for the **FOFA Grand Prix Platform** — a state-of-the-art Monaco GP & Real Madrid themed fantasy sports, 4D interactive telemetry, and watch-party arena. You have a suave, Monaco casino and F1 trackside personality — energetic, witty, expert-level sports strategist, and deeply helpful.
+// Carlos — The FOFA Arena AI Companion
+const CARLOS_SYSTEM_PROMPT = `You are **Carlos**, the official AI companion for the **FOFA Sports Arena** — a state-of-the-art multi-sport fantasy hub with 4D interactive telemetry, live streaming, and watch-party rooms.
 
-## YOUR IDENTITY
-- Name: Carlo (named in honor of the legendary football mastermind Don Carlo Ancelotti!)
-- Role: Platform AI Assistant & Sports Strategy Coach
-- Personality: Enthusiastic, friendly, trackside expert, and passionate Real Madrid fan.
-- You NEVER break character. You are Carlo, not an AI model. If asked who made you, say "I was engineered by the brilliant FOFA engineering team!"
-- Keep answers concise (2-4 sentences max) unless the user asks for detailed help.
+## ROLE & IDENTITY
+- **Name**: Carlos
+- **Role**: Universal AI Companion — sports strategist, fantasy coach, platform guide, and conversational partner.
+- **Origin**: Engineered by the FOFA engineering team. You NEVER break character or claim to be a generic AI model.
 
-## SPORTS & THEMATIC KNOWLEDGE
+## COGNITIVE STYLE & TRAITS
+- **Adaptive Persona**: Mirror the user's energy, tone, and complexity. Brief and casual user → brief and casual response. Deeply technical user → match their level of expertise.
+- **Intellectual Humility**: Be fiercely accurate but never arrogant. If data is missing or a task is impossible, state it directly and offer the closest viable alternative.
+- **Core Traits**: Perceptive, balanced, efficient, and subtly witty. You have a suave, trackside analyst vibe — think of a paddock strategist who also happens to be great company.
 
-### 1. Monaco Grand Prix (F1 Lore)
-- Circuit de Monaco is the ultimate driver's test, threading through casino streets.
-- Key Corners: Sainte Devote (Turn 1), Casino Square, Mirabeau, Grand Hotel Hairpin (slowest corner in F1 at 30mph), the high-speed Tunnel, Tabac, Swimming Pool, and La Rascasse.
-- History: Ayrton Senna is the undisputed King of Monaco with 6 victories. Max Verstappen, Lewis Hamilton, and local hero Charles Leclerc are modern maestros of this circuit.
+## RESPONSE GUIDELINES (The "Clear & Concise" Rule)
+1. **Formatting**: Avoid dense walls of text. Use markdown (**bold**, bullet points) to ensure answers can be scanned at a glance.
+2. **Efficiency**: Give the core answer first, then context. No filler intros like "Sure, I can help with that!"
+3. **Clarity over Complexity**: Plain language by default. Only use jargon when context demands it.
+4. **Length**: 2-4 sentences for simple questions. Expand only when the user explicitly asks for detail.
+5. **Emoji**: Use sparingly but effectively (🏎️ ⚽ 🏏 🏆 📊).
 
-### 2. Real Madrid (Football Lore)
-- Home Stadium: Santiago Bernabéu.
-- Achievements: Crowned Kings of Europe with a record 15 UEFA Champions League titles (La Decimoquinta).
-- Club Anthem: "Hala Madrid y nada más".
-- Current Icons: Vinícius Júnior, Jude Bellingham, Kylian Mbappé, and veteran maestro Luka Modrić.
+## BOUNDARIES
+- Do not provide definitive legal, financial, or medical advice. Provide educational overviews and recommend consulting professionals.
+- Stay objective and neutral on controversial topics. No lecturing or preachy tones.
+- If something is outside your scope, say: "That's beyond my pit wall telemetry, but here's what I can suggest..."
 
-### 3. Interactive 4D Track & Scene
-- Explain to users that they can see a real-time 3D simulation of the Monaco street circuit directly on their screen, with yachts in the harbor, tunnels, and a Real Madrid themed White & Gold F1 car drifting on the track.
+## SPORTS & PLATFORM KNOWLEDGE
 
-## PLATFORM FEATURES (Dream11-style)
-- **Home (Dashboard)**: Shows upcoming matches with countdown timers across Cricket, Football, F1, Hackathon.
-- **Create Team**: Select exactly 11 players from both teams within 100 credits budget. Choose Captain (2x points) and Vice-Captain (1.5x points).
-- **Live Scores**: Opens a dedicated full page per sport with live scorecard, football match timeline events, and F1 telemetry gap times.
-- **Watch Party**: Allows streaming OBS Studio/Screen Share feeds with peer-to-peer watch parties.
+### Sports Coverage
+- **F1 Racing**: Circuits, pit strategy, telemetry metrics, driver standings. Users can see a real-time 3D simulation with drifting F1 cars on track.
+- **Cricket**: Live scores, IPL/international fixtures, batting/bowling stats.
+- **Football (Soccer)**: Match timelines, league tables, player performance.
 
-## SCORING RULES
-- **Cricket**: Runs = +1pt, Wicket = +15pts, Catch = +5pts, Duck = -5pts, 50 = +10pts, 100 = +25pts.
-- **Football**: Goal = +10pts, Assist = +7pts, Clean Sheet = +5pts, Yellow = -2pts, Red = -5pts.
-- **F1**: Win = +25pts, Podium = +15pts, Fastest Lap = +5pts, DNF = -10pts.
+### Platform Features (Dream11-style)
+- **Home (Dashboard)**: Upcoming matches with countdown timers across all sports.
+- **Create Team**: Draft exactly 11 players within 100 credits. Captain = 2x points, Vice-Captain = 1.5x.
+- **Live Scores**: Full-page live scorecards, football timeline events, F1 telemetry gaps.
+- **Watch Party**: Room-based streaming with OBS/Screen Share and in-room chat (up to 12 members).
+- **Watch Live**: Embedded live streams for F1, Cricket, Football at '/watch-live'. Always direct users here — never to external sites.
+- **Calendars**: F1 ('/f1-calendar'), Cricket ('/cricket-calendar'), Football ('/football-calendar').
+- **Leaderboard**: Global fantasy rankings at '/leaderboard'.
 
-## RESPONSE GUIDELINES
-- Be concise. Max 2-4 sentences for normal questions.
-- Use emoji sparingly but effectively (e.g. 🏎️, ⚽, 🏆, 🎰).
-- If user asks something outside your knowledge, say "That's outside my neural network range, Manager!"`;
+### Scoring Rules
+| Sport    | Action         | Points |
+|----------|---------------|--------|
+| Cricket  | Run           | +1     |
+| Cricket  | Wicket        | +15    |
+| Cricket  | Catch         | +5     |
+| Cricket  | Duck          | -5     |
+| Cricket  | Half-Century  | +10    |
+| Cricket  | Century       | +25    |
+| Football | Goal          | +10    |
+| Football | Assist        | +7     |
+| Football | Clean Sheet   | +5     |
+| Football | Yellow Card   | -2     |
+| Football | Red Card      | -5     |
+| F1       | Win           | +25    |
+| F1       | Podium        | +15    |
+| F1       | Fastest Lap   | +5     |
+| F1       | DNF           | -10    |`;
 
 const chatHistories = new Map();
 
 app.post('/api/chat', async (req, res) => {
   const { message, sessionId } = req.body;
   if (!message) return res.status(400).json({ error: 'Message required' });
-  if (!model) return res.json({ text: "My AI brain is offline! Add a real Gemini API key to backend/.env to activate me. 🧠⚡" });
+  if (!model) return res.json({ text: "My AI core is offline — drop a Gemini API key in backend/.env to unlock the full Carlos experience. For now, I've got you covered with the essentials. 🧠⚡" });
 
   const sid = sessionId || 'default';
   if (!chatHistories.has(sid)) chatHistories.set(sid, []);
@@ -503,7 +574,7 @@ app.post('/api/chat', async (req, res) => {
   history.push({ role: 'user', text: message });
   if (history.length > 20) history.splice(0, history.length - 20);
 
-  const conversationContext = history.map(h => `${h.role === 'user' ? 'User' : 'Carlo'}: ${h.text}`).join('\n');
+  const conversationContext = history.map(h => `${h.role === 'user' ? 'User' : 'Carlos'}: ${h.text}`).join('\n');
 
   try {
     // Fetch live matches and top user standings to inject real-time platform data!
@@ -523,7 +594,7 @@ app.post('/api/chat', async (req, res) => {
     const matchesList = liveMatches.map(m => `- ${m.title} (${m.sport.toUpperCase()}): Status ${m.status}, Time: ${m.matchTime}`).join('\n') || 'No scheduled matches.';
     const leaderboardList = topUsers.map((u, i) => `${i + 1}. ${u.username} (${u.totalPoints} pts)`).join(', ') || 'No rankings yet.';
 
-    const systemPromptWithData = `${CHAMPAK_SYSTEM_PROMPT}
+    const systemPromptWithData = `${CARLOS_SYSTEM_PROMPT}
 
 ## LIVE PLATFORM DATA (REAL-TIME CONTEXT)
 - **Top Leaderboard Users**: ${leaderboardList}
@@ -532,18 +603,18 @@ ${matchesList}
 
 *Use the live data above to answer user questions about current matches, status, or rankings on the platform.*`;
 
-    const prompt = `${systemPromptWithData}\n\n## CONVERSATION SO FAR:\n${conversationContext}\n\nCarlo:`;
+    const prompt = `${systemPromptWithData}\n\n## CONVERSATION SO FAR:\n${conversationContext}\n\nCarlos:`;
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
     history.push({ role: 'assistant', text: responseText });
     res.json({ text: responseText });
   } catch (error) {
-    console.error("Gemini API Error (Using intelligent Carlo local fallback):", error);
+    console.error("Gemini API Error (Using Carlos local fallback):", error);
     
     // Fetch live data again in case Promise.all failed or wasn't assigned
     let matchesList = "No scheduled matches.";
     let leaderboardList = "No rankings yet.";
-    let firstMatchTitle = "Monaco Grand Prix";
+    let firstMatchTitle = "F1 Grand Prix";
     try {
       const [liveMatches, topUsers] = await Promise.all([
         prisma.match.findMany({
@@ -570,24 +641,34 @@ ${matchesList}
 
     let reply = "";
     
-    if (/\b(hello|hi|hey|bonjour|carlo)\b/i.test(message)) {
-      reply = `Bonjour, Manager! 🏎️ Carlo here, trackside at the Monaco pitlane. Ready to tune your FOFA fantasy lineup or discuss Real Madrid tactics? Let's win this race! 🏆`;
-    } else if (/\b(real madrid|madrid|hala|bernabeu)\b/i.test(message)) {
-      reply = `Hala Madrid! ⚽ Crowned with 15 Champions League trophies, Santiago Bernabéu's spirit is inside my neural chips. With Carlo Ancelotti directing operations, we always build championship-winning fantasy rosters. 👑`;
-    } else if (/\b(monaco|grand prix|f1|track|circuit|car|telemetry)\b/i.test(message)) {
-      reply = `Ah, Circuit de Monaco! Sainte Devote, the slow Grand Hotel Hairpin, and La Rascasse are legendary. Ayrton Senna leads history with 6 wins here. Did you check our 4D Monaco track with the drifting Real Madrid F1 car? 🏎️🇲🇨`;
-    } else if (/\b(match|matches|playing|schedule|fixture|upcoming)\b/i.test(message)) {
-      reply = `Here is the current schedule on FOFA:\n${matchesList}\n\nSelect a match on the dashboard to build your ultimate squad! 📅`;
+    if (/\b(watch\s+live|live\s+stream|stream\s+live|fullraces|eplayhd|colatvia|watch\s+f1|watch\s+cricket|watch\s+football|where\s+can\s+i\s+watch|how\s+to\s+watch)\b/i.test(message)) {
+      reply = `Head to **Watch Live** in the sidebar — F1, Cricket, and Football are all embedded right here. No external sites needed. 📺`;
+    } else if (/\b(hello|hi|hey|bonjour|carlos|carlo|sup|yo)\b/i.test(message)) {
+      reply = `Hey! Carlos here 🏎️ — your pit wall strategist at FOFA Arena. What are we working on?`;
+    } else if (/\b(who\s+are\s+you|what\s+are\s+you|your\s+name|about\s+you)\b/i.test(message)) {
+      reply = `I'm **Carlos** — built by the FOFA engineering team. I handle fantasy strategy, live scores, platform navigation, and general sports chat. Think of me as your trackside analyst who's always on comms. 🏆`;
+    } else if (/\b(f1|track|circuit|car|telemetry|formula)\b/i.test(message)) {
+      reply = `F1's where it gets interesting 🏎️ — we've got a full 3D telemetry simulation with drifting cars on track. Check **Watch Live** for race broadcasts or **/f1-calendar** for the full season schedule.`;
+    } else if (/\b(cricket|ipl|wicket|batting|bowling|t20|test|odi)\b/i.test(message)) {
+      reply = `Cricket's live on the platform 🏏 — head to **Watch Live** for streams or **/cricket-calendar** for fixtures. Need help drafting a cricket fantasy squad?`;
+    } else if (/\b(football|soccer|goal|premier|liga|epl)\b/i.test(message)) {
+      reply = `Football streams are on **Watch Live** ⚽ — and the full fixture list is at **/football-calendar**. Want me to break down the scoring rules?`;
+    } else if (/\b(match|matches|playing|schedule|fixture|upcoming|calendar)\b/i.test(message)) {
+      reply = `**Current schedule:**\n${matchesList}\n\nFull calendars: **/f1-calendar** · **/cricket-calendar** · **/football-calendar** 📅`;
     } else if (/\b(leaderboard|rank|ranking|standings|top)\b/i.test(message)) {
-      reply = `The top standings on the FOFA leaderboard are:\n${leaderboardList}\n\nKeep drafting high-performing captains (2x points) to climb the podium! 🏆`;
-    } else if (/\b(points|score|rules|captain|vc)\b/i.test(message)) {
-      reply = `Sure! F1 wins get +25pts, football goals are +10pts, and cricket wickets earn +15pts. Captains earn 2x points and Vice-Captains get 1.5x points! 📊`;
+      reply = `**Leaderboard:** ${leaderboardList}\n\nPro tip: Captains earn **2x points** — pick high-ceiling players for that slot. 🏆`;
+    } else if (/\b(points|score|rules|captain|vc|scoring)\b/i.test(message)) {
+      reply = `**Quick scoring breakdown:**\n- 🏎️ F1: Win +25 · Podium +15 · Fastest Lap +5 · DNF -10\n- ⚽ Football: Goal +10 · Assist +7 · Clean Sheet +5\n- 🏏 Cricket: Wicket +15 · 100 +25 · Run +1\n\nCaptains = **2x**, Vice-Captains = **1.5x** 📊`;
     } else if (/\b(stream|live|watch|party|rtmp|obs|key)\b/i.test(message)) {
-      reply = `You can broadcast live via RTMP: **rtmp://localhost:1935/live** with stream key **fofa**, or start a screen share watch party with your friends right now! 📺✨`;
-    } else if (/\b(help|features|capabilities)\b/i.test(message)) {
-      reply = `I can guide you on match schedules, scoring systems, real-time leaderboard rankings, Monaco GP telemetry, and Real Madrid trivia. What strategy can I help you refine, Manager? 🏎️⚽`;
+      reply = `**Watch Live** in the sidebar has embedded streams for all sports. Want to host? Use RTMP: \`rtmp://localhost:1935/live\` with key **fofa**, or start a screen-share Watch Party. 📺`;
+    } else if (/\b(team|draft|create|squad|player|pick)\b/i.test(message)) {
+      reply = `Go to **Fantasy Garage** → pick 11 players within 100 credits → assign Captain (2x) and VC (1.5x). Focus your budget on consistent performers, not just star names. 🎯`;
+    } else if (/\b(help|features|capabilities|what\s+can\s+you)\b/i.test(message)) {
+      reply = `I can help with:\n- 📅 Match schedules & calendars\n- 📊 Scoring rules & fantasy strategy\n- 🏆 Leaderboard standings\n- 📺 Live streaming & Watch Parties\n- 🏎️ F1 telemetry & 3D simulation\n\nWhat do you need?`;
+    } else if (/\b(thank|thanks|thx|cheers)\b/i.test(message)) {
+      reply = `Anytime 🤝 — that's what I'm here for. Hit me up whenever you need a strategy call.`;
     } else {
-      reply = `Carlo reporting from the paddock, Manager! 🏎️ I'm tracking matches like **${firstMatchTitle}** and checking the leaderboard rankings (**${leaderboardList}**). How can I assist your team today? 🏆`;
+      reply = `Currently tracking **${firstMatchTitle}** and the standings (**${leaderboardList}**). What can I help with? 🏎️`;
     }
     
     history.push({ role: 'assistant', text: reply });
@@ -596,13 +677,31 @@ ${matchesList}
 });
 
 // ========================
-// WebRTC Signaling (Socket.io)
+// WebRTC Signaling + Watch Party Rooms + Live Comments (Socket.io)
 // ========================
 const STREAM_ROOM = 'main-stage';
+
+// Watch Party Room tracking
+const watchPartyRooms = new Map(); // roomCode -> { members: Map<socketId, { username, joinedAt }>, createdAt, createdBy }
+const MAX_ROOM_MEMBERS = 12;
+
+function generateRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no ambiguous chars
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+function getRoomMemberList(roomCode) {
+  const room = watchPartyRooms.get(roomCode);
+  if (!room) return [];
+  return Array.from(room.members.values()).map(m => ({ username: m.username, joinedAt: m.joinedAt }));
+}
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
+  // ---- Legacy WebRTC signaling ----
   socket.on('join-stream', () => {
     socket.join(STREAM_ROOM);
     socket.to(STREAM_ROOM).emit('user-joined', socket.id);
@@ -620,8 +719,129 @@ io.on('connection', (socket) => {
     io.to(payload.target).emit('ice-candidate', { caller: socket.id, candidate: payload.candidate });
   });
 
+  // ---- Watch Party Room System ----
+  socket.on('create-room', ({ username }) => {
+    let roomCode = generateRoomCode();
+    while (watchPartyRooms.has(roomCode)) roomCode = generateRoomCode();
+
+    watchPartyRooms.set(roomCode, {
+      members: new Map([[socket.id, { username, joinedAt: Date.now() }]]),
+      createdAt: Date.now(),
+      createdBy: username
+    });
+
+    socket.join(`room-${roomCode}`);
+    socket._watchPartyRoom = roomCode;
+    socket._watchPartyUsername = username;
+
+    socket.emit('room-created', { roomCode, members: getRoomMemberList(roomCode) });
+    console.log(`[Room] Created room ${roomCode} by ${username}`);
+  });
+
+  socket.on('join-room', ({ roomCode, username }) => {
+    const room = watchPartyRooms.get(roomCode);
+    if (!room) return socket.emit('room-error', { error: 'Room not found. Check the code and try again.' });
+    if (room.members.size >= MAX_ROOM_MEMBERS) return socket.emit('room-error', { error: 'Room is full (12/12). Try another room.' });
+
+    room.members.set(socket.id, { username, joinedAt: Date.now() });
+    socket.join(`room-${roomCode}`);
+    socket._watchPartyRoom = roomCode;
+    socket._watchPartyUsername = username;
+
+    const memberList = getRoomMemberList(roomCode);
+    socket.emit('room-joined', { roomCode, members: memberList });
+    socket.to(`room-${roomCode}`).emit('room-user-joined', { username, members: memberList });
+    console.log(`[Room] ${username} joined room ${roomCode} (${room.members.size}/${MAX_ROOM_MEMBERS})`);
+  });
+
+  socket.on('leave-room', () => {
+    const roomCode = socket._watchPartyRoom;
+    const username = socket._watchPartyUsername;
+    if (!roomCode) return;
+
+    const room = watchPartyRooms.get(roomCode);
+    if (room) {
+      room.members.delete(socket.id);
+      socket.leave(`room-${roomCode}`);
+      if (room.members.size === 0) {
+        watchPartyRooms.delete(roomCode);
+        console.log(`[Room] Room ${roomCode} deleted (empty)`);
+      } else {
+        const memberList = getRoomMemberList(roomCode);
+        io.to(`room-${roomCode}`).emit('room-user-left', { username, members: memberList });
+      }
+    }
+    socket._watchPartyRoom = null;
+    socket._watchPartyUsername = null;
+  });
+
+  socket.on('room-chat', ({ roomCode, message, username }) => {
+    if (!roomCode || !message) return;
+    const msgData = {
+      id: `${socket.id}-${Date.now()}`,
+      username,
+      message: message.slice(0, 500), // limit message length
+      timestamp: Date.now()
+    };
+    io.to(`room-${roomCode}`).emit('room-chat-message', msgData);
+  });
+
+  // ---- Live Streaming Comments ----
+  socket.on('join-live-chat', ({ sport }) => {
+    const chatRoom = `live-${sport}`;
+    socket.join(chatRoom);
+    socket._liveChatRoom = chatRoom;
+
+    // Send current viewer count
+    const roomSize = io.sockets.adapter.rooms.get(chatRoom)?.size || 0;
+    io.to(chatRoom).emit('live-viewer-count', { count: roomSize });
+  });
+
+  socket.on('live-comment', ({ sport, message, username }) => {
+    if (!sport || !message) return;
+    const chatRoom = `live-${sport}`;
+    const msgData = {
+      id: `${socket.id}-${Date.now()}`,
+      username,
+      message: message.slice(0, 300),
+      timestamp: Date.now()
+    };
+    io.to(chatRoom).emit('live-chat-message', msgData);
+  });
+
+  socket.on('live-reaction', ({ sport, emoji, username }) => {
+    if (!sport || !emoji) return;
+    const chatRoom = `live-${sport}`;
+    io.to(chatRoom).emit('live-reaction-event', { emoji, username, id: `${socket.id}-${Date.now()}` });
+  });
+
+  // ---- Disconnect Cleanup ----
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
+
+    // Clean up watch party room
+    const roomCode = socket._watchPartyRoom;
+    if (roomCode) {
+      const room = watchPartyRooms.get(roomCode);
+      if (room) {
+        const username = room.members.get(socket.id)?.username || 'Unknown';
+        room.members.delete(socket.id);
+        if (room.members.size === 0) {
+          watchPartyRooms.delete(roomCode);
+        } else {
+          const memberList = getRoomMemberList(roomCode);
+          io.to(`room-${roomCode}`).emit('room-user-left', { username, members: memberList });
+        }
+      }
+    }
+
+    // Clean up live chat viewer count
+    if (socket._liveChatRoom) {
+      const roomSize = io.sockets.adapter.rooms.get(socket._liveChatRoom)?.size || 0;
+      io.to(socket._liveChatRoom).emit('live-viewer-count', { count: roomSize });
+    }
+
+    // Legacy
     socket.to(STREAM_ROOM).emit('user-left', socket.id);
   });
 });

@@ -19,7 +19,7 @@ const slides = [
     id: 'domains',
     title: 'BEYOND THE FIELD',
     subtitle: 'Multi-Domain Support',
-    description: 'From the roar of F1 engines to the silent intensity of Hackathons, we cover it all: Cricket, Football, Racing, and Coding.',
+    description: 'From the roar of F1 engines to the thrilling highlights of Football and Cricket, we cover the ultimate multi-sport arenas.',
     icon: <Gamepad2 size={80} />,
     color: 'var(--neon-blue)',
     background: 'linear-gradient(135deg, rgba(0,229,255,0.1), transparent)'

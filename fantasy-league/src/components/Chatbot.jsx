@@ -2,18 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, Sparkles } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
+  "What sports can I track here?",
   "How do I draft a team?",
-  "What are Monaco GP scoring rules?",
-  "Tell me about Real Madrid's squad!",
-  "How does live F1 telemetry work?",
-  "Tips for picking a Captain?",
-  "Show me Monaco GP standings!",
+  "Scoring rules breakdown",
+  "Show me the current standings",
+  "How does F1 telemetry work?",
+  "Tips for picking a Captain",
 ];
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hey Manager! I'm **Carlo** ⚡ — your AI coach for the Monaco GP x Real Madrid Command Center. Ask me anything about drafting teams, live telemetry feeds, race strategies, or football tactics!", sender: 'ai' }
+    { id: 1, text: "Hey — I'm **Carlos** 🏎️, your AI companion for FOFA Arena. Ask me anything about drafts, live scores, streaming, or sports strategy.", sender: 'ai' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -68,12 +68,9 @@ const Chatbot = () => {
       {/* Floating Action Button */}
       <div
         onClick={() => setIsOpen(!isOpen)}
+        className="chatbot-trigger"
         style={{
-          position: 'fixed', bottom: '32px', right: '32px', width: '60px', height: '60px', borderRadius: '50%',
-          background: 'linear-gradient(135deg, #f3c623, #5d2a8f)',
           display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(93, 42, 143, 0.4)', zIndex: 1000,
-          transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           transform: isOpen ? 'scale(0.85) rotate(90deg)' : 'scale(1)',
           animation: !isOpen ? 'float 3s ease-in-out infinite' : 'none'
         }}
@@ -84,13 +81,10 @@ const Chatbot = () => {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className="glass-panel"
+          className="glass-panel chatbot-panel"
           style={{
-            position: 'fixed', bottom: '110px', right: '32px', width: '380px', height: '520px',
-            zIndex: 1000, display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden',
-            borderRadius: '20px', border: '1px solid rgba(243,198,35,0.2)',
-            animation: 'slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            background: 'linear-gradient(180deg, rgba(15,12,25,0.95), rgba(10,8,18,0.98))'
+            display: 'flex', flexDirection: 'column', padding: 0,
+            animation: 'slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
           }}
         >
           {/* Header */}
@@ -108,9 +102,9 @@ const Chatbot = () => {
               <Bot size={22} color="#fff" />
             </div>
             <div style={{ flex: 1 }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>Carlo</h3>
+              <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>Carlos</h3>
               <span style={{ fontSize: '0.7rem', color: '#00c0f9', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00c0f9', boxShadow: '0 0 8px #00c0f9' }}></span> AI COACH
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00c0f9', boxShadow: '0 0 8px #00c0f9' }}></span> AI COMPANION
               </span>
             </div>
             <Sparkles size={18} color="#f3c623" style={{ opacity: 0.6 }} />
@@ -180,7 +174,7 @@ const Chatbot = () => {
           }}>
             <input
               type="text" value={input} onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Carlo anything..."
+              placeholder="Ask Carlos anything..."
               style={{
                 flex: 1, padding: '10px 16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)',
                 background: 'rgba(255,255,255,0.04)', color: '#fff', outline: 'none', fontSize: '0.85rem',
