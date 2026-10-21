@@ -68,7 +68,7 @@ const MatchDetail = () => {
   const [match, setMatch] = useState(null);
   const [contests, setContests] = useState([]);
   const [myTeams, setMyTeams] = useState([]);
-  const [activeTab, setActiveTab] = useState('contests');
+  const [activeTab, setActiveTab] = useState('challenges');
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('fantasy_token');
 
@@ -172,8 +172,8 @@ const MatchDetail = () => {
         {/* Action Bar */}
         <div style={{ padding: '16px 32px', background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '24px' }}>
-            <div><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>PRIZE POOL</div><div style={{ color: '#FFD700', fontFamily: 'var(--font-heading)', fontWeight: 900 }}>{match.prize}</div></div>
-            <div><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>CONTESTS</div><div style={{ color: '#fff', fontFamily: 'var(--font-heading)', fontWeight: 900 }}>{contests.length}</div></div>
+            <div><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>ENTRY</div><div style={{ color: '#00ff87', fontFamily: 'var(--font-heading)', fontWeight: 900 }}>FREE</div></div>
+            <div><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>FAN CHALLENGES</div><div style={{ color: '#fff', fontFamily: 'var(--font-heading)', fontWeight: 900 }}>{contests.length}</div></div>
             <div><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>MY TEAMS</div><div style={{ color: '#fff', fontFamily: 'var(--font-heading)', fontWeight: 900 }}>{myTeams.length}</div></div>
           </div>
           <button onClick={() => navigate(`/create-team?matchId=${match.id}`)} className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.75rem' }}>
@@ -184,7 +184,7 @@ const MatchDetail = () => {
 
       {/* Tabs */}
       <div className="glass-panel" style={{ display: 'flex', gap: '0', marginBottom: '24px', padding: '4px', borderRadius: '12px' }}>
-        {['contests', 'my-teams', 'leaderboard'].map(tab => (
+        {['challenges', 'my-teams', 'leaderboard'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             flex: 1, padding: '12px', border: 'none', borderRadius: '10px', cursor: 'pointer',
             fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px',
@@ -198,7 +198,7 @@ const MatchDetail = () => {
       </div>
 
       {/* Contests Tab */}
-      {activeTab === 'contests' && (
+      {activeTab === 'challenges' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {contests.map((contest, i) => (
             <div key={contest.id} className="glass-panel" style={{
@@ -215,12 +215,12 @@ const MatchDetail = () => {
                       <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{contest.name}</h3>
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      {contest.contestType === 'practice' ? 'Free Entry' : `Entry: ₹${contest.entryFee}`}
+                      Free Entry • Play for fan points only
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>PRIZE POOL</div>
-                    <div style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', fontWeight: 900, color: '#FFD700' }}>{contest.prizePool}</div>
+                    <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>REWARD</div>
+                    <div style={{ fontSize: '1.3rem', fontFamily: 'var(--font-heading)', fontWeight: 900, color: '#00ff87' }}>Fan Points</div>
                   </div>
                 </div>
 
@@ -249,7 +249,7 @@ const MatchDetail = () => {
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}30`; e.currentTarget.style.boxShadow = `0 0 20px ${color}30`; }}
                 onMouseLeave={e => { e.currentTarget.style.background = `${color}15`; e.currentTarget.style.boxShadow = 'none'; }}
                 >
-                  {contest.entryFee === 0 ? 'JOIN FREE' : `JOIN ₹${contest.entryFee}`} <ChevronRight size={16} />
+                  JOIN FREE <ChevronRight size={16} />
                 </button>
               </div>
             </div>

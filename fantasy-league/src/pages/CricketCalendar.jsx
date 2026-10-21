@@ -2,26 +2,20 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Calendar, MapPin, Trophy, Radio, Search, Eye, Award, Shield } from 'lucide-react';
 
-// Cricket 2026 schedule static metadata to merge with DB matches
+// Cricket calendar — latest 2026–27 India/international series (updated 21 Oct 2026)
 const cricketScheduleMetadata = [
-  { round: 1, gp: 'IPL Round 1: CSK vs RCB', dateRange: 'Jan 15', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 2, gp: 'BGT Round 2: AUS vs IND (1st Test)', dateRange: 'Jan 29', format: 'Test', type: 'international', countryCode: 'AU' },
-  { round: 3, gp: 'IPL Round 3: RCB vs CSK', dateRange: 'Feb 12', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 4, gp: 'T20 Cup Round 4: IND vs AUS', dateRange: 'Feb 26', format: 'T20', type: 'international', countryCode: 'IN' },
-  { round: 5, gp: 'IPL Round 5: CSK vs RCB', dateRange: 'Mar 12', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 6, gp: 'BGT Round 6: AUS vs IND (2nd Test)', dateRange: 'Mar 26', format: 'Test', type: 'international', countryCode: 'AU' },
-  { round: 7, gp: 'IPL Round 7: RCB vs CSK', dateRange: 'Apr 9', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 8, gp: 'ODI Series Round 8: IND vs AUS (1st ODI)', dateRange: 'Apr 23', format: 'ODI', type: 'international', countryCode: 'IN' },
-  { round: 9, gp: 'IPL Round 9: CSK vs RCB', dateRange: 'May 7', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 10, gp: 'BGT Round 10: AUS vs IND (3rd Test)', dateRange: 'May 21', format: 'Test', type: 'international', countryCode: 'AU' },
-  { round: 11, gp: 'IPL Round 11: RCB vs CSK', dateRange: 'Jun 4', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 12, gp: 'T20 Series Round 12: IND vs AUS (1st T20I)', dateRange: 'Jun 18', format: 'T20', type: 'international', countryCode: 'IN' },
-  { round: 13, gp: 'IPL Round 13: CSK vs RCB', dateRange: 'Jul 2', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 14, gp: 'BGT Round 14: AUS vs IND (4th Test)', dateRange: 'Jul 16', format: 'Test', type: 'international', countryCode: 'AU' },
-  { round: 15, gp: 'IPL Round 15: RCB vs CSK', dateRange: 'Jul 30', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 16, gp: 'T20 Series Round 16: IND vs AUS (2nd T20I)', dateRange: 'Aug 13', format: 'T20', type: 'international', countryCode: 'IN' },
-  { round: 17, gp: 'IPL Round 17: CSK vs RCB (IPL Final)', dateRange: 'Aug 27', format: 'T20', type: 'ipl', countryCode: 'IN' },
-  { round: 18, gp: 'BGT Round 18: AUS vs IND (5th Test)', dateRange: 'Sep 10', format: 'Test', type: 'international', countryCode: 'AU' },
+  { round: 1, gp: 'NZ vs India — T20I Series (5 matches)', dateRange: 'Oct 22 – Nov 1, 2026', format: 'T20I', type: 'international', countryCode: 'NZ' },
+  { round: 2, gp: 'NZ vs India — ODI Series (5 matches)', dateRange: 'Nov 4–15, 2026', format: 'ODI', type: 'international', countryCode: 'NZ' },
+  { round: 3, gp: 'NZ vs India — 1st Test (Wellington)', dateRange: 'Nov 19–23, 2026', format: 'Test', type: 'international', countryCode: 'NZ' },
+  { round: 4, gp: 'NZ vs India — 2nd Test (Christchurch)', dateRange: 'Nov 27 – Dec 1, 2026', format: 'Test', type: 'international', countryCode: 'NZ' },
+  { round: 5, gp: 'Australia vs England — Ashes Series', dateRange: 'Nov 2026 – Jan 2027', format: 'Test', type: 'international', countryCode: 'AU' },
+  { round: 6, gp: 'India vs Sri Lanka — 1st ODI (Delhi)', dateRange: 'Dec 13, 2026', format: 'ODI', type: 'international', countryCode: 'IN' },
+  { round: 7, gp: 'India vs Sri Lanka — 2nd ODI (Bengaluru)', dateRange: 'Dec 16, 2026', format: 'ODI', type: 'international', countryCode: 'IN' },
+  { round: 8, gp: 'India vs Sri Lanka — 3rd ODI (Ahmedabad)', dateRange: 'Dec 19, 2026', format: 'ODI', type: 'international', countryCode: 'IN' },
+  { round: 9, gp: 'India vs Sri Lanka — T20I Series (Rajkot · Cuttack · Pune)', dateRange: 'Dec 22–27, 2026', format: 'T20I', type: 'international', countryCode: 'IN' },
+  { round: 10, gp: 'India vs Zimbabwe — ODI Series (3 matches)', dateRange: 'Jan 3–9, 2027', format: 'ODI', type: 'international', countryCode: 'IN' },
+  { round: 11, gp: 'India vs Australia — Test Series (Nagpur opener)', dateRange: 'Jan 21 – Feb 2027', format: 'Test', type: 'international', countryCode: 'IN' },
+  { round: 12, gp: 'IPL 2027 — Indian Premier League', dateRange: 'Mar – May 2027 (tentative)', format: 'T20', type: 'ipl', countryCode: 'IN' },
 ];
 
 export default function CricketCalendar() {
@@ -56,7 +50,7 @@ export default function CricketCalendar() {
         ...meta,
         id: dbMatch?.id || null,
         venue: dbMatch?.venue || 'Venue TBD',
-        prize: dbMatch?.prize || 'INR 25K',
+        formatInfo: meta.format,
         status: dbMatch?.status || 'UPCOMING',
         matchTime: dbMatch?.matchTime || `${meta.dateRange}, 2026 • 7:30 PM`
       };
@@ -87,13 +81,13 @@ export default function CricketCalendar() {
         <div>
           <div className="eyebrow" style={{ color: 'var(--neon-pink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Radio size={16} className="pulse" />
-            OFFICIAL CRICKET 2026 SEASON PORTAL
+            LATEST CRICKET 2026–27 SEASON PORTAL
           </div>
           <h1 className="hero-title" style={{ fontSize: '3rem', margin: '10px 0' }}>
-            Cricket <span>2026 Calendar</span>
+            Cricket <span>2026–27 Calendar</span>
           </h1>
           <p className="hero-copy">
-            Explore the complete 18-round Cricket championship calendar for 2026. Build your winning fantasy squad, track live ball-by-ball contests, and stream match actions live.
+            Explore the latest 2026–27 cricket calendar — India's New Zealand tour, Sri Lanka home series, the Ashes and IPL 2027 (updated Oct 2026). Track live ball-by-ball scores and stream match action live.
           </p>
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <Link
@@ -283,7 +277,7 @@ export default function CricketCalendar() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                       <Trophy size={14} color="var(--gold)" />
-                      <span>Fantasy Prize Pool: {match.prize}</span>
+                      <span>{match.formatInfo || match.format} • {match.dateRange}</span>
                     </div>
                   </div>
                 </div>

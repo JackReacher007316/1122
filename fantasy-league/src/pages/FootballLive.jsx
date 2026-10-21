@@ -137,10 +137,9 @@ export default function FootballLive() {
 
   const months = [
     { id: 'all', label: 'All' },
-    { id: '5', label: 'May' },
-    { id: '6', label: 'June' },
-    { id: '7', label: 'July' },
-    { id: '8', label: 'August' },
+    { id: '10', label: 'October' },
+    { id: '11', label: 'November' },
+    { id: '12', label: 'December' },
   ];
 
   const filtered = useMemo(() => {
@@ -208,7 +207,7 @@ export default function FootballLive() {
               Football <span>Schedule & Streaming</span>
             </h1>
             <p className="hero-copy">
-              All matches from Premier League, La Liga, Serie A, Bundesliga, Champions League & FIFA World Cup 2026 — with one-click live streaming powered by ColaTV.
+              Latest 2026/27 fixtures — Premier League, Champions League & La Liga (updated Oct 2026), auto-refreshed with live ESPN scores — with one-click live streaming powered by ColaTV & Sportsurge.
             </p>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
               <button className="ftb-stream-big-btn" onClick={openFullStream}>
