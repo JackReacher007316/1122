@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Calendar, MapPin, Trophy, Radio, ExternalLink, Flame, Search, Grid, Eye, Zap } from 'lucide-react';
 import { getSportsurgeF1Url } from '../data/sportsurgeLinks';
 import { SportsurgeButton } from '../components/SportsurgeLinks';
+import { useF1Schedule } from '../components/useEspnFixtures';
 
 // F1 calendar — updated 21 Oct 2026 (23 rounds in 2026 + 2027 preview below)
 const f1ScheduleMetadata = [
@@ -32,6 +33,8 @@ const f1ScheduleMetadata = [
 ];
 
 export default function F1Calendar() {
+  // Live F1 schedule (GP dates/circuits/sessions) straight from ESPN
+  const { events: espnGps, lastUpdated: f1Updated, fromEspn: f1FromEspn } = useF1Schedule();
   const [dbMatches, setDbMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all', 'upcoming', 'sprint', 'completed'
@@ -52,7 +55,13 @@ export default function F1Calendar() {
 
   // Merge database match data with static metadata
   const calendarData = useMemo(() => {
+    const espnByKey = (gp) => espnGps.find((e) => {
+      const a = gp.toLowerCase(); const b = (e.gp || '').toLowerCase();
+      return a.includes(b.split(' grand')[0]) || b.includes(a.split(' grand')[0]) ||
+        a.split(' ')[0] === b.split(' ')[0];
+    });
     return f1ScheduleMetadata.map((meta) => {
+      const espn = espnByKey(meta.gp);
       // Find matching database entry by title
       const dbMatch = dbMatches.find(
         (m) => m.title.toLowerCase().includes(meta.gp.toLowerCase())
@@ -60,14 +69,18 @@ export default function F1Calendar() {
 
       return {
         ...meta,
+        ...(espn ? {
+          dateRange: new Date(espn.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          espnCircuit: espn.circuit,
+        } : {}),
         id: dbMatch?.id || null,
-        venue: dbMatch?.venue || 'Circuit Layout Pending',
+        venue: dbMatch?.venue || espn?.circuit || espn?.venue || 'Circuit Layout Pending',
         format: meta.sprint ? 'Sprint Weekend' : 'Race Weekend',
         status: dbMatch?.status || 'UPCOMING',
-        matchTime: dbMatch?.matchTime || `${meta.dateRange}, 2026`
+        matchTime: dbMatch?.matchTime || (espn?.date ? new Date(espn.date).toLocaleString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : `${meta.dateRange}, 2026`)
       };
     });
-  }, [dbMatches]);
+  }, [dbMatches, espnGps]);
 
   // Apply filters and search query
   const filteredCalendar = useMemo(() => {
@@ -98,7 +111,7 @@ export default function F1Calendar() {
             Grand Prix <span>2026 Calendar</span>
           </h1>
           <p className="hero-copy">
-            Explore the complete 23-round Formula 1 2026 Championship calendar (updated Oct 2026) plus the announced 24-round 2027 calendar below. Check pitlane sessions and watch every live broadcast link.
+            {f1FromEspn ? `Formula 1 schedule LIVE from ESPN${f1Updated ? ` • updated ${f1Updated.toLocaleTimeString()}` : ''} — latest Grand Prix dates & sessions, on top of the full 23-round 2026 + announced 2027 calendars below.` : 'Explore the complete 23-round Formula 1 2026 Championship calendar plus the announced 24-round 2027 calendar below.'} Check pitlane sessions and watch every live broadcast link.
           </p>
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <Link

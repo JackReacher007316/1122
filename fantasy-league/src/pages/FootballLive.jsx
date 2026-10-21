@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { ArrowLeft, Play, Calendar, Trophy, Tv, X, ChevronRight, Radio, BarChart3, ClipboardList, FileText, LayoutGrid, ExternalLink, Zap } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LEAGUES, MATCHES, getStreamUrl, getLeagueById, getFeaturedMatches } from '../data/footballSchedule';
+import { LEAGUES, MATCHES, getLeagueById, getFeaturedMatches } from '../data/footballSchedule';
 import { getSportsurgeFootballUrl, getSportsurgeHomeUrl } from '../data/sportsurgeLinks';
+import { useFootballFixtures, espnToMatch } from '../components/useEspnFixtures';
 import { SportsurgeButton } from '../components/SportsurgeLinks';
 
 const BASE_URL = 'https://harborfreight22.com';
@@ -77,6 +78,12 @@ function MatchRow({ match, onWatch }) {
           <span className="ftb-vs">vs</span>
           <strong>{match.away}</strong>
         </div>
+        {(match.statusState === 'in' || match.statusState === 'post') && (
+          <div style={{ fontWeight: 900, fontSize: '1.05rem', color: match.statusState === 'in' ? '#ff314a' : 'var(--text)' }}>
+            {match.homeScore} – {match.awayScore}
+            <span style={{ fontSize: '0.65rem', marginLeft: 8, color: 'var(--muted)', fontWeight: 700 }}>{match.statusText || ''}</span>
+          </div>
+        )}
         <div className="ftb-meta">
           <span className="ftb-league-badge" style={{ background: `${league.color}22`, color: league.color, borderColor: `${league.color}44` }}>{league.label}</span>
           <span>{match.round}</span>
@@ -127,6 +134,9 @@ function InlineViewer({ url, title, onClose }) {
 
 export default function FootballLive() {
   const navigate = useNavigate();
+  // Latest fixtures from ESPN (all leagues) — static MATCHES is only a fallback
+  const { fixtures: espnFixtures, lastUpdated, fromEspn } = useFootballFixtures({ daysPast: 2, daysAhead: 21 });
+  const allMatches = fromEspn ? espnFixtures.map(espnToMatch) : MATCHES;
   const [activeLeague, setActiveLeague] = useState('all');
   const [streamMatch, setStreamMatch] = useState(null);
   const [showStream, setShowStream] = useState(false);
@@ -135,22 +145,26 @@ export default function FootballLive() {
   const [viewerUrl, setViewerUrl] = useState('');
   const [viewerTitle, setViewerTitle] = useState('');
 
-  const months = [
-    { id: 'all', label: 'All' },
-    { id: '10', label: 'October' },
-    { id: '11', label: 'November' },
-    { id: '12', label: 'December' },
-  ];
+  const months = useMemo(() => {
+    const seen = new Map();
+    allMatches.forEach((m) => {
+      const d = new Date(m.date);
+      seen.set(String(d.getMonth() + 1), d.toLocaleDateString('en-IN', { month: 'long' }));
+    });
+    return [{ id: 'all', label: 'All' }, ...[...seen].map(([id, label]) => ({ id, label }))];
+  }, [allMatches]);
 
   const filtered = useMemo(() => {
-    let list = activeLeague === 'all' ? MATCHES : MATCHES.filter(m => m.league === activeLeague);
+    let list = activeLeague === 'all' ? allMatches : allMatches.filter(m => m.league === activeLeague);
     if (monthFilter !== 'all') {
       list = list.filter(m => (new Date(m.date).getMonth() + 1).toString() === monthFilter);
     }
-    return list.sort((a, b) => new Date(a.date) - new Date(b.date));
-  }, [activeLeague, monthFilter]);
+    return [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [activeLeague, monthFilter, allMatches]);
 
-  const featured = useMemo(() => getFeaturedMatches(), []);
+  const featured = useMemo(
+    () => (fromEspn ? allMatches.filter(m => m.statusState === 'in').concat(allMatches.filter(m => m.statusState === 'pre')).slice(0, 3) : getFeaturedMatches()),
+    [fromEspn, allMatches]);
 
   // Group matches by date for schedule-wise display
   const groupedByDate = useMemo(() => {
@@ -207,7 +221,7 @@ export default function FootballLive() {
               Football <span>Schedule & Streaming</span>
             </h1>
             <p className="hero-copy">
-              Latest 2026/27 fixtures — Premier League, Champions League & La Liga (updated Oct 2026), auto-refreshed with live ESPN scores — with one-click live streaming powered by ColaTV & Sportsurge.
+              {fromEspn ? `Latest fixtures LIVE from ESPN — Premier League, Champions League, La Liga, Serie A, Bundesliga & more${lastUpdated ? ` • updated ${lastUpdated.toLocaleTimeString()}` : ''} • auto-refreshes every minute` : 'Latest 2026/27 fixtures (ESPN offline — showing calendar snapshot)'} — with one-click live streaming powered by ColaTV & Sportsurge.
             </p>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
               <button className="ftb-stream-big-btn" onClick={openFullStream}>
