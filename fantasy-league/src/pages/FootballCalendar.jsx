@@ -1,18 +1,22 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Calendar, MapPin, Trophy, Radio, Search, Eye, Award, Shield } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Radio, Search, Eye, Award, Shield, ExternalLink, Zap } from 'lucide-react';
+import { getSportsurgeFootballUrl } from '../data/sportsurgeLinks';
+import { MATCHES as LATEST_MATCHES, getLeagueById } from '../data/footballSchedule';
+import { SportsurgeButton } from '../components/SportsurgeLinks';
 
-// Football 2026 schedule static metadata to merge with DB matches
-const footballScheduleMetadata = Array.from({ length: 38 }, (_, i) => {
-  const round = i + 1;
-  const isManCityHome = round % 2 !== 0;
-  return {
-    round,
-    gp: isManCityHome ? `Premier League Round ${round}: Man City vs Liverpool` : `Premier League Round ${round}: Liverpool vs Man City`,
-    type: isManCityHome ? 'etihad' : 'anfield',
-    countryCode: 'GB'
-  };
-});
+// Football calendar — latest 2026/27 fixtures (updated Oct 2026, from footballSchedule.js)
+const footballScheduleMetadata = LATEST_MATCHES.map((m, i) => ({
+  round: m.round,
+  gp: `${m.home} vs ${m.away}`,
+  type: m.league,
+  leagueLabel: getLeagueById(m.league).label,
+  venue: m.venue,
+  matchTime: new Date(m.date).toLocaleString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+  status: new Date(m.date) < new Date() ? 'COMPLETED' : 'UPCOMING',
+  countryCode: 'GB',
+  _i: i,
+}));
 
 export default function FootballCalendar() {
   const [dbMatches, setDbMatches] = useState([]);
@@ -45,10 +49,9 @@ export default function FootballCalendar() {
       return {
         ...meta,
         id: dbMatch?.id || null,
-        venue: dbMatch?.venue || 'Venue TBD',
-        prize: dbMatch?.prize || 'INR 15K',
-        status: dbMatch?.status || 'UPCOMING',
-        matchTime: dbMatch?.matchTime || `TBD, 2026`
+        venue: meta.venue || dbMatch?.venue || 'Venue TBD',
+        status: meta.status,
+        matchTime: meta.matchTime,
       };
     });
   }, [dbMatches]);
@@ -64,8 +67,7 @@ export default function FootballCalendar() {
 
       if (filter === 'upcoming') return match.status === 'UPCOMING';
       if (filter === 'completed') return match.status === 'COMPLETED';
-      if (filter === 'etihad') return match.type === 'etihad';
-      if (filter === 'anfield') return match.type === 'anfield';
+      if (['pl', 'ucl', 'laliga'].includes(filter)) return match.type === filter;
       return true;
     });
   }, [calendarData, filter, searchQuery]);
@@ -83,7 +85,7 @@ export default function FootballCalendar() {
             Football <span>2026 Calendar</span>
           </h1>
           <p className="hero-copy">
-            Explore the complete 38-round Premier League head-to-head campaign for 2026. Draft your ultimate fantasy roster, track live goal-scoring metrics, and stream match action live.
+            Explore the latest 2026/27 Premier League calendar — all 38 rounds, updated Oct 2026. Track live goal-scoring metrics and stream match action live.
           </p>
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <Link
@@ -102,6 +104,18 @@ export default function FootballCalendar() {
               }}
             >
               <Radio size={16} /> Watch Live Stream
+            </Link>
+            <a
+              href={getSportsurgeFootballUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px', textDecoration: 'none', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', fontWeight: 'bold', fontSize: '0.85rem' }}
+            >
+              <Zap size={16} /> Sportsurge Football <ExternalLink size={13} />
+            </a>
+            <Link to="/sportsurge?sport=football" style={{ alignSelf: 'center', color: '#ff8a1c', fontWeight: 700, fontSize: '0.82rem' }}>
+              All Sportsurge links →
             </Link>
           </div>
         </div>
@@ -122,6 +136,15 @@ export default function FootballCalendar() {
             >
               Launch Live Player
             </Link>
+            <a
+              href={getSportsurgeFootballUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ marginTop: '10px', fontSize: '0.8rem', width: '100%', justifyContent: 'center', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', textDecoration: 'none' }}
+            >
+              <Zap size={14} /> Watch on Sportsurge <ExternalLink size={13} />
+            </a>
           </div>
         </div>
       </section>
@@ -141,9 +164,10 @@ export default function FootballCalendar() {
       >
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {[
-            { id: 'all', label: 'All Rounds' },
-            { id: 'etihad', label: 'Etihad Stadium' },
-            { id: 'anfield', label: 'Anfield' },
+            { id: 'all', label: 'All Matches' },
+            { id: 'pl', label: 'Premier League' },
+            { id: 'ucl', label: 'Champions League' },
+            { id: 'laliga', label: 'La Liga' },
             { id: 'upcoming', label: 'Upcoming' },
             { id: 'completed', label: 'Finished' }
           ].map((tab) => (
@@ -202,11 +226,11 @@ export default function FootballCalendar() {
             const isLive = match.status === 'LIVE';
 
             const borderTopColor = 
-              match.type === 'etihad' ? 'var(--neon-blue)' : 'var(--neon-red)';
+              match.type === 'ucl' ? 'var(--gold)' : 'var(--neon-blue)';
 
             return (
               <div
-                key={match.round}
+                key={`${match.round}-${match._i}`}
                 className="glass-panel"
                 style={{
                   display: 'flex',
@@ -223,21 +247,21 @@ export default function FootballCalendar() {
                   {/* Top line metadata */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>
-                      ROUND {match.round} • PREMIER LEAGUE
+                      {match.round} • {(match.leagueLabel || 'FOOTBALL').toUpperCase()}
                     </span>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <span
                         style={{
                           background: match.type === 'etihad' ? 'rgba(0,192,249,0.1)' : 'rgba(225,6,0,0.1)',
-                          border: `1px solid ${match.type === 'etihad' ? 'var(--neon-blue)' : 'var(--neon-red)'}`,
-                          color: match.type === 'etihad' ? 'var(--neon-blue)' : 'var(--neon-red)',
+                          border: `1px solid ${match.type === 'ucl' ? 'var(--gold)' : 'var(--neon-blue)'}`,
+                          color: match.type === 'ucl' ? 'var(--gold)' : 'var(--neon-blue)',
                           fontSize: '0.6rem',
                           padding: '2px 8px',
                           borderRadius: '4px',
                           fontWeight: 'bold',
                         }}
                       >
-                        {match.type === 'etihad' ? 'HOME' : 'AWAY'}
+                        {(match.leagueLabel || 'MATCH').toUpperCase()}
                       </span>
                       {isLive ? (
                         <span className="live-badge">LIVE</span>
@@ -272,7 +296,7 @@ export default function FootballCalendar() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                       <Trophy size={14} color="var(--gold)" />
-                      <span>Fantasy Prize Pool: {match.prize}</span>
+                      <span>2026/27 Season • Premier League</span>
                     </div>
                   </div>
                 </div>
@@ -293,6 +317,7 @@ export default function FootballCalendar() {
                   >
                     <Eye size={14} /> Watch Live
                   </Link>
+                  <SportsurgeButton sport="football" match={match.gp} style={{ width: '100%' }} />
 
                   {match.id && (
                     <button

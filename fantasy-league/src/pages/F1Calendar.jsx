@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Calendar, MapPin, Trophy, Radio, ExternalLink, Flame, Search, Grid, Eye } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Radio, ExternalLink, Flame, Search, Grid, Eye, Zap } from 'lucide-react';
+import { getSportsurgeF1Url } from '../data/sportsurgeLinks';
+import { SportsurgeButton } from '../components/SportsurgeLinks';
 
-// F1 2026 schedule static metadata to merge with DB matches
+// F1 calendar — updated 21 Oct 2026 (23 rounds in 2026 + 2027 preview below)
 const f1ScheduleMetadata = [
   { round: 1, gp: 'Australian Grand Prix', dateRange: 'March 6–8', sprint: false, countryCode: 'AU' },
   { round: 2, gp: 'Chinese Grand Prix', dateRange: 'March 13–15', sprint: true, countryCode: 'CN' },
@@ -18,14 +20,15 @@ const f1ScheduleMetadata = [
   { round: 12, gp: 'Hungarian Grand Prix', dateRange: 'July 24–26', sprint: false, countryCode: 'HU' },
   { round: 13, gp: 'Dutch Grand Prix', dateRange: 'August 21–23', sprint: true, countryCode: 'NL' },
   { round: 14, gp: 'Italian Grand Prix', dateRange: 'September 4–6', sprint: false, countryCode: 'IT' },
-  { round: 15, gp: 'Azerbaijan Grand Prix', dateRange: 'September 25–27', sprint: false, countryCode: 'AZ' },
-  { round: 16, gp: 'Singapore Grand Prix', dateRange: 'October 9–11', sprint: true, countryCode: 'SG' },
-  { round: 17, gp: 'United States Grand Prix', dateRange: 'October 23–25', sprint: false, countryCode: 'US' },
-  { round: 18, gp: 'Mexico City Grand Prix', dateRange: 'October 30 – November 1', sprint: false, countryCode: 'MX' },
-  { round: 19, gp: 'São Paulo Grand Prix', dateRange: 'November 6–8', sprint: false, countryCode: 'BR' },
-  { round: 20, gp: 'Las Vegas Grand Prix', dateRange: 'November 19–21', sprint: false, countryCode: 'US' },
-  { round: 21, gp: 'Qatar Grand Prix', dateRange: 'November 27–29', sprint: false, countryCode: 'QA' },
-  { round: 22, gp: 'Abu Dhabi Grand Prix', dateRange: 'December 4–6', sprint: false, countryCode: 'AE' }
+  { round: 15, gp: 'Spanish Grand Prix (Madrid)', dateRange: 'September 11–13', sprint: false, countryCode: 'ES' },
+  { round: 16, gp: 'Azerbaijan Grand Prix', dateRange: 'September 24–26', sprint: false, countryCode: 'AZ' },
+  { round: 17, gp: 'Singapore Grand Prix', dateRange: 'October 9–11', sprint: true, countryCode: 'SG' },
+  { round: 18, gp: 'United States Grand Prix', dateRange: 'October 23–25', sprint: false, countryCode: 'US' },
+  { round: 19, gp: 'Mexico City Grand Prix', dateRange: 'October 30 – November 1', sprint: false, countryCode: 'MX' },
+  { round: 20, gp: 'São Paulo Grand Prix', dateRange: 'November 6–8', sprint: false, countryCode: 'BR' },
+  { round: 21, gp: 'Las Vegas Grand Prix', dateRange: 'November 19–21', sprint: false, countryCode: 'US' },
+  { round: 22, gp: 'Qatar Grand Prix', dateRange: 'November 27–29', sprint: true, countryCode: 'QA' },
+  { round: 23, gp: 'Abu Dhabi Grand Prix', dateRange: 'December 4–6', sprint: false, countryCode: 'AE' }
 ];
 
 export default function F1Calendar() {
@@ -59,7 +62,7 @@ export default function F1Calendar() {
         ...meta,
         id: dbMatch?.id || null,
         venue: dbMatch?.venue || 'Circuit Layout Pending',
-        prize: dbMatch?.prize || 'INR 30K',
+        format: meta.sprint ? 'Sprint Weekend' : 'Race Weekend',
         status: dbMatch?.status || 'UPCOMING',
         matchTime: dbMatch?.matchTime || `${meta.dateRange}, 2026`
       };
@@ -95,7 +98,7 @@ export default function F1Calendar() {
             Grand Prix <span>2026 Calendar</span>
           </h1>
           <p className="hero-copy">
-            Explore the complete 22-round Formula 1 2026 Championship calendar. Build your elite garage, check pitlane sessions, and watch every live broadcast link below.
+            Explore the complete 23-round Formula 1 2026 Championship calendar (updated Oct 2026) plus the announced 24-round 2027 calendar below. Check pitlane sessions and watch every live broadcast link.
           </p>
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <Link
@@ -114,6 +117,18 @@ export default function F1Calendar() {
               }}
             >
               <Radio size={16} /> Watch Races Live
+            </Link>
+            <a
+              href={getSportsurgeF1Url()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px', textDecoration: 'none', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', fontWeight: 'bold', fontSize: '0.85rem' }}
+            >
+              <Zap size={16} /> Sportsurge F1 <ExternalLink size={13} />
+            </a>
+            <Link to="/sportsurge?sport=f1" style={{ alignSelf: 'center', color: '#ff8a1c', fontWeight: 700, fontSize: '0.82rem' }}>
+              All Sportsurge links →
             </Link>
           </div>
         </div>
@@ -134,6 +149,15 @@ export default function F1Calendar() {
             >
               Launch Live Player <ExternalLink size={14} />
             </Link>
+            <a
+              href={getSportsurgeF1Url()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ marginTop: '10px', fontSize: '0.8rem', width: '100%', justifyContent: 'center', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', textDecoration: 'none' }}
+            >
+              <Zap size={14} /> Watch on Sportsurge <ExternalLink size={13} />
+            </a>
           </div>
         </div>
       </section>
@@ -285,7 +309,7 @@ export default function F1Calendar() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                       <Trophy size={14} color="var(--gold)" />
-                      <span>Fantasy Prize Pool: {race.prize}</span>
+                      <span>{race.format || 'Race Weekend'} • 2026 Season</span>
                     </div>
                   </div>
                 </div>
@@ -306,6 +330,7 @@ export default function F1Calendar() {
                   >
                     <Eye size={14} /> Watch Live
                   </Link>
+                  <SportsurgeButton sport="f1" match={race} style={{ width: '100%' }} />
 
                   {race.id && (
                     <button
@@ -331,6 +356,36 @@ export default function F1Calendar() {
       ) : (
         <div className="empty-state">No matching F1 Grand Prix matches found. Try selecting another filter!</div>
       )}
+
+      {/* 2027 Calendar Preview — announced Sep 2026, 24 rounds */}
+      <div className="section-head" style={{ marginTop: '36px' }}>
+        <h2>🏁 F1 2027 Calendar — Announced</h2>
+        <span className="section-note">24 rounds • Bahrain opener Mar 12–14 • 10 Sprints</span>
+      </div>
+      <div className="score-grid">
+        {F1_2027_PREVIEW.map((r) => (
+          <div key={r.round} className="glass-panel" style={{ padding: '18px 20px' }}>
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '1px', fontWeight: 800 }}>2027 • ROUND {r.round}{r.sprint ? ' • SPRINT' : ''}</div>
+            <h3 style={{ margin: '6px 0', fontSize: '1rem' }}>{r.gp}</h3>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{new Date(`${r.date}T12:00`).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} • {r.circuit}</div>
+            <div style={{ marginTop: '12px' }}><SportsurgeButton sport="f1" match={r} /></div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
+
+const F1_2027_PREVIEW = [
+  { round: 1, gp: 'Bahrain Grand Prix', date: '2027-03-14', circuit: 'Sakhir', sprint: true },
+  { round: 2, gp: 'Saudi Arabian Grand Prix', date: '2027-03-21', circuit: 'Jeddah', sprint: false },
+  { round: 3, gp: 'Australian Grand Prix', date: '2027-04-04', circuit: 'Melbourne', sprint: true },
+  { round: 4, gp: 'Japanese Grand Prix', date: '2027-04-11', circuit: 'Suzuka', sprint: true },
+  { round: 6, gp: 'Miami Grand Prix', date: '2027-05-02', circuit: 'Miami', sprint: false },
+  { round: 8, gp: 'Monaco Grand Prix', date: '2027-06-06', circuit: 'Monaco', sprint: true },
+  { round: 9, gp: 'Portuguese Grand Prix', date: '2027-06-20', circuit: 'Portimão (returning)', sprint: false },
+  { round: 10, gp: 'British Grand Prix', date: '2027-07-04', circuit: 'Silverstone', sprint: true },
+  { round: 17, gp: 'Turkish Grand Prix', date: '2027-10-03', circuit: 'Istanbul (returning)', sprint: false },
+  { round: 19, gp: 'United States Grand Prix', date: '2027-10-24', circuit: 'Austin', sprint: false },
+  { round: 24, gp: 'Abu Dhabi Grand Prix', date: '2027-12-12', circuit: 'Yas Marina (finale)', sprint: true },
+];

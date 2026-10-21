@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import SportTabs from '../components/SportTabs';
 import { fetchAllScores, getScoreSummary, getSportById, SPORT_CATALOG } from '../data/liveSports';
+import SportsurgeLinks from '../components/SportsurgeLinks';
+import UpcomingFixtures from '../components/UpcomingFixtures';
 
 const demoMatches = [
   {
@@ -21,8 +23,6 @@ const demoMatches = [
     status: 'LIVE',
     teamA: 'Verstappen',
     teamB: 'Norris',
-    contestCount: 54,
-    prize: 'INR 65K',
     _count: { teams: 284 },
     deadline: new Date(Date.now() + 1000 * 60 * 18).toISOString(),
   },
@@ -32,8 +32,6 @@ const demoMatches = [
     status: 'LIVE',
     teamA: 'FOFA Wolves',
     teamB: 'Nagpur City',
-    contestCount: 48,
-    prize: 'INR 42K',
     _count: { teams: 192 },
     deadline: new Date(Date.now() + 1000 * 60 * 42).toISOString(),
   },
@@ -43,8 +41,6 @@ const demoMatches = [
     status: 'UPCOMING',
     teamA: 'CSK',
     teamB: 'RCB',
-    contestCount: 78,
-    prize: 'INR 95K',
     _count: { teams: 340 },
     deadline: new Date(Date.now() + 1000 * 60 * 60 * 3).toISOString(),
   },
@@ -54,8 +50,6 @@ const demoMatches = [
     status: 'LIVE',
     teamA: 'Raptors',
     teamB: 'Heat',
-    contestCount: 39,
-    prize: 'INR 36K',
     _count: { teams: 148 },
     deadline: new Date(Date.now() + 1000 * 60 * 24).toISOString(),
   },
@@ -94,13 +88,13 @@ const carouselSlides = [
   },
   {
     id: 'slide-fantasy',
-    title: 'Draft your dream lineup',
-    subtitle: 'FOFA FANTASY LEAGUE • STAGED CONTESTS',
-    desc: 'Put your strategy to the test. Draft drivers, batsmen, and strikers. Earn points based on real telemetry data and top the leaderboard.',
-    cta: 'Create Fantasy Team',
-    path: '/create-team',
+    title: 'Star players & full rosters',
+    subtitle: 'PLAYER STATS • UPDATED ROSTERS',
+    desc: 'Faces, ratings and 2026/27 season stats for football, cricket and F1 stars — plus the full updated team rosters for every big match.',
+    cta: 'View Player Stats',
+    path: '/stats',
     image: 'https://images.unsplash.com/photo-1540747737956-37872404a82a?auto=format&fit=crop&q=70&w=900',
-    tag: 'FANTASY GARAGE'
+    tag: 'ROSTERS 2026/27'
   }
 ];
 
@@ -280,8 +274,8 @@ function MatchCard({ match, navigate, setActiveMatch }) {
         </div>
 
         <div className="prize-block">
-          <small>Contest Prize</small>
-          <strong>{match.prize}</strong>
+          <small>Fan Teams</small>
+          <strong>{match._count?.teams ?? 0} teams</strong>
         </div>
       </div>
     </div>
@@ -456,10 +450,10 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
             <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Watch Party</div>
           </div>
         </div>
-        <div className="prime-brand-tile" onClick={() => navigate('/create-team')} style={{ '--sport-glow-color': 'var(--hotstar-gold)' }}>
+        <div className="prime-brand-tile" onClick={() => navigate('/stats')} style={{ '--sport-glow-color': 'var(--hotstar-gold)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--hotstar-gold)', zIndex: 2 }}>
             <Trophy size={28} />
-            <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Fantasy</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Rosters</div>
           </div>
         </div>
       </section>
@@ -471,18 +465,29 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
           <div className="stat-value" style={{ color: 'var(--prime-blue)' }}>{scores.filter((score) => score.statusState === 'in').length} Feeds</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Grand Prix Active Pools</div>
-          <div className="stat-value" style={{ color: '#ffffff' }}>{matches.reduce((sum, match) => sum + (match.contestCount || 0), 0)} Pools</div>
+          <div className="stat-label">Fan Teams Created</div>
+          <div className="stat-value" style={{ color: '#ffffff' }}>{matches.reduce((sum, match) => sum + (match._count?.teams || 0), 0)} Teams</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Sports Leagues</div>
           <div className="stat-value" style={{ color: 'var(--hotstar-gold)' }}>{SPORT_CATALOG.length} Leagues</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Leaderboard Prizes</div>
-          <div className="stat-value" style={{ color: 'var(--spotify-green)' }}>INR 2.5L+</div>
+        <div className="stat-card" onClick={() => navigate('/stats')} style={{ cursor: 'pointer' }} title="Open Player Stats & Faces">
+          <div className="stat-label">Star Players Tracked</div>
+          <div className="stat-value" style={{ color: 'var(--spotify-green)' }}>10 Profiles</div>
         </div>
       </div>
+
+      {/* Sportsurge — football & F1 live links */}
+      <div className="section-head" style={{ marginBottom: '10px' }}>
+        <h2 style={{ fontSize: '1.15rem' }}>⚡ Sportsurge Live Links</h2>
+        <button className="ghost-button" type="button" onClick={() => navigate('/sportsurge')}>
+          Football &amp; F1 on Sportsurge <ArrowRight size={16} />
+        </button>
+      </div>
+      <SportsurgeLinks style={{ marginBottom: '28px' }} />
+
+      <UpcomingFixtures limit={9} />
 
       <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
 
@@ -513,8 +518,8 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
 
       {/* Match Contests Card Row */}
       <div className="section-head">
-        <h2>Championship Contests</h2>
-        <span className="section-note">{filteredMatches.length} pools active</span>
+        <h2>Championship Matches</h2>
+        <span className="section-note">{filteredMatches.length} matches • free to play, no prizes</span>
       </div>
 
       {loadingMatches ? (
@@ -547,7 +552,7 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
               <div className="section-head" style={{ margin: '12px 0' }}>
                 <h3 style={{ fontSize: '1.05rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Calendar size={16} style={{ color: '#1f80e0' }} />
-                  Upcoming qualifying Pools
+                  Upcoming Matches
                 </h3>
               </div>
               <div className="match-list">
@@ -574,7 +579,7 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
             </section>
           )}
 
-          {!filteredMatches.length && <div className="empty-state">No fantasy contests scheduled for this category.</div>}
+          {!filteredMatches.length && <div className="empty-state">No matches scheduled for this category.</div>}
         </>
       )}
     </div>

@@ -1,8 +1,10 @@
 name: Deploy to GitHub Pages
 
 on:
+  # Only `main` may deploy: the github-pages environment's branch policy
+  # allows main only (other branches are rejected at the deploy step).
   push:
-    branches: ['website-4d-f1-theme']
+    branches: ['main']
   workflow_dispatch:
 
 permissions:
@@ -30,7 +32,13 @@ jobs:
 
       - name: Build
         working-directory: ./fantasy-league
-        run: npx vite build
+        env:
+          GITHUB_PAGES: 'true'
+        run: |
+          npx vite build
+          # SPA fallback: GitHub Pages serves 404.html for deep links like
+          # /1122/sportsurge — returning the app lets React Router handle it.
+          cp dist/index.html dist/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

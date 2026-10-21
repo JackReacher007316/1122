@@ -19,7 +19,8 @@ import {
   Volume2,
   VolumeX,
   Maximize2,
-  ListMusic
+  ListMusic,
+  Zap
 } from 'lucide-react';
 import Background3D from './components/Background3D';
 import Chatbot from './components/Chatbot';
@@ -27,7 +28,6 @@ import WelcomeAnimation from './components/WelcomeAnimation';
 import MercedesStarLogo from './components/MercedesStarLogo';
 
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const CreateTeam = React.lazy(() => import('./pages/CreateTeam'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 const LiveTracking = React.lazy(() => import('./pages/LiveTracking'));
@@ -41,6 +41,8 @@ const F1Calendar = React.lazy(() => import('./pages/F1Calendar'));
 const CricketCalendar = React.lazy(() => import('./pages/CricketCalendar'));
 const FootballCalendar = React.lazy(() => import('./pages/FootballCalendar'));
 const WatchLive = React.lazy(() => import('./pages/WatchLive'));
+const SportsurgeLive = React.lazy(() => import('./pages/SportsurgeLive'));
+const PlayerStats = React.lazy(() => import('./pages/PlayerStats'));
 
 function PageLoader() {
   return (
@@ -76,10 +78,12 @@ function Sidebar({ setToken }) {
     { path: '/football-calendar', label: 'Football Schedule', icon: Calendar },
     { path: '/live', label: 'Race Control', icon: Radio, live: true },
     { path: '/live/football', label: 'Football Live', icon: Play },
-    { path: '/create-team', label: 'Fantasy Garage', icon: Shield },
+    { path: '/stats', label: 'Player Stats & Rosters', icon: Award },
     { path: '/leaderboard', label: 'Championship', icon: Award },
     { path: '/watch-party', label: 'Watch Party Lobby', icon: Users },
     { path: '/watch-live', label: 'Watch Live', icon: Tv },
+    { path: '/sportsurge', label: 'Sportsurge Live', icon: Zap, live: true },
+    { path: '/stats', label: 'Player Stats', icon: Award },
     { path: '/admin', label: 'Race Engineer', icon: Settings },
   ];
 
@@ -95,7 +99,7 @@ function Sidebar({ setToken }) {
         <MercedesStarLogo size={24} />
         <div className="brand-title">
           <span style={{ fontWeight: 800 }}>FOFA</span>{' '}
-          <span style={{ color: '#1f80e0', fontWeight: 400 }}>ARENA</span>
+          <span style={{ color: '#ff4b44', fontWeight: 700 }}>ARENA</span>
         </div>
       </div>
 
@@ -138,7 +142,7 @@ function FloatingNav() {
     { path: '/', label: 'Home', icon: Home },
     { path: '/live', label: 'Control', icon: Radio },
     { path: '/live/football', label: 'Football', icon: Play },
-    { path: '/create-team', label: 'Fantasy', icon: Shield },
+    { path: '/stats', label: 'Rosters', icon: Award },
     { path: '/leaderboard', label: 'Championship', icon: Award },
   ];
 
@@ -255,15 +259,10 @@ function AppRoutes({ activeSport, setActiveSport, token, activeMatch, setActiveM
       <Route path="/live/:sport" element={<LiveScorePage />} />
       <Route path="/watch-party" element={<WatchParty activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route path="/watch-live" element={<WatchLive />} />
+      <Route path="/sportsurge" element={<SportsurgeLive />} />
+      <Route path="/stats" element={<PlayerStats />} />
       <Route path="/leaderboard" element={<Leaderboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
-      <Route
-        path="/create-team"
-        element={
-          <ProtectedRoute token={token}>
-            <CreateTeam activeSport={activeSport} setActiveSport={setActiveSport} />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/create-team" element={<Navigate to="/stats" replace />} />
       <Route
         path="/admin"
         element={
@@ -302,8 +301,14 @@ export default function App() {
       .catch(e => console.error("Error loading initial match:", e));
   }, []);
 
+  // On GitHub Pages the app lives under /1122/ (BASE_URL=/1122/); locally
+  // and on the backend it lives at / (BASE_URL=./) — keep routing in sync.
+  const basename = import.meta.env.BASE_URL.startsWith('/')
+    ? import.meta.env.BASE_URL.replace(/\/$/, '')
+    : undefined;
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Background3D disabled={disable3D} activeSport={activeSport} />
       <WelcomeAnimation />
       <Suspense fallback={<PageLoader />}>
@@ -328,11 +333,13 @@ export default function App() {
                     <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <MercedesStarLogo size={28} />
-                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '2px', fontFamily: 'Inter, sans-serif' }}>FOFA <span style={{ color: '#1f80e0' }}>ARENA</span></span>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '2px', fontFamily: 'Inter, sans-serif' }}>FOFA <span style={{ color: '#ff4b44' }}>ARENA</span></span>
                       </div>
                       <nav style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#e5e5e5' }}>
                         <Link to="/" style={{ fontWeight: 600 }}>Home</Link>
                         <Link to="/watch-live" style={{ opacity: 0.8 }}>Live Streams</Link>
+                        <Link to="/sportsurge" style={{ opacity: 0.8 }}>Sportsurge</Link>
+                        <Link to="/stats" style={{ opacity: 0.8 }}>Player Stats</Link>
                         <Link to="/watch-party" style={{ opacity: 0.8 }}>Watch Parties</Link>
                         <Link to="/leaderboard" style={{ opacity: 0.8 }}>Leaderboard</Link>
                       </nav>

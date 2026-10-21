@@ -331,3 +331,64 @@ export async function fetchAllScores() {
     .map((result) => result.value);
 }
 
+/* ------------------------------------------------------------------
+   Auto-updating upcoming fixtures: ESPN scoreboards accept a date
+   range (dates=YYYYMMDD-YYYYMMDD), so we pull the NEXT 14 days of
+   football across the top leagues + today's other sports. Called on
+   mount and re-polled every 30s by Dashboard / Live pages, so the
+   "Live & Upcoming" lists keep themselves current with no edits.
+   ------------------------------------------------------------------ */
+const UPCOMING_LEAGUES = [
+  { league: 'eng.1', label: 'Premier League' },
+  { league: 'uefa.champions', label: 'Champions League' },
+  { league: 'esp.1', label: 'La Liga' },
+  { league: 'ita.1', label: 'Serie A' },
+  { league: 'ger.1', label: 'Bundesliga' },
+];
+
+const ymd = (d) => d.toISOString().slice(0, 10).replace(/-/g, '');
+
+export async function fetchUpcomingFixtures(days = 14) {
+  const start = new Date();
+  const end = new Date(Date.now() + days * 86400000);
+  const range = `${ymd(start)}-${ymd(end)}`;
+  const football = getSportById('football');
+
+  const perLeague = await Promise.allSettled(
+    UPCOMING_LEAGUES.map(async ({ league, label }) => {
+      const data = await fetchJson(
+        `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${range}&limit=100`,
+      );
+      return parseEspnScoreboard(data, football).map((s) => ({ ...s, competition: label }));
+    }),
+  );
+
+  const seen = new Set();
+  const fixtures = perLeague
+    .filter((r) => r.status === 'fulfilled')
+    .flatMap((r) => r.value)
+    .filter((s) => {
+      if (seen.has(s.id)) return false;
+      seen.add(s.id);
+      return s.statusState === 'pre' || s.statusState === 'in';
+    })
+    .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+  return fixtures;
+}
+
+/** Live scores + upcoming fixtures merged, live first then soonest. */
+export async function fetchLiveAndUpcoming() {
+  const [groups, upcoming] = await Promise.allSettled([fetchAllScores(), fetchUpcomingFixtures()]);
+  const scores = groups.status === 'fulfilled' ? groups.value.flatMap((g) => g.scores) : [];
+  const upcomingScores = upcoming.status === 'fulfilled' ? upcoming.value : [];
+
+  const byId = new Map();
+  [...scores, ...upcomingScores].forEach((s) => { if (!byId.has(s.id)) byId.set(s.id, s); });
+  const order = { in: 0, pre: 1, post: 2 };
+  return [...byId.values()].sort((a, b) =>
+    (order[a.statusState] ?? 1) - (order[b.statusState] ?? 1) ||
+    new Date(a.date || 0) - new Date(b.date || 0));
+}
+
+

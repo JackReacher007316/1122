@@ -3,7 +3,13 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  // Permanent public site is GitHub Pages under /<repo>/ — assets & router
+  // must respect that sub-path there, while local/backend serving stays at /.
+  // Repo name comes from CI (GITHUB_REPOSITORY=owner/repo) so the same code
+  // deploys correctly to any repo (1122, fofa-arena, ...).
+  base: process.env.GITHUB_PAGES === 'true'
+    ? `/${(process.env.GITHUB_REPOSITORY || 'JackReacher007316/1122').split('/')[1]}/`
+    : './',
   plugins: [react()],
   server: {
     host: true, // Listen on all local IPs

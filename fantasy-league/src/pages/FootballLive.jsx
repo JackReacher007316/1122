@@ -1,13 +1,18 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { ArrowLeft, Play, Calendar, Trophy, Tv, X, ChevronRight, Radio, BarChart3, ClipboardList, FileText, LayoutGrid } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Play, Calendar, Trophy, Tv, X, ChevronRight, Radio, BarChart3, ClipboardList, FileText, LayoutGrid, ExternalLink, Zap } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { LEAGUES, MATCHES, getStreamUrl, getLeagueById, getFeaturedMatches } from '../data/footballSchedule';
+import { getSportsurgeFootballUrl, getSportsurgeHomeUrl } from '../data/sportsurgeLinks';
+import { SportsurgeButton } from '../components/SportsurgeLinks';
 
 const BASE_URL = 'https://harborfreight22.com';
 
 // All football sections from harborfreight22.com — opened INSIDE our website, no new tab
+// Sportsurge sections are also opened inside, with an external fallback (↗).
 const FOOTBALL_SECTIONS = [
   { id: 'live', label: 'Live Streams', icon: Tv, url: BASE_URL, color: '#ff314a', desc: 'Watch live football matches' },
+  { id: 'sportsurge', label: 'Sportsurge Football', icon: Zap, url: getSportsurgeFootballUrl(), color: '#ff8a1c', desc: 'All football matches on Sportsurge' },
+  { id: 'sportsurge-live', label: 'Sportsurge Live', icon: Radio, url: getSportsurgeHomeUrl(), color: '#ff8a1c', desc: 'Every live sport on Sportsurge right now' },
   { id: 'schedule', label: 'Schedule', icon: Calendar, url: `${BASE_URL}/lich-thi-dau`, color: '#20df7f', desc: 'Full match schedule' },
   { id: 'standings', label: 'Standings', icon: BarChart3, url: `${BASE_URL}/bang-xep-hang`, color: '#f2c94c', desc: 'League tables & rankings' },
   { id: 'results', label: 'Results', icon: ClipboardList, url: `${BASE_URL}/ket-qua-tran-dau`, color: '#4bb7ff', desc: 'Match results & scores' },
@@ -78,25 +83,30 @@ function MatchRow({ match, onWatch }) {
           <span className="ftb-venue">{match.venue}</span>
         </div>
       </div>
-      <button className="ftb-watch-btn" onClick={() => onWatch(match)}>
-        <Tv size={14} />
-        Watch Live
-      </button>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <button className="ftb-watch-btn" onClick={() => onWatch(match)}>
+          <Tv size={14} />
+          Watch Live
+        </button>
+        <SportsurgeButton sport="football" match={match} />
+      </div>
     </div>
   );
 }
 
-/* Inline iframe viewer — opens harborfreight22.com pages INSIDE the website, no new tab */
+/* Inline iframe viewer — opens stream pages INSIDE the website, no new tab */
 function InlineViewer({ url, title, onClose }) {
+  const isSportsurge = url.includes('sportsurge');
   return (
     <div className="ftb-stream-overlay">
       <div className="ftb-stream-modal">
         <div className="ftb-stream-header">
           <div>
             <h3>{title}</h3>
-            <span className="ftb-stream-meta">Powered by ColaTV • harborfreight22.com</span>
+            <span className="ftb-stream-meta">{isSportsurge ? 'Powered by Sportsurge • v2.sportsurge.net' : 'Powered by ColaTV • harborfreight22.com'}</span>
           </div>
           <div className="ftb-stream-actions">
+            <a href={url} target="_blank" rel="noopener noreferrer" title="Open in new tab (use if embed is blocked)" className="ftb-close-btn" style={{ textDecoration: 'none' }}><ExternalLink size={16} /></a>
             <button className="ftb-close-btn" onClick={onClose}><X size={18} /></button>
           </div>
         </div>
@@ -127,10 +137,9 @@ export default function FootballLive() {
 
   const months = [
     { id: 'all', label: 'All' },
-    { id: '5', label: 'May' },
-    { id: '6', label: 'June' },
-    { id: '7', label: 'July' },
-    { id: '8', label: 'August' },
+    { id: '10', label: 'October' },
+    { id: '11', label: 'November' },
+    { id: '12', label: 'December' },
   ];
 
   const filtered = useMemo(() => {
@@ -198,11 +207,17 @@ export default function FootballLive() {
               Football <span>Schedule & Streaming</span>
             </h1>
             <p className="hero-copy">
-              All matches from Premier League, La Liga, Serie A, Bundesliga, Champions League & FIFA World Cup 2026 — with one-click live streaming powered by ColaTV.
+              Latest 2026/27 fixtures — Premier League, Champions League & La Liga (updated Oct 2026), auto-refreshed with live ESPN scores — with one-click live streaming powered by ColaTV & Sportsurge.
             </p>
-            <button className="ftb-stream-big-btn" onClick={openFullStream}>
-              <Play size={18} /> Open Live Stream Player
-            </button>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <button className="ftb-stream-big-btn" onClick={openFullStream}>
+                <Play size={18} /> Open Live Stream Player
+              </button>
+              <SportsurgeButton sport="football" label="Watch on Sportsurge" style={{ padding: '12px 20px', fontSize: '0.88rem' }} />
+              <Link to="/sportsurge?sport=football" style={{ color: '#ff8a1c', fontWeight: 750, fontSize: '0.85rem' }}>
+                All Sportsurge links →
+              </Link>
+            </div>
           </div>
           <div className="ftb-featured-stack">
             {featured.slice(0, 3).map(m => (
@@ -226,15 +241,18 @@ export default function FootballLive() {
       </div>
       <SectionNav activeSection={activeSection} onSelect={openSection} />
 
-      {/* Inline Section Viewer — shows harborfreight22.com pages INSIDE our site */}
+      {/* Inline Section Viewer — shows stream pages INSIDE our site */}
       {activeSection && (
         <div className="ftb-inline-viewer">
           <div className="ftb-inline-header">
             <div className="ftb-inline-title-row">
               <h3>{viewerTitle}</h3>
-              <span className="ftb-inline-badge">harborfreight22.com</span>
+              <span className="ftb-inline-badge">{viewerUrl.includes('sportsurge') ? 'via Sportsurge' : 'harborfreight22.com'}</span>
             </div>
-            <button className="ftb-close-btn" onClick={closeViewer}><X size={16} /></button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <a href={viewerUrl} target="_blank" rel="noopener noreferrer" title="Open in new tab" className="ftb-close-btn" style={{ textDecoration: 'none' }}><ExternalLink size={15} /></a>
+              <button className="ftb-close-btn" onClick={closeViewer}><X size={16} /></button>
+            </div>
           </div>
           <div className="ftb-inline-frame">
             <iframe
