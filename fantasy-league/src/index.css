@@ -1,5 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
-   FOFA SPORTS ARENA — DISNEY+ HOTSTAR DESIGN SYSTEM
+   FOFA SPORTS ARENA — FORMULA 1 × LA LIGA DESIGN SYSTEM
+   F1: carbon black, racing red #E10600, chequered-flag white
+   La Liga: coral #FF4B44, vibrant multicolour accents, deep navy
    ═══════════════════════════════════════════════════════════ */
 
 :root {
@@ -10,18 +12,22 @@
   --panel-solid: #18181c;
   --panel-strong: #28282c;
   --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(30, 215, 96, 0.25);
+  --line-strong: rgba(225, 6, 0, 0.35);
   --text: #f9f9f9;
   --muted: #a7a7a7;
   --faint: #3e3e3e;
 
-  /* ── Accent Colors (Merged Streaming Giants) ── */
-  --spotify-green: #1db954;
-  --netflix-red: #e50914;
-  --prime-blue: #00a8e1;
-  --hotstar-gold: #ffcc00;
-  --hotstar-blue: #1f80e0;
-  --hotstar-blue-hover: #3594f0;
+  /* ── Accent Colors (Formula 1 × La Liga) ── */
+  --f1-official-red: #e10600;
+  --laliga-coral: #ff4b44;
+  --laliga-navy: #0b1e3a;
+  --laliga-yellow: #ffcc00;
+  --spotify-green: #20df7f;
+  --netflix-red: var(--f1-official-red);
+  --prime-blue: var(--laliga-coral);
+  --hotstar-gold: var(--laliga-yellow);
+  --hotstar-blue: var(--f1-official-red);
+  --hotstar-blue-hover: #ff2b1f;
   --gold: var(--hotstar-gold);
   --red: var(--netflix-red);
   --green: var(--spotify-green);
@@ -57,8 +63,8 @@
   /* ── Shape & Spacing ────────────────────────────────────── */
   --radius: 8px;
   --radius-sm: 4px;
-  --shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(29, 185, 84, 0.04);
-  --shadow-red: 0 8px 24px rgba(229, 9, 20, 0.15);
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(225, 6, 0, 0.08);
+  --shadow-red: 0 8px 24px rgba(225, 6, 0, 0.25);
 
   /* ── Typography (Clean modern sans-serif) ────────────────── */
   --font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -174,7 +180,7 @@ canvas {
   flex-direction: column;
   align-items: center;
   gap: 32px;
-  background: linear-gradient(90deg, #030b17 0%, rgba(3, 11, 23, 0.8) 100%);
+  background: linear-gradient(180deg, #0a0a0c 0%, #16090b 55%, var(--laliga-navy) 130%);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   position: sticky;
@@ -203,8 +209,8 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--hotstar-blue), #0b2240);
-  border: 1px solid rgba(31, 128, 224, 0.3);
+  background: linear-gradient(135deg, var(--f1-official-red), var(--laliga-coral));
+  border: 1px solid rgba(225, 6, 0, 0.4);
   flex-shrink: 0;
 }
 
@@ -281,7 +287,7 @@ canvas {
   top: 15%;
   height: 70%;
   width: 3px;
-  background: var(--hotstar-blue);
+  background: linear-gradient(180deg, var(--f1-official-red), var(--laliga-coral));
   border-radius: 0 4px 4px 0;
 }
 
@@ -425,7 +431,11 @@ canvas {
   letter-spacing: -1px;
 }
 .hero-title span {
-  color: #ffffff;
+  background: linear-gradient(92deg, var(--f1-official-red) 10%, var(--laliga-coral) 55%, var(--laliga-yellow) 110%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
   text-shadow: none;
 }
 
@@ -1749,3 +1759,18 @@ canvas {
   transform: scale(1.1);
 }
 
+
+
+/* ── F1 × La Liga theme overrides ─────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(92deg, var(--f1-official-red), var(--laliga-coral)) !important;
+  border-color: rgba(255, 75, 68, 0.5) !important;
+  box-shadow: 0 6px 22px rgba(225, 6, 0, 0.28);
+}
+.btn-netflix-play {
+  background: linear-gradient(92deg, var(--f1-official-red), var(--laliga-coral)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 22px rgba(225, 6, 0, 0.35) !important;
+}
+.eyebrow { color: var(--laliga-coral); }
+::selection { background: var(--f1-official-red); color: #fff; }

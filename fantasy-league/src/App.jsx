@@ -28,7 +28,6 @@ import WelcomeAnimation from './components/WelcomeAnimation';
 import MercedesStarLogo from './components/MercedesStarLogo';
 
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const CreateTeam = React.lazy(() => import('./pages/CreateTeam'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 const LiveTracking = React.lazy(() => import('./pages/LiveTracking'));
@@ -79,7 +78,7 @@ function Sidebar({ setToken }) {
     { path: '/football-calendar', label: 'Football Schedule', icon: Calendar },
     { path: '/live', label: 'Race Control', icon: Radio, live: true },
     { path: '/live/football', label: 'Football Live', icon: Play },
-    { path: '/create-team', label: 'Fantasy Garage', icon: Shield },
+    { path: '/stats', label: 'Player Stats & Rosters', icon: Award },
     { path: '/leaderboard', label: 'Championship', icon: Award },
     { path: '/watch-party', label: 'Watch Party Lobby', icon: Users },
     { path: '/watch-live', label: 'Watch Live', icon: Tv },
@@ -100,7 +99,7 @@ function Sidebar({ setToken }) {
         <MercedesStarLogo size={24} />
         <div className="brand-title">
           <span style={{ fontWeight: 800 }}>FOFA</span>{' '}
-          <span style={{ color: '#1f80e0', fontWeight: 400 }}>ARENA</span>
+          <span style={{ color: '#ff4b44', fontWeight: 700 }}>ARENA</span>
         </div>
       </div>
 
@@ -143,7 +142,7 @@ function FloatingNav() {
     { path: '/', label: 'Home', icon: Home },
     { path: '/live', label: 'Control', icon: Radio },
     { path: '/live/football', label: 'Football', icon: Play },
-    { path: '/create-team', label: 'Fantasy', icon: Shield },
+    { path: '/stats', label: 'Rosters', icon: Award },
     { path: '/leaderboard', label: 'Championship', icon: Award },
   ];
 
@@ -263,14 +262,7 @@ function AppRoutes({ activeSport, setActiveSport, token, activeMatch, setActiveM
       <Route path="/sportsurge" element={<SportsurgeLive />} />
       <Route path="/stats" element={<PlayerStats />} />
       <Route path="/leaderboard" element={<Leaderboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
-      <Route
-        path="/create-team"
-        element={
-          <ProtectedRoute token={token}>
-            <CreateTeam activeSport={activeSport} setActiveSport={setActiveSport} />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/create-team" element={<Navigate to="/stats" replace />} />
       <Route
         path="/admin"
         element={
@@ -341,7 +333,7 @@ export default function App() {
                     <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <MercedesStarLogo size={28} />
-                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '2px', fontFamily: 'Inter, sans-serif' }}>FOFA <span style={{ color: '#1f80e0' }}>ARENA</span></span>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '2px', fontFamily: 'Inter, sans-serif' }}>FOFA <span style={{ color: '#ff4b44' }}>ARENA</span></span>
                       </div>
                       <nav style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#e5e5e5' }}>
                         <Link to="/" style={{ fontWeight: 600 }}>Home</Link>

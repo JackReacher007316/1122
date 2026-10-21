@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Search, Star, TrendingUp } from 'lucide-react';
 import { PLAYER_STATS, STAT_SPORTS } from '../data/playerStats';
 import PlayerFace from '../components/PlayerFace';
+import { ROSTERS } from '../data/rosters';
 
 const SPORT_COLOR = { football: '#20df7f', cricket: '#f2c94c', f1: '#ff314a' };
 
@@ -94,6 +95,29 @@ export default function PlayerStats() {
         })}
       </div>
       {!players.length && <div className="empty-state">No players match your search.</div>}
+
+      {/* Full updated rosters with real photos */}
+      <h2 style={{ marginTop: 36, fontSize: '1.3rem' }}>Updated Team Rosters — 2026/27</h2>
+      <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Every big team's key players with real photos. Use the sport filter above — rosters follow it too.</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(320px,1fr))', gap: 14 }}>
+        {ROSTERS.filter((r) => sport === 'all' || r.sport === sport).map((r) => (
+          <div key={r.team} className="glass-panel" style={{ padding: 18, borderTop: `3px solid ${r.color}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <strong>{r.team}</strong>
+              <span style={{ fontSize: '0.65rem', fontWeight: 800, color: r.color }}>{r.league}</span>
+            </div>
+            <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
+              {r.players.map((pl) => (
+                <div key={pl.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <PlayerFace name={pl.name} img={pl.img} size={40} color={r.color} />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 650 }}>{pl.name}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--muted)' }}>{pl.role}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

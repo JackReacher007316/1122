@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Trophy, Clock, Users, ArrowLeft, Star, Zap, Crown, ChevronRight } from 'lucide-react';
+import PlayerFace from '../components/PlayerFace';
+import { getMatchRosters } from '../data/rosters';
 
 const TeamBadge = ({ teamName, sport, size = '80px' }) => {
   const getSportColor = (s) => {
@@ -99,15 +101,12 @@ const MatchDetail = () => {
 
   const joinContest = async (contestId) => {
     if (!token) { navigate('/auth'); return; }
-    if (myTeams.length === 0) {
-      navigate(`/create-team?matchId=${id}`);
-      return;
-    }
+    // Free fan challenge — no team creation or entry fee required.
     try {
       const res = await fetch(`/api/contests/${contestId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ teamId: myTeams[0].id })
+        body: JSON.stringify({ teamId: myTeams[0]?.id || null })
       });
       const data = await res.json();
       if (data.success) alert('Successfully joined contest! 🎉');
@@ -176,15 +175,15 @@ const MatchDetail = () => {
             <div><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>FAN CHALLENGES</div><div style={{ color: '#fff', fontFamily: 'var(--font-heading)', fontWeight: 900 }}>{contests.length}</div></div>
             <div><div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-heading)', letterSpacing: '1px' }}>MY TEAMS</div><div style={{ color: '#fff', fontFamily: 'var(--font-heading)', fontWeight: 900 }}>{myTeams.length}</div></div>
           </div>
-          <button onClick={() => navigate(`/create-team?matchId=${match.id}`)} className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.75rem' }}>
-            + CREATE TEAM
+          <button onClick={() => setActiveTab('roster')} className="btn-primary" style={{ padding: '10px 24px', fontSize: '0.75rem' }}>
+            VIEW MATCH ROSTER
           </button>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="glass-panel" style={{ display: 'flex', gap: '0', marginBottom: '24px', padding: '4px', borderRadius: '12px' }}>
-        {['challenges', 'my-teams', 'leaderboard'].map(tab => (
+        {['challenges', 'roster', 'leaderboard'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             flex: 1, padding: '12px', border: 'none', borderRadius: '10px', cursor: 'pointer',
             fontFamily: 'var(--font-heading)', fontSize: '0.75rem', letterSpacing: '1px',
@@ -257,44 +256,33 @@ const MatchDetail = () => {
         </div>
       )}
 
-      {/* My Teams Tab */}
-      {activeTab === 'my-teams' && (
-        <div>
-          {myTeams.length === 0 ? (
-            <div className="glass-panel" style={{ textAlign: 'center', padding: '48px' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🏏</div>
-              <h3 style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>No teams created yet</h3>
-              <button onClick={() => navigate(`/create-team?matchId=${match.id}`)} className="btn-primary" style={{ padding: '12px 32px' }}>
-                CREATE YOUR FIRST TEAM
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {myTeams.map((team, i) => (
-                <div key={team.id} className="glass-panel" style={{ padding: '20px', animation: `slideInUp 0.3s ease ${0.1 * i}s both` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h3 style={{ margin: 0 }}>{team.teamName}</h3>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      {team.members.length} players • {team.budget} credits left
-                    </span>
+      {/* Match Roster Tab — updated rosters with real player photos */}
+      {activeTab === 'roster' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {getMatchRosters(match.teamA, match.teamB, match.sport).map((roster) => (
+            <div key={roster.team} className="glass-panel" style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                <h3 style={{ margin: 0 }}>{roster.team}</h3>
+                <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '3px 10px', borderRadius: '999px', color: roster.color, border: `1px solid ${roster.color}55`, background: `${roster.color}14` }}>
+                  {roster.league} • Updated 2026/27
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: '12px' }}>
+                {roster.players.map((player) => (
+                  <div key={player.name} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <PlayerFace name={player.name} img={player.img} size={52} color={roster.color} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 750, fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player.name}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{player.role}</div>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {team.members.map(m => (
-                      <span key={m.id} style={{
-                        padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem',
-                        background: m.teamRole === 'C' ? 'rgba(255,215,0,0.15)' : m.teamRole === 'VC' ? 'rgba(192,192,192,0.15)' : 'rgba(255,255,255,0.05)',
-                        border: m.teamRole === 'C' ? '1px solid rgba(255,215,0,0.4)' : m.teamRole === 'VC' ? '1px solid rgba(192,192,192,0.4)' : '1px solid rgba(255,255,255,0.1)',
-                        color: m.teamRole === 'C' ? '#FFD700' : m.teamRole === 'VC' ? '#c0c0c0' : '#fff'
-                      }}>
-                        {m.teamRole && <span style={{ fontWeight: 'bold', marginRight: '4px' }}>{m.teamRole}</span>}
-                        {m.player.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          )}
+          ))}
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0 }}>
+            Rosters updated for the 2026/27 season. Star players use bundled real photos; others use federation/club photos with initials fallback.
+          </p>
         </div>
       )}
 

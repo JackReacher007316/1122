@@ -88,13 +88,13 @@ const carouselSlides = [
   },
   {
     id: 'slide-fantasy',
-    title: 'Draft your dream lineup',
-    subtitle: 'FOFA FANTASY LEAGUE • STAGED CONTESTS',
-    desc: 'Put your strategy to the test. Draft drivers, batsmen, and strikers. Earn points based on real telemetry data and top the leaderboard.',
-    cta: 'Create Fantasy Team',
-    path: '/create-team',
+    title: 'Star players & full rosters',
+    subtitle: 'PLAYER STATS • UPDATED ROSTERS',
+    desc: 'Faces, ratings and 2026/27 season stats for football, cricket and F1 stars — plus the full updated team rosters for every big match.',
+    cta: 'View Player Stats',
+    path: '/stats',
     image: 'https://images.unsplash.com/photo-1540747737956-37872404a82a?auto=format&fit=crop&q=70&w=900',
-    tag: 'FANTASY GARAGE'
+    tag: 'ROSTERS 2026/27'
   }
 ];
 
@@ -450,10 +450,10 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
             <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Watch Party</div>
           </div>
         </div>
-        <div className="prime-brand-tile" onClick={() => navigate('/create-team')} style={{ '--sport-glow-color': 'var(--hotstar-gold)' }}>
+        <div className="prime-brand-tile" onClick={() => navigate('/stats')} style={{ '--sport-glow-color': 'var(--hotstar-gold)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--hotstar-gold)', zIndex: 2 }}>
             <Trophy size={28} />
-            <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Fantasy</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#ffffff' }}>Rosters</div>
           </div>
         </div>
       </section>
