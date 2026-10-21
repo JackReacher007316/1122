@@ -1,5 +1,8 @@
 // Football match schedule — May to August 2026
 // streamUrl points to harborfreight22.com (ColaTV) for live viewing
+// Sportsurge links are centralised in ./sportsurgeLinks.js (re-exported below)
+
+import { getSportsurgeFootballUrl } from './sportsurgeLinks';
 
 const STREAM_BASE = 'https://harborfreight22.com';
 
@@ -91,6 +94,13 @@ export const MATCHES = [
 export function getStreamUrl() {
   return STREAM_BASE;
 }
+
+/** Sportsurge link for one football match (hub pre-searched for the teams). */
+export function getSportsurgeStreamUrl(match) {
+  return getSportsurgeFootballUrl(match);
+}
+
+export { getSportsurgeFootballUrl };
 
 export function getLeagueById(id) {
   return LEAGUES.find(l => l.id === id) || LEAGUES[0];

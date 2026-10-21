@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Radio, RotateCcw, Flame, Trophy, MessageCircle, X, Send, Eye } from 'lucide-react';
+import { Radio, RotateCcw, Flame, Trophy, MessageCircle, X, Send, Eye, ExternalLink, Zap } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { Link } from 'react-router-dom';
+import { getSportsurgeUrlForSport } from '../data/sportsurgeLinks';
+import SportsurgeLinks from '../components/SportsurgeLinks';
 
 const USERNAME_COLORS = ['#38bdf8', '#60a5fa', '#f3c623', '#a78bfa', '#34d399', '#f87171'];
 const REACTION_EMOJIS = ['🔥', '⚡', '🏆', '❤️', '😱', '👏'];
@@ -48,6 +51,11 @@ export default function WatchLive() {
   const sportParam = searchParams.get('sport');
   const sport = (sportParam === 'cricket' || sportParam === 'football') ? sportParam : 'f1';
 
+  // Stream provider: 'partner' (ColaTV / FullRaces / ePlayHD) or 'sportsurge'.
+  // Sportsurge covers football & F1; cricket keeps the partner feed.
+  const [provider, setProvider] = useState('partner');
+  const sportsurgeAvailable = sport === 'football' || sport === 'f1';
+
   const reloadIframe = () => {
     setIframeKey((prev) => prev + 1);
   };
@@ -57,9 +65,14 @@ export default function WatchLive() {
     setIframeKey(0);
   };
 
-  const streamUrl =
+  const partnerUrl =
     sport === 'football' ? 'https://colatvia.live/' :
     sport === 'cricket' ? 'https://eplayhd.com/' : 'https://fullraces.com/';
+
+  const streamUrl =
+    provider === 'sportsurge' && sportsurgeAvailable
+      ? getSportsurgeUrlForSport(sport)
+      : partnerUrl;
 
   const sportTitle =
     sport === 'football' ? 'Football Live Stream' :
@@ -249,6 +262,48 @@ export default function WatchLive() {
         </button>
       </div>
 
+      {/* Provider selector — Partner feed vs Sportsurge (football & F1) */}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '14px' }}>
+        <span style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.06em', color: '#8f98a9' }}>SOURCE:</span>
+        <button
+          onClick={() => { setProvider('partner'); setIframeKey(0); }}
+          style={{
+            padding: '8px 16px', borderRadius: '999px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 750,
+            border: `1px solid ${provider === 'partner' ? '#1f80e0' : 'rgba(255,255,255,0.12)'}`,
+            background: provider === 'partner' ? 'rgba(31,128,224,0.16)' : 'rgba(255,255,255,0.03)',
+            color: provider === 'partner' ? '#fff' : '#8f98a9',
+          }}
+        >
+          {sport === 'football' ? 'ColaTV' : sport === 'cricket' ? 'ePlayHD' : 'FullRaces'} (default)
+        </button>
+        <button
+          onClick={() => { if (sportsurgeAvailable) { setProvider('sportsurge'); setIframeKey(0); } }}
+          disabled={!sportsurgeAvailable}
+          title={sportsurgeAvailable ? 'Watch this sport via Sportsurge' : 'Sportsurge links are added for football & F1'}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '8px 16px', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 750,
+            cursor: sportsurgeAvailable ? 'pointer' : 'not-allowed', opacity: sportsurgeAvailable ? 1 : 0.45,
+            border: `1px solid ${provider === 'sportsurge' ? '#ff8a1c' : 'rgba(255,138,28,0.35)'}`,
+            background: provider === 'sportsurge' ? 'rgba(255,138,28,0.16)' : 'rgba(255,138,28,0.06)',
+            color: '#ff8a1c',
+          }}
+        >
+          <Zap size={14} /> Sportsurge {sport === 'f1' ? 'F1' : sport === 'football' ? 'Football' : ''}
+        </button>
+        {provider === 'sportsurge' && (
+          <a href={streamUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#ff8a1c', fontSize: '0.78rem', fontWeight: 700 }}>
+            Open Sportsurge in new tab <ExternalLink size={12} />
+          </a>
+        )}
+        <Link to={`/sportsurge?sport=${sport === 'cricket' ? 'live' : sport}`} style={{ marginLeft: 'auto', color: '#ff8a1c', fontSize: '0.78rem', fontWeight: 700 }}>
+          All Sportsurge match links →
+        </Link>
+      </div>
+
+      {/* Sportsurge quick links — Live / Football / F1 */}
+      <SportsurgeLinks style={{ marginBottom: '20px' }} />
+
       {/* Main Streaming Grid */}
       <div className={`live-stream-layout ${chatOpen ? 'has-sidebar' : ''}`}>
         {/* Left Video Panel */}
@@ -270,7 +325,7 @@ export default function WatchLive() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span className="status-pill is-live" style={{ padding: '3px 8px', fontSize: '0.75rem' }}>Live</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff' }}>
-                  FOFA Official Feed • {sportTitle}
+                  {provider === 'sportsurge' ? 'via Sportsurge' : 'FOFA Official Feed'} • {sportTitle}
                 </span>
               </div>
               <button

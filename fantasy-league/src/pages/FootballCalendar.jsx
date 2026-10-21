@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Calendar, MapPin, Trophy, Radio, Search, Eye, Award, Shield } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Radio, Search, Eye, Award, Shield, ExternalLink, Zap } from 'lucide-react';
+import { getSportsurgeFootballUrl } from '../data/sportsurgeLinks';
+import { SportsurgeButton } from '../components/SportsurgeLinks';
 
 // Football 2026 schedule static metadata to merge with DB matches
 const footballScheduleMetadata = Array.from({ length: 38 }, (_, i) => {
@@ -103,6 +105,18 @@ export default function FootballCalendar() {
             >
               <Radio size={16} /> Watch Live Stream
             </Link>
+            <a
+              href={getSportsurgeFootballUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px', textDecoration: 'none', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', fontWeight: 'bold', fontSize: '0.85rem' }}
+            >
+              <Zap size={16} /> Sportsurge Football <ExternalLink size={13} />
+            </a>
+            <Link to="/sportsurge?sport=football" style={{ alignSelf: 'center', color: '#ff8a1c', fontWeight: 700, fontSize: '0.82rem' }}>
+              All Sportsurge links →
+            </Link>
           </div>
         </div>
 
@@ -122,6 +136,15 @@ export default function FootballCalendar() {
             >
               Launch Live Player
             </Link>
+            <a
+              href={getSportsurgeFootballUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ marginTop: '10px', fontSize: '0.8rem', width: '100%', justifyContent: 'center', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', textDecoration: 'none' }}
+            >
+              <Zap size={14} /> Watch on Sportsurge <ExternalLink size={13} />
+            </a>
           </div>
         </div>
       </section>
@@ -293,6 +316,7 @@ export default function FootballCalendar() {
                   >
                     <Eye size={14} /> Watch Live
                   </Link>
+                  <SportsurgeButton sport="football" match={match.gp} style={{ width: '100%' }} />
 
                   {match.id && (
                     <button

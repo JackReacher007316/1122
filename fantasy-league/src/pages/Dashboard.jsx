@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import SportTabs from '../components/SportTabs';
 import { fetchAllScores, getScoreSummary, getSportById, SPORT_CATALOG } from '../data/liveSports';
+import SportsurgeLinks from '../components/SportsurgeLinks';
 
 const demoMatches = [
   {
@@ -483,6 +484,15 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
           <div className="stat-value" style={{ color: 'var(--spotify-green)' }}>INR 2.5L+</div>
         </div>
       </div>
+
+      {/* Sportsurge — football & F1 live links */}
+      <div className="section-head" style={{ marginBottom: '10px' }}>
+        <h2 style={{ fontSize: '1.15rem' }}>⚡ Sportsurge Live Links</h2>
+        <button className="ghost-button" type="button" onClick={() => navigate('/sportsurge')}>
+          Football &amp; F1 on Sportsurge <ArrowRight size={16} />
+        </button>
+      </div>
+      <SportsurgeLinks style={{ marginBottom: '28px' }} />
 
       <SportTabs activeSport={activeSport} setActiveSport={setActiveSport} />
 

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Calendar, MapPin, Trophy, Radio, ExternalLink, Flame, Search, Grid, Eye } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Radio, ExternalLink, Flame, Search, Grid, Eye, Zap } from 'lucide-react';
+import { getSportsurgeF1Url } from '../data/sportsurgeLinks';
+import { SportsurgeButton } from '../components/SportsurgeLinks';
 
 // F1 2026 schedule static metadata to merge with DB matches
 const f1ScheduleMetadata = [
@@ -115,6 +117,18 @@ export default function F1Calendar() {
             >
               <Radio size={16} /> Watch Races Live
             </Link>
+            <a
+              href={getSportsurgeF1Url()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px', textDecoration: 'none', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', fontWeight: 'bold', fontSize: '0.85rem' }}
+            >
+              <Zap size={16} /> Sportsurge F1 <ExternalLink size={13} />
+            </a>
+            <Link to="/sportsurge?sport=f1" style={{ alignSelf: 'center', color: '#ff8a1c', fontWeight: 700, fontSize: '0.82rem' }}>
+              All Sportsurge links →
+            </Link>
           </div>
         </div>
 
@@ -134,6 +148,15 @@ export default function F1Calendar() {
             >
               Launch Live Player <ExternalLink size={14} />
             </Link>
+            <a
+              href={getSportsurgeF1Url()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ghost-button"
+              style={{ marginTop: '10px', fontSize: '0.8rem', width: '100%', justifyContent: 'center', color: '#ff8a1c', borderColor: 'rgba(255,138,28,0.4)', textDecoration: 'none' }}
+            >
+              <Zap size={14} /> Watch on Sportsurge <ExternalLink size={13} />
+            </a>
           </div>
         </div>
       </section>
@@ -306,6 +329,7 @@ export default function F1Calendar() {
                   >
                     <Eye size={14} /> Watch Live
                   </Link>
+                  <SportsurgeButton sport="f1" match={race} style={{ width: '100%' }} />
 
                   {race.id && (
                     <button

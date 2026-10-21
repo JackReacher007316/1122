@@ -19,7 +19,8 @@ import {
   Volume2,
   VolumeX,
   Maximize2,
-  ListMusic
+  ListMusic,
+  Zap
 } from 'lucide-react';
 import Background3D from './components/Background3D';
 import Chatbot from './components/Chatbot';
@@ -41,6 +42,7 @@ const F1Calendar = React.lazy(() => import('./pages/F1Calendar'));
 const CricketCalendar = React.lazy(() => import('./pages/CricketCalendar'));
 const FootballCalendar = React.lazy(() => import('./pages/FootballCalendar'));
 const WatchLive = React.lazy(() => import('./pages/WatchLive'));
+const SportsurgeLive = React.lazy(() => import('./pages/SportsurgeLive'));
 
 function PageLoader() {
   return (
@@ -80,6 +82,7 @@ function Sidebar({ setToken }) {
     { path: '/leaderboard', label: 'Championship', icon: Award },
     { path: '/watch-party', label: 'Watch Party Lobby', icon: Users },
     { path: '/watch-live', label: 'Watch Live', icon: Tv },
+    { path: '/sportsurge', label: 'Sportsurge Live', icon: Zap, live: true },
     { path: '/admin', label: 'Race Engineer', icon: Settings },
   ];
 
@@ -255,6 +258,7 @@ function AppRoutes({ activeSport, setActiveSport, token, activeMatch, setActiveM
       <Route path="/live/:sport" element={<LiveScorePage />} />
       <Route path="/watch-party" element={<WatchParty activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route path="/watch-live" element={<WatchLive />} />
+      <Route path="/sportsurge" element={<SportsurgeLive />} />
       <Route path="/leaderboard" element={<Leaderboard activeSport={activeSport} setActiveSport={setActiveSport} />} />
       <Route
         path="/create-team"
@@ -302,8 +306,14 @@ export default function App() {
       .catch(e => console.error("Error loading initial match:", e));
   }, []);
 
+  // On GitHub Pages the app lives under /1122/ (BASE_URL=/1122/); locally
+  // and on the backend it lives at / (BASE_URL=./) — keep routing in sync.
+  const basename = import.meta.env.BASE_URL.startsWith('/')
+    ? import.meta.env.BASE_URL.replace(/\/$/, '')
+    : undefined;
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Background3D disabled={disable3D} activeSport={activeSport} />
       <WelcomeAnimation />
       <Suspense fallback={<PageLoader />}>
@@ -333,6 +343,7 @@ export default function App() {
                       <nav style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#e5e5e5' }}>
                         <Link to="/" style={{ fontWeight: 600 }}>Home</Link>
                         <Link to="/watch-live" style={{ opacity: 0.8 }}>Live Streams</Link>
+                        <Link to="/sportsurge" style={{ opacity: 0.8 }}>Sportsurge</Link>
                         <Link to="/watch-party" style={{ opacity: 0.8 }}>Watch Parties</Link>
                         <Link to="/leaderboard" style={{ opacity: 0.8 }}>Leaderboard</Link>
                       </nav>
