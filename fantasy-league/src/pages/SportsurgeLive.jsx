@@ -5,6 +5,7 @@ import {
   Radio, RotateCcw, Trophy, X, Zap,
 } from 'lucide-react';
 import { MATCHES, getLeagueById } from '../data/footballSchedule';
+import { useFootballFixtures, espnToMatch } from '../components/useEspnFixtures';
 import {
   F1_2026_RACES, SPORTSURGE_MIRRORS,
   getSportsurgeF1Url, getSportsurgeFootballUrl, getSportsurgeHomeUrl,
@@ -34,9 +35,13 @@ export default function SportsurgeLive() {
 
   const openInside = (url, title) => setViewer({ url, title });
 
+  // Latest fixtures from ESPN; static MATCHES only if ESPN is unreachable
+  const { fixtures: espnFixtures, fromEspn: footballFromEspn } = useFootballFixtures({ daysPast: 1, daysAhead: 14 });
   const footballMatches = useMemo(
-    () => [...MATCHES].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 14),
-    [],
+    () => (footballFromEspn
+      ? espnFixtures.map(espnToMatch).slice(0, 14)
+      : [...MATCHES].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 14)),
+    [footballFromEspn, espnFixtures],
   );
 
   const activeColor = TABS.find((t) => t.id === tab)?.color || '#ff8a1c';
@@ -143,7 +148,7 @@ export default function SportsurgeLive() {
       {tab === 'football' && (
         <section>
           <h2 style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: '1.1rem' }}>
-            <Radio size={17} color="#20df7f" /> Upcoming Football Matches — Sportsurge Links
+            <Radio size={17} color="#20df7f" /> {footballFromEspn ? 'Latest Football Fixtures (ESPN) — Sportsurge Links' : 'Upcoming Football Matches — Sportsurge Links'}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {footballMatches.map((m) => {

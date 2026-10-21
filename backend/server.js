@@ -470,6 +470,38 @@ app.get('/api/live/cricket', async (req, res) => {
   }
 });
 
+// Latest fixtures from ESPN for all major football leagues (+ F1 sessions)
+// GET /api/live/espn/fixtures?sport=football&daysPast=2&daysAhead=21
+// GET /api/live/espn/fixtures?sport=f1
+const ESPN_FOOTBALL_LEAGUES = [
+  ['eng.1', 'Premier League'], ['uefa.champions', 'Champions League'], ['esp.1', 'La Liga'],
+  ['ita.1', 'Serie A'], ['ger.1', 'Bundesliga'], ['fra.1', 'Ligue 1'], ['uefa.europa', 'Europa League'],
+  ['por.1', 'Primeira Liga'], ['ned.1', 'Eredivisie'], ['usa.1', 'MLS'],
+];
+app.get('/api/live/espn/fixtures', async (req, res) => {
+  try {
+    const sport = String(req.query.sport || 'football');
+    if (sport === 'f1') {
+      const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard');
+      return res.json({ source: 'espn', sport, data: await r.json() });
+    }
+    const daysPast = Math.min(14, Math.max(0, parseInt(req.query.daysPast || '2', 10) || 0));
+    const daysAhead = Math.min(45, Math.max(1, parseInt(req.query.daysAhead || '21', 10) || 21));
+    const ymd = (d) => d.toISOString().slice(0, 10).replace(/-/g, '');
+    const range = `${ymd(new Date(Date.now() - daysPast * 86400000))}-${ymd(new Date(Date.now() + daysAhead * 86400000))}`;
+    const results = await Promise.allSettled(ESPN_FOOTBALL_LEAGUES.map(async ([slug, label]) => {
+      const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard?dates=${range}&limit=100`);
+      const data = await r.json();
+      return (data.events || []).map((e) => ({ ...e, _league: label, _slug: slug }));
+    }));
+    const events = results.filter((r) => r.status === 'fulfilled').flatMap((r) => r.value)
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    res.json({ source: 'espn', sport: 'football', range, count: events.length, events });
+  } catch (e) {
+    res.json({ source: 'demo', events: [] });
+  }
+});
+
 app.get('/api/live/f1/scoreboard', async (req, res) => {
   try {
     const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard');

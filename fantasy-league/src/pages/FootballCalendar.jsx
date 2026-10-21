@@ -4,6 +4,7 @@ import { Calendar, MapPin, Trophy, Radio, Search, Eye, Award, Shield, ExternalLi
 import { getSportsurgeFootballUrl } from '../data/sportsurgeLinks';
 import { MATCHES as LATEST_MATCHES, getLeagueById } from '../data/footballSchedule';
 import { SportsurgeButton } from '../components/SportsurgeLinks';
+import { useFootballFixtures, espnToMatch } from '../components/useEspnFixtures';
 
 // Football calendar — latest 2026/27 fixtures (updated Oct 2026, from footballSchedule.js)
 const footballScheduleMetadata = LATEST_MATCHES.map((m, i) => ({
@@ -19,6 +20,8 @@ const footballScheduleMetadata = LATEST_MATCHES.map((m, i) => ({
 }));
 
 export default function FootballCalendar() {
+  // Latest fixtures from ESPN (all leagues); static snapshot is the fallback
+  const { fixtures: espnFixtures, lastUpdated, fromEspn } = useFootballFixtures({ daysPast: 3, daysAhead: 28 });
   const [dbMatches, setDbMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all', 'etihad', 'anfield', 'upcoming', 'completed'
@@ -37,8 +40,17 @@ export default function FootballCalendar() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Merge database match data with static metadata
+  // ESPN first; merge database/static metadata only as offline fallback
   const calendarData = useMemo(() => {
+    if (fromEspn) {
+      return espnFixtures.map(espnToMatch).map((m, i) => ({
+        round: m.round, gp: `${m.home} vs ${m.away}`, type: m.league,
+        leagueLabel: getLeagueById(m.league).label, venue: m.venue || 'Venue TBD',
+        matchTime: new Date(m.date).toLocaleString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+        status: m.status === 'completed' ? 'COMPLETED' : m.status === 'live' ? 'LIVE' : 'UPCOMING',
+        homeScore: m.homeScore, awayScore: m.awayScore, _i: i, id: null,
+      }));
+    }
     return footballScheduleMetadata.map((meta) => {
       // Find matching database entry by title
       const dbMatch = dbMatches.find(
@@ -54,7 +66,7 @@ export default function FootballCalendar() {
         matchTime: meta.matchTime,
       };
     });
-  }, [dbMatches]);
+  }, [dbMatches, espnFixtures, fromEspn]);
 
   // Apply filters and search query
   const filteredCalendar = useMemo(() => {
@@ -67,7 +79,7 @@ export default function FootballCalendar() {
 
       if (filter === 'upcoming') return match.status === 'UPCOMING';
       if (filter === 'completed') return match.status === 'COMPLETED';
-      if (['pl', 'ucl', 'laliga'].includes(filter)) return match.type === filter;
+      if (['pl', 'ucl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'uel'].includes(filter)) return match.type === filter;
       return true;
     });
   }, [calendarData, filter, searchQuery]);
@@ -85,7 +97,7 @@ export default function FootballCalendar() {
             Football <span>2026 Calendar</span>
           </h1>
           <p className="hero-copy">
-            Explore the latest 2026/27 Premier League calendar — all 38 rounds, updated Oct 2026. Track live goal-scoring metrics and stream match action live.
+            {fromEspn ? `Latest fixtures LIVE from ESPN — every major league, updated ${lastUpdated ? lastUpdated.toLocaleTimeString() : 'now'} and auto-refreshing every minute.` : 'Explore the latest 2026/27 football calendar (ESPN offline — showing snapshot).'} Track live scores and stream match action live.
           </p>
           <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <Link
@@ -168,6 +180,8 @@ export default function FootballCalendar() {
             { id: 'pl', label: 'Premier League' },
             { id: 'ucl', label: 'Champions League' },
             { id: 'laliga', label: 'La Liga' },
+            { id: 'seriea', label: 'Serie A' },
+            { id: 'bundesliga', label: 'Bundesliga' },
             { id: 'upcoming', label: 'Upcoming' },
             { id: 'completed', label: 'Finished' }
           ].map((tab) => (
@@ -278,8 +292,11 @@ export default function FootballCalendar() {
                   </div>
 
                   {/* Match Title */}
-                  <h3 style={{ fontSize: '1.15rem', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px', height: '42px', overflow: 'hidden' }}>
+                  <h3 style={{ fontSize: '1.15rem', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '10px', minHeight: '42px', overflow: 'hidden' }}>
                     {match.gp}
+                    {(match.status === 'COMPLETED' || match.status === 'LIVE') && match.homeScore !== undefined && (
+                      <span style={{ color: match.status === 'LIVE' ? '#ff314a' : 'var(--gold)', fontWeight: 900 }}>{match.homeScore}–{match.awayScore}</span>
+                    )}
                   </h3>
 
                   {/* Date & Venue */}

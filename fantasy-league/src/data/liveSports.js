@@ -32,7 +32,7 @@ export const SPORT_CATALOG = [
     short: 'F1',
     shape: 'f1',
     color: '#ff314a',
-    endpoint: '/api/live/f1/scoreboard',
+    endpoint: 'https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard',
     sourceLabel: 'ESPN Formula 1',
   },
   {
@@ -298,6 +298,14 @@ export async function fetchSportScores(sportId) {
       };
     }
 
+    // Football = every major league from ESPN (not just Premier League)
+    if (sport.id === 'football') {
+      const fixtures = await fetchFootballFixtures({ daysPast: 2, daysAhead: 21 });
+      if (fixtures.length) {
+        return { sport, scores: fixtures, source: 'live', updatedAt: new Date() };
+      }
+    }
+
     const data = await fetchJson(sport.endpoint);
     let scores = [];
 
@@ -332,63 +340,139 @@ export async function fetchAllScores() {
 }
 
 /* ------------------------------------------------------------------
-   Auto-updating upcoming fixtures: ESPN scoreboards accept a date
-   range (dates=YYYYMMDD-YYYYMMDD), so we pull the NEXT 14 days of
-   football across the top leagues + today's other sports. Called on
-   mount and re-polled every 30s by Dashboard / Live pages, so the
-   "Live & Upcoming" lists keep themselves current with no edits.
+   ALL MATCH FIXTURES FROM ESPN — the single source of truth.
+   Football: ESPN scoreboards for every major league, queried with a
+   date range (dates=YYYYMMDD-YYYYMMDD) so we get past results, live
+   games and upcoming fixtures in one call. F1: ESPN racing scoreboard
+   directly (same feed the backend proxy used). Other sports: ESPN
+   scoreboards in SPORT_CATALOG. Pages re-poll every 30–60s, so
+   fixtures/scores update themselves with zero manual edits.
+   Static calendars in footballSchedule/latestCalendars are only an
+   offline fallback if ESPN is unreachable.
    ------------------------------------------------------------------ */
-const UPCOMING_LEAGUES = [
-  { league: 'eng.1', label: 'Premier League' },
-  { league: 'uefa.champions', label: 'Champions League' },
-  { league: 'esp.1', label: 'La Liga' },
-  { league: 'ita.1', label: 'Serie A' },
-  { league: 'ger.1', label: 'Bundesliga' },
+export const FOOTBALL_LEAGUES = [
+  { slug: 'eng.1', id: 'pl', label: 'Premier League' },
+  { slug: 'uefa.champions', id: 'ucl', label: 'Champions League' },
+  { slug: 'esp.1', id: 'laliga', label: 'La Liga' },
+  { slug: 'ita.1', id: 'seriea', label: 'Serie A' },
+  { slug: 'ger.1', id: 'bundesliga', label: 'Bundesliga' },
+  { slug: 'fra.1', id: 'ligue1', label: 'Ligue 1' },
+  { slug: 'uefa.europa', id: 'uel', label: 'Europa League' },
+  { slug: 'por.1', id: 'primeira', label: 'Primeira Liga' },
+  { slug: 'ned.1', id: 'eredivisie', label: 'Eredivisie' },
+  { slug: 'usa.1', id: 'mls', label: 'MLS' },
 ];
 
+const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports';
 const ymd = (d) => d.toISOString().slice(0, 10).replace(/-/g, '');
 
-export async function fetchUpcomingFixtures(days = 14) {
-  const start = new Date();
-  const end = new Date(Date.now() + days * 86400000);
-  const range = `${ymd(start)}-${ymd(end)}`;
+export const espnDatesRange = (daysPast = 2, daysAhead = 21) =>
+  `${ymd(new Date(Date.now() - daysPast * 86400000))}-${ymd(new Date(Date.now() + daysAhead * 86400000))}`;
+
+/** Parse helper exposed for reuse: attach league info to parsed ESPN events. */
+function withLeague(scores, league) {
+  return scores.map((score) => ({
+    ...score,
+    leagueSlug: league.slug,
+    leagueId: league.id,
+    competition: league.label,
+  }));
+}
+
+/**
+ * Latest football fixtures from ESPN across all major leagues.
+ * Includes live + upcoming + recent results, sorted live first,
+ * then soonest kick-off. Returns [] if ESPN is unreachable (callers
+ * fall back to the static calendar snapshot).
+ */
+export async function fetchFootballFixtures({ daysPast = 2, daysAhead = 21 } = {}) {
+  const range = espnDatesRange(daysPast, daysAhead);
   const football = getSportById('football');
 
   const perLeague = await Promise.allSettled(
-    UPCOMING_LEAGUES.map(async ({ league, label }) => {
+    FOOTBALL_LEAGUES.map(async (league) => {
       const data = await fetchJson(
-        `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${range}&limit=100`,
+        `${ESPN_BASE}/soccer/${league.slug}/scoreboard?dates=${range}&limit=100`,
       );
-      return parseEspnScoreboard(data, football).map((s) => ({ ...s, competition: label }));
+      return withLeague(parseEspnScoreboard(data, football), league);
     }),
   );
 
   const seen = new Set();
-  const fixtures = perLeague
+  const order = { in: 0, pre: 1, post: 2 };
+  return perLeague
     .filter((r) => r.status === 'fulfilled')
     .flatMap((r) => r.value)
-    .filter((s) => {
-      if (seen.has(s.id)) return false;
-      seen.add(s.id);
-      return s.statusState === 'pre' || s.statusState === 'in';
+    .filter((score) => {
+      if (seen.has(score.id)) return false;
+      seen.add(score.id);
+      return true;
     })
-    .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    .sort((a, b) =>
+      (order[a.statusState] ?? 1) - (order[b.statusState] ?? 1) ||
+      new Date(a.date || 0) - new Date(b.date || 0));
+}
 
-  return fixtures;
+/** Backwards-compatible: next-N-days upcoming/live football from ESPN. */
+export async function fetchUpcomingFixtures(days = 14) {
+  const all = await fetchFootballFixtures({ daysPast: 0, daysAhead: days });
+  return all.filter((s) => s.statusState === 'pre' || s.statusState === 'in');
+}
+
+/** Latest F1 sessions/races from ESPN's racing scoreboard (direct). */
+export async function fetchF1Fixtures() {
+  const sport = getSportById('f1');
+  try {
+    const data = await fetchJson(sport.endpoint);
+    const scores = parseF1(data, sport);
+    const order = { in: 0, pre: 1, post: 2 };
+    return scores.sort((a, b) =>
+      (order[a.statusState] ?? 1) - (order[b.statusState] ?? 1) ||
+      new Date(a.date || 0) - new Date(b.date || 0));
+  } catch {
+    return [];
+  }
+}
+
+/** F1 Grand Prix list (event level) from ESPN, for calendar pages. */
+export async function fetchF1Schedule() {
+  try {
+    const data = await fetchJson(`${ESPN_BASE}/racing/f1/scoreboard`);
+    if (!Array.isArray(data?.events)) return [];
+    return data.events.map((event) => ({
+      id: event.id,
+      gp: event.name || 'Grand Prix',
+      date: event.date || event.competitions?.[0]?.date || '',
+      circuit: event.circuit?.fullName || '',
+      venue: event.circuit?.address
+        ? `${event.circuit.address.city || ''}, ${event.circuit.address.country || ''}`
+        : '',
+      sessions: (event.competitions || []).map((c) => ({
+        name: c.type?.shortName || c.type?.name || 'Session',
+        date: c.date || '',
+        state: c.status?.type?.state || 'pre',
+      })),
+    })).sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+  } catch {
+    return [];
+  }
 }
 
 /** Live scores + upcoming fixtures merged, live first then soonest. */
 export async function fetchLiveAndUpcoming() {
-  const [groups, upcoming] = await Promise.allSettled([fetchAllScores(), fetchUpcomingFixtures()]);
+  const [groups, upcoming, f1] = await Promise.allSettled([
+    fetchAllScores(), fetchUpcomingFixtures(), fetchF1Fixtures(),
+  ]);
   const scores = groups.status === 'fulfilled' ? groups.value.flatMap((g) => g.scores) : [];
   const upcomingScores = upcoming.status === 'fulfilled' ? upcoming.value : [];
+  const f1Scores = f1.status === 'fulfilled' ? f1.value : [];
 
   const byId = new Map();
-  [...scores, ...upcomingScores].forEach((s) => { if (!byId.has(s.id)) byId.set(s.id, s); });
+  [...scores, ...upcomingScores, ...f1Scores].forEach((score) => {
+    if (!byId.has(score.id)) byId.set(score.id, score);
+  });
   const order = { in: 0, pre: 1, post: 2 };
   return [...byId.values()].sort((a, b) =>
     (order[a.statusState] ?? 1) - (order[b.statusState] ?? 1) ||
     new Date(a.date || 0) - new Date(b.date || 0));
 }
-
-

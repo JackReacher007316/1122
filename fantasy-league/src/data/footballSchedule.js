@@ -1,4 +1,5 @@
-// Football match schedule — 2026/27 season, Oct–Dec 2026 (updated 21 Oct 2026)
+// Football fixtures — PRIMARY SOURCE IS ESPN (liveSports.fetchFootballFixtures).
+// This static list is only an offline fallback if ESPN is unreachable.
 // streamUrl points to harborfreight22.com (ColaTV) for live viewing
 // Sportsurge links are centralised in ./sportsurgeLinks.js (re-exported below)
 
@@ -15,6 +16,11 @@ export const LEAGUES = [
   { id: 'bundesliga', label: 'Bundesliga', color: '#d20515' },
   { id: 'worldcup', label: 'FIFA World Cup 2026', color: '#56042c' },
   { id: 'copa', label: 'Copa América', color: '#1a3c6e' },
+  { id: 'ligue1', label: 'Ligue 1', color: '#091c3e' },
+  { id: 'uel', label: 'Europa League', color: '#f68b1f' },
+  { id: 'primeira', label: 'Primeira Liga', color: '#0a5c2e' },
+  { id: 'eredivisie', label: 'Eredivisie', color: '#e03a31' },
+  { id: 'mls', label: 'MLS', color: '#001f5b' },
 ];
 
 export const MATCHES = [
