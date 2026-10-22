@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 /** Player face with initials fallback (never shows a broken image). */
-export default function PlayerFace({ name, img, size = 72, color = '#1f80e0' }) {
+export default function PlayerFace({ name, img, size = 72, color = '#ff4b44' }) {
   const [failed, setFailed] = useState(false);
   const initials = (name || '?').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 

@@ -15,7 +15,7 @@ function StatBar({ label, value, max }) {
         <span>{label}</span><strong style={{ color: 'var(--text)' }}>{value}</strong>
       </div>
       <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginTop: 4 }}>
-        <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: 'linear-gradient(90deg,#1f80e0,#20df7f)' }} />
+        <div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: 'linear-gradient(90deg,#ff4b44,#20df7f)' }} />
       </div>
     </div>
   );

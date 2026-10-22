@@ -140,7 +140,7 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
     <div className="page-shell">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px', marginBottom: '24px' }}>
         <div>
-          <div className="eyebrow" style={{ color: '#1f80e0' }}>FOFA Sports Telemetry Desk</div>
+          <div className="eyebrow" style={{ color: '#ff4b44' }}>FOFA Sports Telemetry Desk</div>
           <h1 className="hero-title" style={{ fontSize: '2.5rem', marginBottom: 10, color: '#ffffff' }}>
             Arena Live Center
           </h1>
@@ -169,7 +169,7 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
         margin: '20px 0',
         padding: '16px 24px',
         background: 'linear-gradient(90deg, rgba(31, 128, 224, 0.15) 0%, rgba(3, 11, 23, 0.2) 100%)',
-        borderLeft: '4px solid #1f80e0',
+        borderLeft: '4px solid #ff4b44',
         borderRadius: '8px',
         display: 'flex',
         alignItems: 'center',
@@ -179,7 +179,7 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
         boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Tv size={20} color="#1f80e0" style={{ minWidth: '20px' }} />
+          <Tv size={20} color="#ff4b44" style={{ minWidth: '20px' }} />
           <span style={{ fontSize: '0.9rem', color: '#ffffff' }}>
             <strong>Live Multicast:</strong> Watch F1 (fullraces.com), Cricket (eplayhd.com), and Football (colatvia.live) embedded streams directly on this platform.
           </span>
@@ -205,7 +205,7 @@ export default function LiveTracking({ activeSport, setActiveSport }) {
       <div className="stat-grid">
         {[
           { label: 'Live now', value: totals.live, color: '#ff2e55' },
-          { label: 'Upcoming', value: totals.upcoming, color: '#1f80e0' },
+          { label: 'Upcoming', value: totals.upcoming, color: '#ff4b44' },
           { label: 'Completed', value: totals.final, color: '#f3c623' },
           { label: 'Sports', value: visibleGroups.length, color: '#ffffff' },
         ].map((stat) => (

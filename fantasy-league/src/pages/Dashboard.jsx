@@ -132,7 +132,7 @@ function ScorePreview({ score, setActiveMatch, navigate }) {
     if (s === 'f1') return 'var(--netflix-red)';
     if (s === 'cricket') return 'var(--hotstar-gold)';
     if (s === 'football') return 'var(--spotify-green)';
-    return '#1f80e0';
+    return '#ff4b44';
   };
   const getSportGlow = (s) => {
     if (s === 'f1') return 'rgba(229, 9, 20, 0.4)';
@@ -213,7 +213,7 @@ function MatchCard({ match, navigate, setActiveMatch }) {
     if (s === 'f1') return 'var(--netflix-red)';
     if (s === 'cricket') return 'var(--hotstar-gold)';
     if (s === 'football') return 'var(--spotify-green)';
-    return '#1f80e0';
+    return '#ff4b44';
   };
   const getSportGlow = (s) => {
     if (s === 'f1') return 'rgba(229, 9, 20, 0.4)';
@@ -367,11 +367,11 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
         }}
       >
         <div className="netflix-hero-content">
-          <div className="netflix-hero-badge" style={{ background: 'linear-gradient(135deg, #1f80e0, #0052a3)', borderRadius: '20px', padding: '6px 14px' }}>
+          <div className="netflix-hero-badge" style={{ background: 'linear-gradient(135deg, #ff4b44, #e10600)', borderRadius: '20px', padding: '6px 14px' }}>
             <Radio size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle', animation: 'pulse 1s infinite' }} />
             {slide.tag} • {slide.subtitle}
           </div>
-          <h1 className="netflix-hero-title" style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '-0.5px' }}>{slide.title}</h1>
+          <h1 className="netflix-hero-title">{slide.title}</h1>
           <p className="netflix-hero-desc">{slide.desc}</p>
           <div className="netflix-hero-actions">
             <button 
@@ -382,10 +382,8 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
                 navigate(slide.path);
               }}
               style={{
-                background: 'linear-gradient(135deg, #ffcc00, #ffaa00)',
-                color: '#000000',
                 border: 'none',
-                boxShadow: '0 0 15px rgba(255, 204, 0, 0.4)'
+                boxShadow: '0 0 18px rgba(225, 6, 0, 0.45)'
               }}
             >
               <PlayCircle size={18} /> {slide.cta}
@@ -423,6 +421,15 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
           </div>
         </div>
       </section>
+
+      {/* F1 × LALIGA theme strip */}
+      <div className="f1-laliga-strip" aria-hidden="true">
+        <div className="f1-laliga-strip-track">
+          {[0, 1].map((n) => (
+            <span key={n}>FORMULA 1 <b>×</b> LALIGA&nbsp;&nbsp;•&nbsp;&nbsp;RACE CONTROL&nbsp;&nbsp;•&nbsp;&nbsp;CARBON &amp; CORAL&nbsp;&nbsp;•&nbsp;&nbsp;LIVE TIMING TOWER&nbsp;&nbsp;•&nbsp;&nbsp;EL CLÁSICO ENERGY&nbsp;&nbsp;•&nbsp;&nbsp;LIGHTS OUT &amp; KICK-OFF&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+          ))}
+        </div>
+      </div>
 
       {/* Prime Video style Channel Brand Tiles */}
       <section className="prime-brand-tiles">
@@ -551,7 +558,7 @@ export default function Dashboard({ activeSport, setActiveSport, setActiveMatch 
             <section style={{ marginBottom: '24px' }}>
               <div className="section-head" style={{ margin: '12px 0' }}>
                 <h3 style={{ fontSize: '1.05rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Calendar size={16} style={{ color: '#1f80e0' }} />
+                  <Calendar size={16} style={{ color: '#ff4b44' }} />
                   Upcoming Matches
                 </h3>
               </div>
