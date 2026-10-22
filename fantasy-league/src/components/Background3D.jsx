@@ -44,8 +44,8 @@ function AmbientGlows() {
   return (
     <group>
       {/* Floating abstract glowing blobs */}
-      <FloatingMesh position={[-6, 3, -10]} color="#1f80e0" size={8} speed={0.12} />
-      <FloatingMesh position={[6, -2, -12]} color="#0052a3" size={9} speed={0.08} />
+      <FloatingMesh position={[-6, 3, -10]} color="#ff4b44" size={8} speed={0.12} />
+      <FloatingMesh position={[6, -2, -12]} color="#e10600" size={9} speed={0.08} />
       <FloatingMesh position={[0, 4, -8]} color="#38bdf8" size={5} speed={0.15} />
       <FloatingMesh position={[-4, -4, -14]} color="#0369a1" size={7} speed={0.09} />
     </group>
@@ -167,13 +167,13 @@ export default function Background3D({ disabled, activeSport = 'all' }) {
               <AmbientGlows />
               
               {/* Subtle cinematic space dust/particles */}
-              <Sparkles count={50} scale={[25, 15, 20]} size={1.2} speed={0.06} color="#1f80e0" opacity={0.25} />
+              <Sparkles count={50} scale={[25, 15, 20]} size={1.2} speed={0.06} color="#ff4b44" opacity={0.25} />
               <Sparkles count={25} scale={[25, 15, 20]} size={1.5} speed={0.10} color="#f3c623" opacity={0.15} />
               
               {/* Light setup */}
               <ambientLight intensity={0.2} />
-              <pointLight position={[0, 10, -5]} color="#1f80e0" intensity={1.5} distance={30} />
-              <pointLight position={[-10, -5, -5]} color="#0052a3" intensity={1.2} distance={25} />
+              <pointLight position={[0, 10, -5]} color="#ff4b44" intensity={1.5} distance={30} />
+              <pointLight position={[-10, -5, -5]} color="#e10600" intensity={1.2} distance={25} />
             </Suspense>
           </Canvas>
         </div>
