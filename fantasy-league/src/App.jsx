@@ -95,7 +95,7 @@ function Sidebar({ setToken }) {
         <MercedesStarLogo size={24} />
         <div className="brand-title">
           <span style={{ fontWeight: 800 }}>FOFA</span>{' '}
-          <span className="brand-gradient-text">ARENA</span>
+          <span style={{ color: '#1f80e0', fontWeight: 400 }}>ARENA</span>
         </div>
       </div>
 
@@ -317,17 +317,18 @@ export default function App() {
                 <Sidebar setToken={setToken} />
                 <main className="main-content">
                   {/* Top Netflix-style Brand Nav Header */}
-                  <div className="brand-header" style={{
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     marginBottom: '28px',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
                     paddingBottom: '16px'
                   }}>
                     <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <MercedesStarLogo size={28} />
-                        <span className="brand-lockup">FOFA <span className="brand-gradient-text">ARENA</span></span>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '2px', fontFamily: 'Inter, sans-serif' }}>FOFA <span style={{ color: '#1f80e0' }}>ARENA</span></span>
                       </div>
                       <nav style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#e5e5e5' }}>
                         <Link to="/" style={{ fontWeight: 600 }}>Home</Link>
