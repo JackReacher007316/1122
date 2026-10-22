@@ -26,16 +26,16 @@ export default function MercedesStarLogo({ size = 28, glow = true }) {
 
       {/* Dynamic Sports indicator notches on the outer ring */}
       {/* F1: Red indicator at the top (12 o'clock) */}
-      <path d="M50 4 L50 9" stroke="#e50914" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="50" cy="4" r="1.5" fill="#e50914" style={{ filter: 'drop-shadow(0 0 4px #e50914)' }} />
+      <path d="M50 4 L50 9" stroke="#e10600" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="50" cy="4" r="1.5" fill="#e10600" style={{ filter: 'drop-shadow(0 0 4px #e10600)' }} />
       
       {/* Cricket: Gold indicator at bottom-left (7:20 o'clock) */}
       <path d="M10 73 L14 70" stroke="#ffcc00" strokeWidth="2.5" strokeLinecap="round" />
       <circle cx="10" cy="73" r="1.5" fill="#ffcc00" style={{ filter: 'drop-shadow(0 0 4px #ffcc00)' }} />
 
       {/* Football: Green indicator at bottom-right (4:40 o'clock) */}
-      <path d="M90 73 L86 70" stroke="#1db954" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="90" cy="73" r="1.5" fill="#1db954" style={{ filter: 'drop-shadow(0 0 4px #1db954)' }} />
+      <path d="M90 73 L86 70" stroke="#00c9b7" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="90" cy="73" r="1.5" fill="#00c9b7" style={{ filter: 'drop-shadow(0 0 4px #00c9b7)' }} />
 
       {/* Mercedes-style three-pointed star */}
       {/* Top Arm */}
@@ -71,15 +71,15 @@ export default function MercedesStarLogo({ size = 28, glow = true }) {
         </linearGradient>
 
         <linearGradient id="neon-ring-glow" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#1f80e0" />
+          <stop offset="0%" stopColor="#ff4b44" />
           <stop offset="50%" stopColor="#8b5cf6" />
           <stop offset="100%" stopColor="#00c0f9" />
         </linearGradient>
 
         <linearGradient id="tech-orbit-1" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#e50914" />
+          <stop offset="0%" stopColor="#e10600" />
           <stop offset="50%" stopColor="#ffcc00" />
-          <stop offset="100%" stopColor="#1db954" />
+          <stop offset="100%" stopColor="#00c9b7" />
         </linearGradient>
         
         <linearGradient id="tech-orbit-2" x1="100" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">

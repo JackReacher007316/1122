@@ -120,7 +120,7 @@ export default function LiveScorePage({ fixedSport }) {
             <ArrowLeft size={16} />
             Back to live center
           </button>
-          <div className="eyebrow" style={{ color: '#1f80e0' }}>
+          <div className="eyebrow" style={{ color: '#ff4b44' }}>
             {sport.short.toUpperCase()} Live Scoreboard
           </div>
           <h1 className="hero-title" style={{ fontSize: '2.5rem', marginBottom: 10, color: '#ffffff' }}>
@@ -163,7 +163,7 @@ export default function LiveScorePage({ fixedSport }) {
       <div className="stat-grid">
         {[
           { label: 'Live Now', value: liveCount, color: '#ff2e55' },
-          { label: 'Upcoming', value: upcomingCount, color: '#1f80e0' },
+          { label: 'Upcoming', value: upcomingCount, color: '#ff4b44' },
           { label: 'Completed', value: finalCount, color: '#f3c623' },
           { label: 'Source Feed', value: group?.source === 'live' ? 'ESPN Stream' : 'Demo Mode', color: '#ffffff' },
         ].map((stat) => (

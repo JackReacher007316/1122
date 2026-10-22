@@ -1,52 +1,64 @@
 /* ═══════════════════════════════════════════════════════════
-   FOFA SPORTS ARENA — DISNEY+ HOTSTAR DESIGN SYSTEM
+   FOFA ARENA — FORMULA 1 × LALIGA DESIGN SYSTEM
+   F1: carbon black #0A0A10, racing red #E10600, italic speed type,
+       slanted TV graphics, chequered-flag accents, timing-tower data
+   La Liga: coral #FF4B44, deep navy #0B1E3A, electric yellow #FFCC00,
+       turquoise #00C9B7, colour-spectrum stripe
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Pitch Black & Dark Slate Palette (Netflix & Spotify) ── */
-  --bg: #000000;
-  --bg-dark: #07070a;
-  --panel: #121216;
-  --panel-solid: #18181c;
-  --panel-strong: #28282c;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(30, 215, 96, 0.25);
+  /* ── F1 carbon & La Liga navy surfaces ── */
+  --bg: #0a0a10;
+  --bg-dark: #06060a;
+  --panel: #15151e;
+  --panel-solid: #1b1b26;
+  --panel-strong: #23232f;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(225, 6, 0, 0.45);
   --text: #f9f9f9;
-  --muted: #a7a7a7;
-  --faint: #3e3e3e;
+  --muted: #a7aab5;
+  --faint: #3e3e46;
 
-  /* ── Accent Colors (Merged Streaming Giants) ── */
-  --spotify-green: #1db954;
-  --netflix-red: #e50914;
-  --prime-blue: #00a8e1;
-  --hotstar-gold: #ffcc00;
-  --hotstar-blue: #1f80e0;
-  --hotstar-blue-hover: #3594f0;
-  --gold: var(--hotstar-gold);
-  --red: var(--netflix-red);
-  --green: var(--spotify-green);
-  
-  --f1-red: var(--netflix-red);
-  --f1-gold: var(--hotstar-gold);
-  --f1-teal: #00c0f9;
-  --f1-blue: var(--hotstar-blue);
+  /* ── Brand palette ── */
+  --f1-red: #e10600;
+  --f1-red-dark: #8f0400;
+  --laliga-coral: #ff4b44;
+  --laliga-navy: #0b1e3a;
+  --laliga-yellow: #ffcc00;
+  --laliga-teal: #00c9b7;
+  --laliga-violet: #7c5cff;
+
+  /* ── Legacy tokens remapped onto the new palette ── */
+  --spotify-green: var(--laliga-coral);
+  --netflix-red: var(--f1-red);
+  --prime-blue: #00c2ff;
+  --hotstar-gold: var(--laliga-yellow);
+  --hotstar-blue: var(--f1-red);
+  --hotstar-blue-hover: var(--laliga-coral);
+  --gold: var(--laliga-yellow);
+  --red: var(--f1-red);
+  --green: #20df7f;
+
+  --f1-gold: var(--laliga-yellow);
+  --f1-teal: #00c2ff;
+  --f1-blue: var(--f1-red);
   --f1-orange: #ff8a1c;
-  --f1-green: var(--spotify-green);
+  --f1-green: #20df7f;
   --f1-pink: #d946ef;
   --f1-white: #ffffff;
 
-  --turf: var(--spotify-green);
+  --turf: #20df7f;
   --orange: #ff8a1c;
-  --blue: var(--prime-blue);
-  --violet: #8b5cf6;
+  --blue: #00c2ff;
+  --violet: var(--laliga-violet);
   --pink: #ec4899;
-  
-  --neon-green: var(--spotify-green);
-  --neon-red: var(--netflix-red);
-  --neon-blue: var(--prime-blue);
+
+  --neon-green: #20df7f;
+  --neon-red: var(--f1-red);
+  --neon-blue: #00c2ff;
   --neon-pink: #ec4899;
-  --neon-purple: #8b5cf6;
-  --neon-cyan: #06b6d4;
+  --neon-purple: var(--laliga-violet);
+  --neon-cyan: var(--laliga-teal);
 
   --text-muted: var(--muted);
   --text-main: var(--text);
@@ -57,12 +69,13 @@
   /* ── Shape & Spacing ────────────────────────────────────── */
   --radius: 8px;
   --radius-sm: 4px;
-  --shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(29, 185, 84, 0.04);
-  --shadow-red: 0 8px 24px rgba(229, 9, 20, 0.15);
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(225, 6, 0, 0.06);
+  --shadow-red: 0 8px 24px rgba(225, 6, 0, 0.35);
 
   /* ── Typography (Clean modern sans-serif) ────────────────── */
   --font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-racing: var(--font);
+  --font-racing: "Titillium Web", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-timing: "Orbitron", "Titillium Web", ui-monospace, monospace;
   --font-body: var(--font);
   --font-heading: var(--font);
   --font-main: var(--font);
@@ -1749,3 +1762,240 @@ canvas {
   transform: scale(1.1);
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   F1 × LALIGA THEME OVERRIDES (appended — wins over legacy styles)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Carbon body with speed-line texture + red/navy glows */
+body {
+  background:
+    radial-gradient(900px 480px at 85% -5%, rgba(225, 6, 0, 0.16), transparent 60%),
+    radial-gradient(800px 500px at -10% 100%, rgba(11, 30, 58, 0.85), transparent 60%),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.014) 0 2px, transparent 2px 14px),
+    linear-gradient(180deg, #0a0a10 0%, #07070c 55%, #0a0f1e 100%);
+  background-attachment: fixed;
+}
+html { background: #06060a; }
+
+/* La Liga colour-spectrum stripe across the very top */
+.app-container::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  z-index: 1200;
+  background: linear-gradient(90deg, var(--f1-red) 0%, var(--laliga-coral) 22%, var(--laliga-yellow) 45%, var(--laliga-teal) 68%, var(--laliga-violet) 85%, var(--f1-red) 100%);
+}
+
+/* ── Speed typography: italic Titillium caps, F1-TV style ── */
+h1, h2, h3,
+.brand-title, .hero-title, .netflix-hero-title,
+.section-head h2, .match-title, .stat-value,
+.calendar-card h3, .chat-header h3, .auth-logo h2 {
+  font-family: var(--font-racing);
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.score-number, .media-time-lbl, .hero-score-chip b {
+  font-family: var(--font-timing);
+  font-style: normal;
+  letter-spacing: 0.5px;
+}
+
+/* ── Sidebar: carbon → La Liga navy, F1 red edge ── */
+.sidebar {
+  background: linear-gradient(180deg, #0d0d13 0%, #101019 55%, var(--laliga-navy) 130%);
+  border-right: 2px solid var(--f1-red);
+  box-shadow: 12px 0 34px rgba(0, 0, 0, 0.45);
+}
+.brand-mark {
+  background: linear-gradient(135deg, var(--f1-red), var(--laliga-coral));
+  border: 1px solid rgba(255, 75, 68, 0.5);
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(225, 6, 0, 0.45);
+}
+.nav-link { border-radius: 4px; font-family: var(--font-racing); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; }
+.nav-link:hover { color: #fff; background: rgba(255, 75, 68, 0.10); }
+.nav-link.is-active {
+  color: #fff;
+  background: linear-gradient(90deg, var(--f1-red), var(--laliga-coral) 130%);
+  box-shadow: 0 6px 18px rgba(225, 6, 0, 0.35);
+}
+.nav-link.is-active::before {
+  background: #fff;
+  transform: skewY(-20deg);
+  width: 4px;
+}
+.user-avatar {
+  background: linear-gradient(135deg, var(--f1-red), var(--laliga-violet));
+  font-family: var(--font-racing); font-weight: 900; font-style: italic;
+}
+.live-dot { background: var(--f1-red); box-shadow: 0 0 0 0 rgba(225, 6, 0, 0.6); animation: pulse 1.6s infinite; }
+
+/* ── Top brand header: chequered-flag underline ── */
+.brand-header { position: relative; }
+.brand-header::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 6px;
+  background:
+    conic-gradient(#e8e8e8 25%, #101014 0 50%, #e8e8e8 0 75%, #101014 0);
+  background-size: 12px 12px;
+  opacity: 0.55;
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* ── Buttons: slanted F1 parallelograms, red → coral ── */
+.btn-netflix-play, .submit-btn, .create-team-cta-bar .btn-netflix-play {
+  background: linear-gradient(92deg, var(--f1-red) 10%, var(--laliga-coral) 90%) !important;
+  color: #fff !important;
+  font-family: var(--font-racing); font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: 1px;
+  border: none;
+  border-radius: 3px;
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  box-shadow: 0 8px 22px rgba(225, 6, 0, 0.35);
+}
+.btn-netflix-play:hover, .submit-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.btn-netflix-info, .ghost-button {
+  background: rgba(11, 30, 58, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+  font-family: var(--font-racing); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+.btn-netflix-info:hover, .ghost-button:hover { border-color: var(--laliga-coral); color: #fff; }
+.chat-send-btn { background: linear-gradient(135deg, var(--f1-red), var(--laliga-coral)); }
+.form-input:focus, .chat-input:focus, .otp-input-box:focus { border-color: var(--laliga-coral) !important; box-shadow: 0 0 0 3px rgba(255, 75, 68, 0.18); }
+
+/* ── Tabs: timing-tower chips ── */
+.sport-tab { border-radius: 3px; font-family: var(--font-racing); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; background: #15151e; border: 1px solid var(--line); }
+.sport-tab:hover { border-color: rgba(255, 75, 68, 0.5); color: #fff; }
+.sport-tab.is-active {
+  background: linear-gradient(92deg, var(--f1-red), var(--laliga-coral));
+  border-color: transparent; color: #fff;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  box-shadow: 0 6px 16px rgba(225, 6, 0, 0.3);
+}
+
+/* ── Cards & panels: carbon-navy with red timing edge ── */
+.match-card, .score-card, .calendar-card, .stat-card, .action-card, .glass-panel {
+  background: linear-gradient(160deg, #181822 0%, #101019 70%, rgba(11, 30, 58, 0.35) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--f1-red);
+  border-radius: 6px;
+}
+.match-card:hover, .score-card:hover, .calendar-card:hover, .stat-card:hover, .action-card:hover {
+  border-color: rgba(255, 75, 68, 0.45);
+  border-left-color: var(--laliga-coral);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(225, 6, 0, 0.12), 0 10px 26px -12px rgba(225, 6, 0, 0.45);
+  transform: translateY(-2px);
+}
+.hero-panel, .live-chat-panel, .chat-panel, .auth-card {
+  background: linear-gradient(160deg, #17171f, #0d0d14 70%, rgba(11, 30, 58, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-top: 3px solid var(--f1-red);
+  border-radius: 8px;
+}
+.hero-panel-stage::before { background: linear-gradient(90deg, var(--f1-red), var(--laliga-coral), var(--laliga-yellow)); }
+
+/* ── Hero: F1 red slash + gradient speed title ── */
+.netflix-hero { border-bottom: 3px solid var(--f1-red); }
+.netflix-hero-overlay { background: linear-gradient(90deg, rgba(6, 6, 10, 0.94) 8%, rgba(11, 30, 58, 0.55) 55%, rgba(225, 6, 0, 0.20) 100%), linear-gradient(0deg, #0a0a10 2%, transparent 45%); }
+.netflix-hero-title, .hero-title {
+  font-weight: 900;
+  background: linear-gradient(94deg, #ffffff 20%, #ffd9d6 45%, var(--laliga-coral) 75%, var(--laliga-yellow) 105%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-title span, .eyebrow { color: var(--laliga-coral); }
+.eyebrow { font-family: var(--font-racing); font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 2px; }
+.netflix-hero-badge {
+  background: linear-gradient(92deg, var(--f1-red), var(--laliga-coral)) !important;
+  font-family: var(--font-racing); font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 1px;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  border-radius: 2px !important;
+}
+
+/* ── Pills & section heads ── */
+.status-pill.is-live, .live-badge {
+  background: var(--f1-red) !important; color: #fff !important;
+  font-family: var(--font-racing); font-weight: 800; font-style: italic; letter-spacing: 1px;
+  box-shadow: 0 0 14px rgba(225, 6, 0, 0.55);
+}
+.sport-pill { background: rgba(225, 6, 0, 0.14); color: #ff8a80; border: 1px solid rgba(225, 6, 0, 0.3); font-family: var(--font-racing); font-weight: 700; text-transform: uppercase; }
+.section-head h2 { display: inline-flex; align-items: center; gap: 10px; }
+.section-head h2::before {
+  content: ""; width: 5px; height: 22px; flex: 0 0 auto;
+  background: linear-gradient(180deg, var(--f1-red), var(--laliga-coral));
+  transform: skewX(-18deg);
+  box-shadow: 0 0 10px rgba(225, 6, 0, 0.5);
+}
+
+/* ── Timing-tower tables (leaderboard) ── */
+.leaderboard-table th {
+  background: linear-gradient(90deg, var(--f1-red-dark), var(--f1-red));
+  color: #fff; font-family: var(--font-racing); font-style: italic; text-transform: uppercase; letter-spacing: 1px;
+  border-bottom: 3px solid var(--laliga-yellow);
+}
+.leaderboard-table tr:hover td { background: rgba(255, 75, 68, 0.07); }
+
+/* ── Brand tiles & category tiles ── */
+.prime-brand-tile, .category-tile { border-radius: 6px; background: linear-gradient(160deg, #17171f, #0d0d14); border: 1px solid rgba(255, 255, 255, 0.09); }
+.prime-brand-tile:hover, .category-tile:hover { border-color: rgba(255, 75, 68, 0.5); box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5), 0 0 18px -4px var(--sport-glow-color, rgba(225, 6, 0, 0.5)); }
+.category-tile-label, .prime-brand-tile span { font-family: var(--font-racing); font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── Bottom nav + media bar: pit-lane carbon ── */
+.bottom-nav {
+  background: linear-gradient(180deg, rgba(21, 21, 30, 0.92), rgba(6, 6, 10, 0.97));
+  border-top: 2px solid var(--f1-red);
+  backdrop-filter: blur(14px);
+}
+.bottom-nav a.is-active { color: var(--laliga-coral); }
+.spotify-media-bar {
+  background: linear-gradient(180deg, rgba(23, 23, 31, 0.96), rgba(8, 8, 12, 0.98));
+  border-top: 2px solid var(--f1-red);
+  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.55);
+}
+.media-btn-play { background: linear-gradient(135deg, var(--f1-red), var(--laliga-coral)); color: #fff; box-shadow: 0 0 16px rgba(225, 6, 0, 0.5); }
+.media-progress-fill { background: linear-gradient(90deg, var(--f1-red), var(--laliga-coral), var(--laliga-yellow)); }
+
+/* ── Scrollbar & selection ── */
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--f1-red), var(--laliga-coral)); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--laliga-coral); }
+* { scrollbar-color: rgba(225, 6, 0, 0.55) rgba(6, 6, 10, 0.6); }
+::selection { background: var(--f1-red); color: #fff; }
+.loading-spinner { border-top-color: var(--laliga-coral) !important; border-color: rgba(255, 75, 68, 0.2); border-top-color: var(--f1-red); }
+
+/* Brand lockup (App header/sidebar) */
+.brand-lockup { color: #fff; font-family: var(--font-racing); font-weight: 900; font-style: italic; font-size: 1.4rem; letter-spacing: 1.5px; text-transform: uppercase; }
+.brand-gradient-text {
+  font-weight: 900;
+  background: linear-gradient(92deg, var(--f1-red), var(--laliga-coral) 55%, var(--laliga-yellow));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.sidebar .brand-title { font-family: var(--font-racing); font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: 1px; }
+
+/* F1 × La Liga scrolling theme strip (Dashboard) */
+.f1-laliga-strip {
+  overflow: hidden;
+  margin: 18px 0 4px;
+  padding: 9px 0;
+  background: linear-gradient(90deg, rgba(225, 6, 0, 0.14), rgba(11, 30, 58, 0.5), rgba(255, 75, 68, 0.12));
+  border-top: 2px solid var(--f1-red);
+  border-bottom: 1px solid rgba(255, 75, 68, 0.35);
+  transform: skewX(-6deg);
+}
+.f1-laliga-strip-track {
+  display: inline-flex;
+  white-space: nowrap;
+  font-family: var(--font-racing);
+  font-weight: 900; font-style: italic; text-transform: uppercase;
+  letter-spacing: 2px; font-size: 0.8rem; color: #fff;
+  animation: f1StripScroll 26s linear infinite;
+}
+.f1-laliga-strip-track b { color: var(--laliga-yellow); }
+@keyframes f1StripScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .f1-laliga-strip-track { animation: none; } }
