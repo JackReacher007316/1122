@@ -243,7 +243,7 @@ const Auth = ({ setToken }) => {
             </div>
             <h2>
               <span style={{ fontWeight: 800, color: '#ffffff' }}>FOFA</span>{' '}
-              <span style={{ color: '#ff4b44', fontWeight: 300 }}>ARENA</span>
+              <span style={{ color: '#1f80e0', fontWeight: 300 }}>ARENA</span>
             </h2>
             <p>Premium Sports Stream &amp; Fantasy Portal</p>
           </div>
@@ -260,21 +260,21 @@ const Auth = ({ setToken }) => {
                 width: '24px', height: '24px', borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '0.75rem', fontWeight: 700,
-                background: step >= 1 ? '#ff4b44' : 'rgba(255,255,255,0.06)',
+                background: step >= 1 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
                 color: '#ffffff',
                 boxShadow: step >= 1 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
                 transition: 'all 0.3s ease',
               }}>1</div>
               <div style={{
                 width: '40px', height: '1px',
-                background: step >= 2 ? '#ff4b44' : 'rgba(255,255,255,0.08)',
+                background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.08)',
                 transition: 'background 0.3s ease',
               }} />
               <div style={{
                 width: '24px', height: '24px', borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '0.75rem', fontWeight: 700,
-                background: step >= 2 ? '#ff4b44' : 'rgba(255,255,255,0.06)',
+                background: step >= 2 ? '#1f80e0' : 'rgba(255,255,255,0.06)',
                 color: step >= 2 ? '#ffffff' : '#8f98a9',
                 boxShadow: step >= 2 ? '0 0 10px rgba(31, 128, 224, 0.4)' : 'none',
                 transition: 'all 0.3s ease',
@@ -313,7 +313,7 @@ const Auth = ({ setToken }) => {
                   style={{
                     flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
                     fontSize: '0.8rem', fontWeight: 600,
-                    background: isLogin ? '#ff4b44' : 'transparent',
+                    background: isLogin ? '#1f80e0' : 'transparent',
                     color: isLogin ? '#ffffff' : '#8f98a9',
                     transition: 'all 0.2s'
                   }}
@@ -325,7 +325,7 @@ const Auth = ({ setToken }) => {
                   style={{
                     flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
                     fontSize: '0.8rem', fontWeight: 600,
-                    background: !isLogin ? '#ff4b44' : 'transparent',
+                    background: !isLogin ? '#1f80e0' : 'transparent',
                     color: !isLogin ? '#ffffff' : '#8f98a9',
                     transition: 'all 0.2s'
                   }}
@@ -418,7 +418,7 @@ const Auth = ({ setToken }) => {
           {step === 2 && (
             <div style={{ animation: 'fadeInStep 0.4s ease both' }} className={otpShake ? 'shake-element' : ''}>
               <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <ShieldCheck size={40} style={{ color: '#ff4b44', margin: '0 auto 12px' }} />
+                <ShieldCheck size={40} style={{ color: '#1f80e0', margin: '0 auto 12px' }} />
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#ffffff', margin: '0 0 4px 0' }}>Security verification</h3>
                 <p style={{ fontSize: '0.82rem', color: '#8f98a9', margin: 0 }}>Please enter the 6-digit code logged in your server console.</p>
               </div>
@@ -437,7 +437,7 @@ const Auth = ({ setToken }) => {
                 }}>
                   {maskedEmail && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Mail size={12} /> OTP sent to: <span style={{ color: '#ff4b44', fontWeight: 600 }}>{maskedEmail}</span>
+                      <Mail size={12} /> OTP sent to: <span style={{ color: '#1f80e0', fontWeight: 600 }}>{maskedEmail}</span>
                     </div>
                   )}
                   {maskedPhone && (
@@ -469,7 +469,7 @@ const Auth = ({ setToken }) => {
                       borderColor: digit 
                         ? '#f3c623' 
                         : focusedOtpIdx === idx 
-                          ? '#ff4b44' 
+                          ? '#1f80e0' 
                           : 'rgba(255,255,255,0.08)'
                     }}
                   />
@@ -512,7 +512,7 @@ const Auth = ({ setToken }) => {
                 <span
                   onClick={handleResendOtp}
                   style={{
-                    color: resendTimer > 0 ? '#8f98a9' : '#ff4b44',
+                    color: resendTimer > 0 ? '#8f98a9' : '#1f80e0',
                     fontSize: '0.8rem',
                     cursor: resendTimer > 0 ? 'default' : 'pointer',
                     fontWeight: 600,

@@ -179,7 +179,7 @@ export default function WelcomeAnimation() {
           <div className="spectrum-bars">
             {Array.from({ length: 42 }).map((_, i) => {
               // Cycle colors of merged giants: Netflix Red, Spotify Green, Prime Blue, Hotstar Gold
-              const colors = ['#e10600', '#00c9b7', '#00c2ff', '#ffcc00'];
+              const colors = ['#e50914', '#1db954', '#00a8e1', '#ffcc00'];
               const color = colors[i % colors.length];
               const left = (i * 2.4); // span across screen
               const width = 2 + Math.random() * 5; // varied widths

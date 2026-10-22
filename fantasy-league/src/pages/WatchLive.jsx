@@ -171,7 +171,7 @@ export default function WatchLive() {
     <div className="page-shell" style={{ animation: 'fadeIn 0.5s ease' }}>
       {/* Header Info Section */}
       <section style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff4b44', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1f80e0', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           <Radio size={16} style={{ animation: 'pulse 1.5s infinite' }} />
           LIVE CINEMA MULTICAST
         </div>
@@ -202,7 +202,7 @@ export default function WatchLive() {
             fontWeight: 600,
             fontSize: '1rem',
             padding: '8px 16px',
-            borderBottom: `2px solid ${sport === 'f1' ? '#ff4b44' : 'transparent'}`,
+            borderBottom: `2px solid ${sport === 'f1' ? '#1f80e0' : 'transparent'}`,
             transition: 'all 0.2s',
             display: 'flex',
             alignItems: 'center',
@@ -220,7 +220,7 @@ export default function WatchLive() {
             fontWeight: 600,
             fontSize: '1rem',
             padding: '8px 16px',
-            borderBottom: `2px solid ${sport === 'cricket' ? '#ff4b44' : 'transparent'}`,
+            borderBottom: `2px solid ${sport === 'cricket' ? '#1f80e0' : 'transparent'}`,
             transition: 'all 0.2s',
             display: 'flex',
             alignItems: 'center',
@@ -238,7 +238,7 @@ export default function WatchLive() {
             fontWeight: 600,
             fontSize: '1rem',
             padding: '8px 16px',
-            borderBottom: `2px solid ${sport === 'football' ? '#ff4b44' : 'transparent'}`,
+            borderBottom: `2px solid ${sport === 'football' ? '#1f80e0' : 'transparent'}`,
             transition: 'all 0.2s',
             display: 'flex',
             alignItems: 'center',
@@ -337,7 +337,7 @@ export default function WatchLive() {
           <div className="live-chat-panel">
             <div className="chat-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MessageCircle size={16} color="#ff4b44" />
+                <MessageCircle size={16} color="#1f80e0" />
                 <h3>Live Chat</h3>
                 <span className="chat-viewer-count">
                   <Eye size={12} /> {viewerCount}
@@ -360,7 +360,7 @@ export default function WatchLive() {
                   fontSize: '0.85rem',
                   padding: '24px 16px'
                 }}>
-                  <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.3, color: '#ff4b44' }} />
+                  <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.3, color: '#1f80e0' }} />
                   <p style={{ margin: 0 }}>Welcome to the stream chat! Be the first to start the conversation.</p>
                 </div>
               )}

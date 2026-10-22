@@ -22,7 +22,7 @@ const calculatePrediction = (score) => {
     return {
       type: 'racing',
       candidates: [
-        { name: score.home || 'Verstappen', probability: isLive ? 68 : 55, color: '#ff4b44' },
+        { name: score.home || 'Verstappen', probability: isLive ? 68 : 55, color: '#1f80e0' },
         { name: score.away || 'Norris', probability: isLive ? 22 : 25, color: '#f3c623' },
         { name: 'Leclerc', probability: isLive ? 10 : 20, color: '#ff2e55' }
       ]
@@ -120,7 +120,7 @@ const Leaderboard = ({ activeSport, setActiveSport }) => {
     <div className="page-shell" style={{ animation: 'fadeIn 0.5s ease' }}>
       {/* Header banner */}
       <section style={{ marginBottom: '28px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff4b44', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1f80e0', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           <Trophy size={16} />
           FOFA CHAMPIONSHIP ARENA
         </div>
@@ -190,7 +190,7 @@ const Leaderboard = ({ activeSport, setActiveSport }) => {
                           </span>
                           <div style={{
                             position: 'absolute', bottom: '-6px',
-                            background: avatarBg, color: '#0a0a10',
+                            background: avatarBg, color: '#030b17',
                             width: '20px', height: '20px', borderRadius: '50%',
                             display: 'flex', justifyContent: 'center', alignItems: 'center',
                             fontWeight: 'bold', fontSize: '0.75rem'
@@ -264,7 +264,7 @@ const Leaderboard = ({ activeSport, setActiveSport }) => {
               <Radio size={16} color="#ff2e55" style={{ animation: 'pulse 1.5s infinite' }} />
               <h3>ESPN Live Predictor</h3>
             </div>
-            <span style={{ fontSize: '0.75rem', color: '#ff4b44', fontWeight: 600 }}>
+            <span style={{ fontSize: '0.75rem', color: '#1f80e0', fontWeight: 600 }}>
               Live Ratios
             </span>
           </div>
@@ -299,7 +299,7 @@ const Leaderboard = ({ activeSport, setActiveSport }) => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#8f98a9', marginBottom: '8px' }}>
                       <span>{score.competition}</span>
                       <span style={{ 
-                        color: isLive ? '#ff2e55' : '#ff4b44', 
+                        color: isLive ? '#ff2e55' : '#1f80e0', 
                         fontWeight: 600, 
                         display: 'flex', 
                         alignItems: 'center', 
@@ -313,7 +313,7 @@ const Leaderboard = ({ activeSport, setActiveSport }) => {
                     {/* Team names and current score */}
                     <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', fontWeight: 700, fontSize: '0.9rem', color: '#ffffff', marginBottom: '12px' }}>
                       <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{score.home}</span>
-                      <span style={{ color: '#ff4b44' }}>{getScoreSummary(score)}</span>
+                      <span style={{ color: '#1f80e0' }}>{getScoreSummary(score)}</span>
                       <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>{score.away}</span>
                     </div>
 
@@ -322,12 +322,12 @@ const Leaderboard = ({ activeSport, setActiveSport }) => {
                       <div>
                         {/* Prediction values */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, marginBottom: '4px' }}>
-                          <span style={{ color: '#ff4b44' }}>Win Prob: {pred.homeProb}%</span>
+                          <span style={{ color: '#1f80e0' }}>Win Prob: {pred.homeProb}%</span>
                           <span style={{ color: '#f3c623' }}>Win Prob: {pred.awayProb}%</span>
                         </div>
                         {/* Double progress bar */}
                         <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden', display: 'flex' }}>
-                          <div style={{ width: `${pred.homeProb}%`, height: '100%', background: '#ff4b44', transition: 'width 0.5s' }} />
+                          <div style={{ width: `${pred.homeProb}%`, height: '100%', background: '#1f80e0', transition: 'width 0.5s' }} />
                           <div style={{ width: `${pred.awayProb}%`, height: '100%', background: '#f3c623', transition: 'width 0.5s' }} />
                         </div>
                       </div>
