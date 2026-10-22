@@ -305,7 +305,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
       {view === 'lobby' && (
         <div>
           <section style={{ marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1f80e0', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff4b44', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               <Users size={16} />
               CO-WATCHING PARTY ROOMS
             </div>
@@ -339,7 +339,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
                   borderRadius: '50%',
                   background: 'rgba(31, 128, 224, 0.1)',
                   marginBottom: '20px',
-                  color: '#1f80e0'
+                  color: '#ff4b44'
                 }}>
                   <Users size={28} />
                 </div>
@@ -390,7 +390,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
                 onClick={joinRoom} 
                 disabled={isJoining || !joinCode.trim()}
                 className="submit-btn"
-                style={{ background: '#f3c623', color: '#030b17' }}
+                style={{ background: '#f3c623', color: '#0a0a10' }}
               >
                 {isJoining ? 'Entering room...' : 'Join Room'}
               </button>
@@ -420,7 +420,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: copied ? '#27d06d' : '#1f80e0',
+                    color: copied ? '#27d06d' : '#ff4b44',
                     cursor: 'pointer',
                     display: 'flex',
                     padding: 4
@@ -430,7 +430,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
                   {copied ? <Check size={16} /> : <Copy size={16} />}
                 </button>
               </div>
-              <span className="status-pill" style={{ background: 'rgba(31,128,224,0.12)', color: '#1f80e0', fontWeight: 700 }}>
+              <span className="status-pill" style={{ background: 'rgba(31,128,224,0.12)', color: '#ff4b44', fontWeight: 700 }}>
                 {members.length}/12 Active Users
               </span>
             </div>
@@ -477,7 +477,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
                   style={{
                     flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
                     fontSize: '0.78rem', fontWeight: 600,
-                    background: mode === 'obs' ? '#1f80e0' : 'transparent',
+                    background: mode === 'obs' ? '#ff4b44' : 'transparent',
                     color: mode === 'obs' ? '#ffffff' : '#8f98a9',
                     transition: 'all 0.2s',
                     display: 'flex',
@@ -493,7 +493,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
                   style={{
                     flex: 1, padding: '8px', border: 'none', borderRadius: '4px',
                     fontSize: '0.78rem', fontWeight: 600,
-                    background: mode === 'webrtc' ? '#1f80e0' : 'transparent',
+                    background: mode === 'webrtc' ? '#ff4b44' : 'transparent',
                     color: mode === 'webrtc' ? '#ffffff' : '#8f98a9',
                     transition: 'all 0.2s',
                     display: 'flex',
@@ -624,7 +624,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
               {/* Chat Header */}
               <div className="chat-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MessageCircle size={16} color="#1f80e0" />
+                  <MessageCircle size={16} color="#ff4b44" />
                   <h3>Room Chat</h3>
                 </div>
                 <span style={{ fontSize: '0.75rem', color: '#8f98a9', fontWeight: 600 }}>
@@ -658,7 +658,7 @@ const WatchParty = ({ activeSport, setActiveSport }) => {
               <div className="chat-messages">
                 {messages.length === 0 && (
                   <div style={{ margin: 'auto', textAlign: 'center', color: '#8f98a9', fontSize: '0.85rem', padding: '24px 16px' }}>
-                    <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.3, color: '#1f80e0' }} />
+                    <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.3, color: '#ff4b44' }} />
                     <p style={{ margin: 0 }}>Start typing to chat with room participants.</p>
                   </div>
                 )}
